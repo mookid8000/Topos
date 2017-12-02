@@ -1,0 +1,11 @@
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\bin\Debug\netcoreapp2.0\Topos.SqlServer.deps.json
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\bin\Debug\netcoreapp2.0\Topos.SqlServer.dll
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\bin\Debug\netcoreapp2.0\Topos.SqlServer.pdb
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\bin\Debug\netcoreapp2.0\Topos.dll
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\bin\Debug\netcoreapp2.0\Topos.pdb
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.csprojResolveAssemblyReference.cache
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.csproj.CoreCompileInputs.cache
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.AssemblyInfoInputs.cache
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.AssemblyInfo.cs
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.dll
+C:\Projects\Topos\Topos.sln\Topos.SqlServer\obj\Debug\netcoreapp2.0\Topos.SqlServer.pdb

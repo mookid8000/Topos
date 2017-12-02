@@ -1,0 +1,13 @@
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.Tests.deps.json
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.Tests.dll
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.csprojResolveAssemblyReference.cache
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.csproj.CoreCompileInputs.cache
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.AssemblyInfoInputs.cache
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.AssemblyInfo.cs
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.Tests.pdb
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.dll
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.SqlServer.dll
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.SqlServer.pdb
+C:\Projects\Topos\Topos.sln\Topos.Tests\bin\Debug\netcoreapp2.0\Topos.pdb
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.dll
+C:\Projects\Topos\Topos.sln\Topos.Tests\obj\Debug\netcoreapp2.0\Topos.Tests.pdb
