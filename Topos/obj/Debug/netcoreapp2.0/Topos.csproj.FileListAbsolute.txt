@@ -1,9 +1,0 @@
-C:\Projects\Topos\Topos.sln\Topos\bin\Debug\netcoreapp2.0\Topos.deps.json
-C:\Projects\Topos\Topos.sln\Topos\bin\Debug\netcoreapp2.0\Topos.dll
-C:\Projects\Topos\Topos.sln\Topos\bin\Debug\netcoreapp2.0\Topos.pdb
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.csproj.CoreCompileInputs.cache
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.AssemblyInfoInputs.cache
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.AssemblyInfo.cs
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.dll
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.pdb
-C:\Projects\Topos\Topos.sln\Topos\obj\Debug\netcoreapp2.0\Topos.csprojResolveAssemblyReference.cache
