@@ -16,3 +16,13 @@ _ReSharper.*
 *.suo
 *.cache
 ~$*
+.vs
+.vs/*
+_NCrunch_*
+*.user
+*.backup
+
+# MS Guideline
+**/packages/*
+!**/packages/build/
+AssemblyInfo_Patch.cs

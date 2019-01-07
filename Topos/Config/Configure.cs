@@ -2,6 +2,8 @@
 {
     public static class Configure
     {
-        public static ToposConfigurer Topos() => new ToposConfigurer();
+        public static ToposProducerConfigurer Producer() => new ToposProducerConfigurer();
+        
+        public static ToposConsumerConfigurer Consumer() => new ToposConsumerConfigurer();
     }
 }

@@ -5,7 +5,7 @@ namespace Topos.Internals
     /// <summary>
     /// Represents the context of resolving one root service and can be used throughout the tree to fetch something to be injected
     /// </summary>
-    interface IResolutionContext
+    public interface IResolutionContext
     {
         /// <summary>
         /// Gets an instance of the specified <typeparamref name="TService"/>.

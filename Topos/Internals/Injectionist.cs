@@ -10,7 +10,7 @@ namespace Topos.Internals
     /// with caching of instances so that the same instance of each class is used throughout the tree. Should probably not be used for
     /// anything at runtime, is only meant to be used in configuration scenarios.
     /// </summary>
-    class Injectionist
+    public class Injectionist
     {
         class Handler
         {
