@@ -1,6 +1,9 @@
-﻿using Topos.Internals;
+﻿using System;
+using Topos.Internals;
 using Topos.Internals.Consumer;
 using Topos.Internals.Producer;
+using Topos.Logging;
+// ReSharper disable RedundantArgumentDefaultValue
 
 namespace Topos.Config
 {
@@ -12,7 +15,7 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
-            injectionist.Register<IToposProducer>(c => new ToposProducer());
+            injectionist.Register<IToposProducer>(c => new ToposProducer(c.Get<ILoggerFactory>()));
 
             var resolutionResult = injectionist.Get<IToposProducer>();
 
@@ -25,7 +28,7 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
-            injectionist.Register<IToposConsumer>(c => new ToposConsumer());
+            injectionist.Register<IToposConsumer>(c => new ToposConsumer(c.Get<ILoggerFactory>()));
 
             var resolutionResult = injectionist.Get<IToposConsumer>();
 
@@ -34,6 +37,15 @@ namespace Topos.Config
 
         static void RegisterCommonServices(Injectionist injectionist)
         {
+            PossiblyRegisterDefault<ILoggerFactory>(injectionist, c => new ConsoleLoggerFactory());
+
+        }
+
+        static void PossiblyRegisterDefault<TService>(Injectionist injectionist, Func<IResolutionContext, TService> factory)
+        {
+            if (injectionist.Has<TService>(primary: true)) return;
+
+            injectionist.Register(factory);
         }
     }
 }

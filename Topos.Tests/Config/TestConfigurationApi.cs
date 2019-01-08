@@ -6,7 +6,6 @@ using Topos.SqlServer.Config;
 namespace Topos.Tests.Config
 {
     [TestFixture]
-    [Ignore("save for later")]
     public class TestConfigurationApi : FixtureBase
     {
         [Test]

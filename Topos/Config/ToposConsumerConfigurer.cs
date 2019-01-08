@@ -5,7 +5,7 @@ namespace Topos.Config
 {
     public class ToposConsumerConfigurer 
     {
-        internal readonly Injectionist Injectionist = new Injectionist();
+        internal readonly Injectionist _injectionist = new Injectionist();
 
         public IDisposable Start() => this.Create().Start();
     }

@@ -4,6 +4,6 @@ namespace Topos.Config
 {
     public class ToposProducerConfigurer 
     {
-        internal readonly Injectionist Injectionist = new Injectionist();
+        internal readonly Injectionist _injectionist = new Injectionist();
     }
 }

@@ -1,13 +1,23 @@
 ﻿using System;
+using Topos.Logging;
 
 namespace Topos.Internals.Consumer
 {
     class ToposConsumer : IToposConsumer
     {
+        readonly ILogger _logger;
+
         bool _disposed;
+
+        public ToposConsumer(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.GetLogger(typeof(ToposConsumer));
+        }
 
         public IDisposable Start()
         {
+            _logger.Info("Starting consumer");
+
             return this;
         }
 
@@ -17,6 +27,7 @@ namespace Topos.Internals.Consumer
 
             try
             {
+                _logger.Info("Stopping consumer");
 
             }
             finally

@@ -10,7 +10,7 @@ namespace Topos.Tests.Logging
         [Test]
         public void LogStuff()
         {
-            var logger = new ConsoleLogger();
+            var logger = new ConsoleLoggerFactory.ConsoleLogger(typeof(TestConsoleLogger));
 
             logger.Debug("This is just debugging info");
             logger.Info("Received {count} things over a duration of {elapsed}", 23, TimeSpan.FromSeconds(4.5));

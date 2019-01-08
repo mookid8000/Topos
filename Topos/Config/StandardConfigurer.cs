@@ -13,9 +13,9 @@ namespace Topos.Config
 
         internal static StandardConfigurer<IEventStore> New(Injectionist injectionist) => new StandardConfigurer<IEventStore>(injectionist);
 
-        internal static Injectionist Open(ToposProducerConfigurer configurer) => configurer.Injectionist;
+        internal static Injectionist Open(ToposProducerConfigurer configurer) => configurer._injectionist;
 
-        internal static Injectionist Open(ToposConsumerConfigurer configurer) => configurer.Injectionist;
+        internal static Injectionist Open(ToposConsumerConfigurer configurer) => configurer._injectionist;
 
         internal static StandardConfigurer<IEventStore> New(ToposProducerConfigurer configurer)
         {
