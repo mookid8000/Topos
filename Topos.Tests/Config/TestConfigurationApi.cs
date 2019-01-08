@@ -23,7 +23,7 @@ namespace Topos.Tests.Config
                 .Transport(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Create();
 
-
+            await producer.Send("hej med dig");
         }
     }
 }

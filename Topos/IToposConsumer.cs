@@ -1,7 +1,9 @@
-﻿namespace Topos
+﻿using System;
+
+namespace Topos
 {
     public interface IToposConsumer
     {
-        void Start();
+        IDisposable Start();
     }
 }

@@ -1,11 +1,12 @@
-﻿using Topos.Internals;
+﻿using System;
+using Topos.Internals;
 
 namespace Topos.Config
 {
     public class ToposConsumerConfigurer 
     {
-        internal readonly Injectionist _injectionist = new Injectionist();
+        internal readonly Injectionist Injectionist = new Injectionist();
 
-        public void Start() => this.Create().Start();
+        public IDisposable Start() => this.Create().Start();
     }
 }

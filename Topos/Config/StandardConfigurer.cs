@@ -13,8 +13,8 @@ namespace Topos.Config
 
         internal static StandardConfigurer<ITransport> New(Injectionist injectionist) => new StandardConfigurer<ITransport>(injectionist);
 
-        public static Injectionist Open(ToposProducerConfigurer configurer) => configurer._injectionist;
+        public static Injectionist Open(ToposProducerConfigurer configurer) => configurer.Injectionist;
 
-        public static Injectionist Open(ToposConsumerConfigurer configurer) => configurer._injectionist;
+        public static Injectionist Open(ToposConsumerConfigurer configurer) => configurer.Injectionist;
     }
 }

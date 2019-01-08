@@ -1,9 +1,12 @@
-﻿namespace Topos.Internals.Consumer
+﻿using System;
+
+namespace Topos.Internals.Consumer
 {
     class ToposConsumer : IToposConsumer
     {
-        public void Start()
+        public IDisposable Start()
         {
+            return null;
         }
     }
 }
