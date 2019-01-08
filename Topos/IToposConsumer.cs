@@ -2,7 +2,7 @@
 
 namespace Topos
 {
-    public interface IToposConsumer
+    public interface IToposConsumer : IDisposable
     {
         IDisposable Start();
     }

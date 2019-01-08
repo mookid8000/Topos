@@ -1,4 +1,6 @@
 ﻿using Topos.Internals;
+using Topos.Internals.Consumer;
+using Topos.Internals.Producer;
 
 namespace Topos.Config
 {
@@ -9,6 +11,8 @@ namespace Topos.Config
             var injectionist = StandardConfigurer<IToposProducer>.Open(configurer);
 
             RegisterCommonServices(injectionist);
+
+            injectionist.Register<IToposProducer>(c => new ToposProducer());
 
             var resolutionResult = injectionist.Get<IToposProducer>();
 
@@ -21,6 +25,8 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
+            injectionist.Register<IToposConsumer>(c => new ToposConsumer());
+
             var resolutionResult = injectionist.Get<IToposConsumer>();
 
             return resolutionResult.Instance;
@@ -28,7 +34,6 @@ namespace Topos.Config
 
         static void RegisterCommonServices(Injectionist injectionist)
         {
-            throw new System.NotImplementedException();
         }
     }
 }
