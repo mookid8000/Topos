@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
+using Topos.EventProcessing;
 using Topos.EventStore.InMem;
 
 namespace Topos.Tests.Config
@@ -19,11 +20,16 @@ namespace Topos.Tests.Config
 
             var consumer = Configure.Consumer()
                 .EventStore(e => e.UseInMemory(eventStore))
+                .EventProcessing(p => p.AddEventProcessor(new ConsoleEventProcessor()))
                 .Start();
 
             Using(consumer);
 
             await producer.Send("HEJ MED DIG MIN VEN");
         }
+    }
+
+    public class ConsoleEventProcessor : IEventProcessor
+    {
     }
 }

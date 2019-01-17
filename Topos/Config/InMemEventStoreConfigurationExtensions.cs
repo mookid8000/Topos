@@ -7,7 +7,7 @@ namespace Topos.Config
     {
         public static void UseInMemory(this StandardConfigurer<IEventStore> configurer, InMemEventStore inMemEventStore)
         {
-
+            StandardConfigurer.Open(configurer).Register(c => inMemEventStore);
         }
     }
 }
