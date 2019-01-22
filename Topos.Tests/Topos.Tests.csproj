@@ -11,8 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Topos.AzureEventHubs\Topos.AzureEventHubs.csproj" />
     <ProjectReference Include="..\Topos.SqlServer\Topos.SqlServer.csproj" />
     <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="azure_event_hubs_connection_string.secret.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

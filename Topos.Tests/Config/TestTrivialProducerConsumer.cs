@@ -20,7 +20,7 @@ namespace Topos.Tests.Config
 
             var consumer = Configure.Consumer()
                 .EventStore(e => e.UseInMemory(eventStore))
-                .EventProcessing(p => p.AddEventProcessor(new ConsoleEventProcessor()))
+                //.EventProcessing(p => p.AddEventProcessor(new ConsoleEventProcessor()))
                 .Start();
 
             Using(consumer);

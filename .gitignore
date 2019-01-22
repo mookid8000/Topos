@@ -22,6 +22,8 @@ _NCrunch_*
 *.user
 *.backup
 
+**/*.secret.*
+
 # MS Guideline
 **/packages/*
 !**/packages/build/
