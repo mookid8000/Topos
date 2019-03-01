@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.Tests", "Topos.Tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.SqlServer", "Topos.SqlServer\Topos.SqlServer.csproj", "{C974D0C8-3E18-465B-A958-AD46DF83EE3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.AzureEventHubs", "Topos.AzureEventHubs\Topos.AzureEventHubs.csproj", "{2BBCDDE4-637E-424C-96C2-F4D8321B2204}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.AzureEventHubs", "Topos.AzureEventHubs\Topos.AzureEventHubs.csproj", "{2BBCDDE4-637E-424C-96C2-F4D8321B2204}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BC32E86D-B992-4887-9D76-B7DEDCC09F90}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

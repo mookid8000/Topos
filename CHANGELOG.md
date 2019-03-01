@@ -1,5 +1,5 @@
 # Changelog
 
-## 0.0.1
+## 0.0.2-b1
 * it's early
 
