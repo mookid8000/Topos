@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using Testy;
 using Topos.Logging;
 
 namespace Topos.Tests.Logging

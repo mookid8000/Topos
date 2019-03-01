@@ -1,11 +1,13 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
+using Testy;
 using Topos.Config;
 using Topos.SqlServer.Config;
 
 namespace Topos.Tests.Config
 {
     [TestFixture]
+    [Ignore("wait with this")]
     public class TestConfigurationApi : FixtureBase
     {
         [Test]

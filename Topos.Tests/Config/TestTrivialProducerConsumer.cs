@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
+using Testy;
 using Topos.Config;
 using Topos.EventProcessing;
 using Topos.EventStore.InMem;
