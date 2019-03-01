@@ -1,6 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Confluent.Kafka;
 using Serilog;
+using Topos.EventProcessing;
 
 namespace Topos.Internals
 {
@@ -34,7 +39,10 @@ namespace Topos.Internals
             logger.Verbose("Committed offsets: {@offsets}", offsetsByTopic);
         }
 
-        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent)
+        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, 
+            RebalanceEvent rebalanceEvent,
+            Func<IEnumerable<Part>, Task> partitionsAssigned,
+            Func<IEnumerable<Part>, Task> partitionsRevoked)
         {
             var partitiongByTopic = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
                 .Select(g => new
@@ -43,13 +51,19 @@ namespace Topos.Internals
                     Partitions = g.Select(p => p.Partition.Value).ToArray()
                 });
 
+            var parts = rebalanceEvent.Partitions.Select(p => new Part(p.Topic, p.Partition.Value));
+
             if (rebalanceEvent.IsAssignment)
             {
                 logger.Information("Assignment: {@partitions}", partitiongByTopic);
+
+                partitionsAssigned(parts);
             }
             else if (rebalanceEvent.IsRevocation)
             {
                 logger.Information("Revocation: {@partitions}", partitiongByTopic);
+
+                partitionsRevoked(parts);
             }
         }
 

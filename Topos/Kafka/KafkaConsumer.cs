@@ -14,13 +14,16 @@ namespace Topos.Kafka
     public class KafkaConsumer : IDisposable
     {
         static readonly ILogger Logger = Log.ForContext<KafkaConsumer>();
+        static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly string _group;
         readonly Func<KafkaEvent, Position, CancellationToken, Task> _eventHandler;
         readonly Consumer<string, string> _consumer;
         readonly Thread _worker;
 
-        public KafkaConsumer(string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, CancellationToken, Task> eventHandler)
+        public KafkaConsumer(string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
+            Func<IEnumerable<Part>, Task> partitionsAssigned = null,
+            Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
             _group = group ?? throw new ArgumentNullException(nameof(@group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
@@ -38,8 +41,15 @@ namespace Topos.Kafka
             _consumer = new ConsumerBuilder<string, string>(consumerConfig)
                 .SetLogHandler((consumer, message) => Handlers.LogHandler(Logger, consumer, message))
                 .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(Logger, consumer, error))
-                .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(Logger, consumer, rebalanceEvent))
-                .SetOffsetsCommittedHandler((consumer, committedOffsets) => Handlers.OffsetsCommitted(Logger, consumer, committedOffsets))
+                .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(
+                    logger: Logger,
+                    consumer: consumer, 
+                    rebalanceEvent: rebalanceEvent,
+                    partitionsAssigned ?? Noop,
+                    partitionsRevoked ?? Noop
+                ))
+                .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
+                    Handlers.OffsetsCommitted(Logger, consumer, committedOffsets))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(topics);
@@ -84,7 +94,7 @@ namespace Topos.Kafka
                         );
 
                         var topf = consumeResult.TopicPartitionOffset;
-                        
+
                         Logger.Verbose("Received event: {@event} - {@position}", kafkaEvent, new { Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}" });
 
                         var position = new Position(consumeResult.Topic, consumeResult.Partition.Value, consumeResult.Offset.Value);
