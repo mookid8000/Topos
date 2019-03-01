@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Serilog;
+using Topos.EventProcessing;
 using Topos.Internals;
 // ReSharper disable RedundantAnonymousTypePropertyName
 
@@ -15,11 +16,11 @@ namespace Topos.Kafka
         static readonly ILogger Logger = Log.ForContext<KafkaConsumer>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly string _group;
-        readonly Func<KafkaEvent, Task> _eventHandler;
+        readonly Func<KafkaEvent, Position, Task> _eventHandler;
         readonly Consumer<string, string> _consumer;
         readonly Thread _worker;
 
-        public KafkaConsumer(string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Task> eventHandler)
+        public KafkaConsumer(string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, Task> eventHandler)
         {
             _group = group ?? throw new ArgumentNullException(nameof(@group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
@@ -86,7 +87,7 @@ namespace Topos.Kafka
                         
                         Logger.Verbose("Received event: {@event} - {@position}", kafkaEvent, new { Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}" });
 
-                        _eventHandler(kafkaEvent).Wait(cancellationToken);
+                        _eventHandler(kafkaEvent, new Position(consumeResult.Topic, consumeResult.Partition.Value, consumeResult.Offset.Value)).Wait(cancellationToken);
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {

@@ -26,7 +26,7 @@ namespace Topos.Tests.Kafka
                 address: "localhost:9092",
                 topics: new[] { "test-topic" },
                 @group: "default3",
-                eventHandler: async evt => receivedEvents.Enqueue(evt.Body)
+                eventHandler: async (evt, pos) => receivedEvents.Enqueue(evt.Body)
             );
 
             Using(consumer);
@@ -51,7 +51,7 @@ namespace Topos.Tests.Kafka
                 address: "localhost:9092",
                 topics: new[] { "lots" },
                 @group: groupName,
-                eventHandler: async evt => receivedEvents.Enqueue(evt.Body)
+                eventHandler: async (evt, pos) => receivedEvents.Enqueue(evt.Body)
             );
 
             Using(consumer1);
@@ -60,7 +60,7 @@ namespace Topos.Tests.Kafka
                 address: "localhost:9092",
                 topics: new[] { "lots" },
                 @group: groupName,
-                eventHandler: async evt => receivedEvents.Enqueue(evt.Body)
+                eventHandler: async (evt, pos) => receivedEvents.Enqueue(evt.Body)
             );
 
             Using(consumer2);
