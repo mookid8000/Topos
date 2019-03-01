@@ -11,11 +11,11 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Consumer_Sql()
         {
-            var disposable = Configure.Consumer()
+            var consumer = Configure.Consumer()
                 .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Start();
 
-            Using(disposable);
+            Using(consumer);
         }
 
         [Test]
