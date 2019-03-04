@@ -27,7 +27,7 @@ namespace Topos.Internals.Consumer
 
             try
             {
-                _logger.Info("Stopping consumer");
+                _logger.Info("Disposing consumer");
 
             }
             finally

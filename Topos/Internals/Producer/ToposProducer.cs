@@ -8,6 +8,8 @@ namespace Topos.Internals.Producer
     {
         readonly ILogger _logger;
 
+        bool _disposed;
+
         public ToposProducer(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLogger(typeof(ToposProducer));
@@ -16,6 +18,21 @@ namespace Topos.Internals.Producer
         public async Task Send(object message, IDictionary<string, string> optionalHeaders = null)
         {
             
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            try
+            {
+                _logger.Info("Disposing producer");
+
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
     }
 }

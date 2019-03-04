@@ -13,12 +13,10 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Logging()
         {
-            var consumer = Configure.Consumer()
+            Using(Configure.Consumer()
                 .Logging(l => l.UseSerilog())
                 .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
-                .Start();
-
-            Using(consumer);
+                .Start());
         }
 
         [Test]
