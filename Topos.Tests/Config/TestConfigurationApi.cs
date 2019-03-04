@@ -11,6 +11,17 @@ namespace Topos.Tests.Config
     public class TestConfigurationApi : FixtureBase
     {
         [Test]
+        public void CanConfigure_Logging()
+        {
+            var consumer = Configure.Consumer()
+                .Logging(l => l.UseSerilog())
+                .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+                .Start();
+
+            Using(consumer);
+        }
+
+        [Test]
         public void CanConfigure_Consumer_Sql()
         {
             var consumer = Configure.Consumer()

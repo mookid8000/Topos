@@ -27,7 +27,13 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
-dotnet build "%root%\%project%" -c Release
+dotnet build "%root%\Topos" -c Release
+if %ERRORLEVEL% neq 0 (
+	popd
+ 	goto exit_fail
+)
+
+dotnet build "%root%\Topos.Serilog" -c Release
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
