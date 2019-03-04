@@ -53,10 +53,10 @@ namespace Topos.Kafka
 
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(_sendTimeoutSeconds));
 
-            var cancellationToken = cancellationTokenSource.Token;
-
             ThreadPool.QueueUserWorkItem(_ =>
             {
+                var cancellationToken = cancellationTokenSource.Token;
+
                 try
                 {
                     _producer.Flush(cancellationToken);
