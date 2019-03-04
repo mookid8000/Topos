@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 using Testy;
+using Topos.Broker.InMem;
 using Topos.Config;
 using Topos.EventProcessing;
-using Topos.EventStore.InMem;
 
 namespace Topos.Tests.Config
 {
@@ -13,14 +13,14 @@ namespace Topos.Tests.Config
         [Test]
         public async Task ItWorks()
         {
-            var eventStore = new InMemEventStore();
+            var eventStore = new InMemEventBroker();
 
             var producer = Configure.Producer()
-                .EventStore(e => e.UseInMemory(eventStore))
+                .EventBroker(e => e.UseInMemory(eventStore))
                 .Create();
 
             var consumer = Configure.Consumer()
-                .EventStore(e => e.UseInMemory(eventStore))
+                .EventBroker(e => e.UseInMemory(eventStore))
                 //.EventProcessing(p => p.AddEventProcessor(new ConsoleEventProcessor()))
                 .Start();
 

@@ -15,7 +15,7 @@ namespace Topos.Tests.Config
         {
             Using(Configure.Consumer()
                 .Logging(l => l.UseSerilog())
-                .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Start());
         }
 
@@ -23,7 +23,7 @@ namespace Topos.Tests.Config
         public void CanConfigure_Consumer_Sql()
         {
             var consumer = Configure.Consumer()
-                .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Start();
 
             Using(consumer);
@@ -33,7 +33,7 @@ namespace Topos.Tests.Config
         public async Task CanConfigure_Producer_Sql()
         {
             var producer = Configure.Producer()
-                .EventStore(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Create();
 
             await producer.Send("hej med dig");
@@ -43,7 +43,7 @@ namespace Topos.Tests.Config
         public void CanConfigure_Consumer_AzureEventHubs()
         {
             var disposable = Configure.Consumer()
-                .EventStore(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
+                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Start();
 
             Using(disposable);
@@ -53,7 +53,7 @@ namespace Topos.Tests.Config
         public async Task CanConfigure_Producer_AzureEventHubs()
         {
             var producer = Configure.Producer()
-                .EventStore(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
+                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Create();
 
             await producer.Send("hej med dig");

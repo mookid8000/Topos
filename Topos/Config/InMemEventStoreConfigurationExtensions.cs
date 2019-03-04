@@ -1,13 +1,13 @@
-﻿using Topos.EventStore;
-using Topos.EventStore.InMem;
+﻿using Topos.Broker;
+using Topos.Broker.InMem;
 
 namespace Topos.Config
 {
     public static class InMemEventStoreConfigurationExtensions
     {
-        public static void UseInMemory(this StandardConfigurer<IEventStore> configurer, InMemEventStore inMemEventStore)
+        public static void UseInMemory(this StandardConfigurer<IEventBroker> configurer, InMemEventBroker inMemEventBroker)
         {
-            StandardConfigurer.Open(configurer).Register(c => inMemEventStore);
+            StandardConfigurer.Open(configurer).Register(c => inMemEventBroker);
         }
     }
 }

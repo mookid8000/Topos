@@ -1,10 +1,10 @@
-﻿using Topos.EventStore;
+﻿using Topos.Broker;
 
 namespace Topos.Config
 {
     public static class AzureEventHubsConfigurationExtensions
     {
-        public static void UseAzureEventHubs(this StandardConfigurer<IEventStore> configuirer, string connectionString)
+        public static void UseAzureEventHubs(this StandardConfigurer<IEventBroker> configuirer, string connectionString)
         {
 
         }

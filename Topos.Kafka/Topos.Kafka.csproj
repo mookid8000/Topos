@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Topos</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Kafka\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
+</Project>
