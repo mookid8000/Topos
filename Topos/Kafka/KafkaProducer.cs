@@ -4,32 +4,33 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Serilog;
 using Topos.Internals;
+using Topos.Logging;
 // ReSharper disable MethodSupportsCancellation
 
 namespace Topos.Kafka
 {
     public class KafkaProducer : IDisposable
     {
-        static readonly ILogger Logger = Log.ForContext<KafkaProducer>();
         static readonly Headers EmptyHeaders = new Headers();
         static readonly object EmptyResult = new object();
 
         readonly Producer<string, string> _producer;
         readonly int _sendTimeoutSeconds;
+        readonly ILogger _logger;
 
-        public KafkaProducer(string address, int sendTimeoutSeconds = 30)
+        public KafkaProducer(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
         {
+            _logger = loggerFactory.GetLogger(typeof(KafkaProducer));
             _sendTimeoutSeconds = sendTimeoutSeconds;
             var config = new ProducerConfig { BootstrapServers = address };
 
             _producer = new ProducerBuilder<string, string>(config)
-                .SetLogHandler((producer, message) => Handlers.LogHandler(Logger, producer, message))
-                .SetErrorHandler((producer, message) => Handlers.ErrorHandler(Logger, producer, message))
+                .SetLogHandler((producer, message) => Handlers.LogHandler(_logger, producer, message))
+                .SetErrorHandler((producer, message) => Handlers.ErrorHandler(_logger, producer, message))
                 .Build();
 
-            Logger.Information("Kafka producer initialized with {address}", address);
+            _logger.Info("Kafka producer initialized with {address}", address);
         }
 
         public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
@@ -94,6 +95,11 @@ namespace Topos.Kafka
             return headers;
         }
 
-        public void Dispose() => _producer.Dispose();
+        public void Dispose()
+        {
+            _logger.Info("Disposing Kafka producer");
+
+            _producer.Dispose();
+        }
     }
 }

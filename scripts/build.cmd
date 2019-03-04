@@ -19,6 +19,11 @@ if "%version%"=="" (
 
 set Version=%version%
 
+
+
+
+
+
 pushd %root%
 
 dotnet restore
@@ -38,6 +43,7 @@ if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
+
 
 popd
 

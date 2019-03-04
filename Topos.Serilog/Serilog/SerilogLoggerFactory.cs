@@ -5,7 +5,7 @@ using ILogger = Serilog.ILogger;
 
 namespace Topos.Serilog
 {
-    class SerilogLoggerFactory : ILoggerFactory
+    public class SerilogLoggerFactory : ILoggerFactory
     {
         readonly ILogger _logger;
 

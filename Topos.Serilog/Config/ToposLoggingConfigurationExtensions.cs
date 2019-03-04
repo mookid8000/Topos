@@ -1,7 +1,7 @@
 ﻿using System;
 using Topos.Logging;
 using Topos.Serilog;
-using ILogger = Serilog.ILogger;
+using SerilogLogger = Serilog.ILogger;
 
 namespace Topos.Config
 {
@@ -13,7 +13,7 @@ namespace Topos.Config
             StandardConfigurer.Open(configurer).Register(c => new SerilogLoggerFactory());
         }
 
-        public static void UseSerilog(this StandardConfigurer<ILoggerFactory> configurer, ILogger logger)
+        public static void UseSerilog(this StandardConfigurer<ILoggerFactory> configurer, SerilogLogger logger)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
             StandardConfigurer.Open(configurer).Register(c => new SerilogLoggerFactory(logger));

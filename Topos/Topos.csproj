@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="confluent.kafka" Version="1.0.0-beta3" />
-    <PackageReference Include="serilog" Version="2.8.0" />
   </ItemGroup>
 
 </Project>

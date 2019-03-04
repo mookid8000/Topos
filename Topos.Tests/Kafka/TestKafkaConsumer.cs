@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Serilog.Events;
 using Topos.Kafka;
+using Topos.Logging;
 using Topos.Tests.Extensions;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 // ReSharper disable ArgumentsStyleStringLiteral
@@ -23,6 +24,7 @@ namespace Topos.Tests.Kafka
             var receivedEvents = new ConcurrentQueue<string>();
 
             var consumer = new KafkaConsumer(
+                loggerFactory: new ConsoleLoggerFactory(),
                 address: "localhost:9092",
                 topics: new[] { "test-topic" },
                 @group: "default3",
@@ -48,6 +50,7 @@ namespace Topos.Tests.Kafka
             const string groupName = "default6";
 
             var consumer1 = new KafkaConsumer(
+                loggerFactory: new ConsoleLoggerFactory(),
                 address: "localhost:9092",
                 topics: new[] { "lots" },
                 @group: groupName,
@@ -57,6 +60,7 @@ namespace Topos.Tests.Kafka
             Using(consumer1);
 
             var consumer2 = new KafkaConsumer(
+                loggerFactory: new ConsoleLoggerFactory(),
                 address: "localhost:9092",
                 topics: new[] { "lots" },
                 @group: groupName,

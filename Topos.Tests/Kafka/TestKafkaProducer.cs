@@ -2,7 +2,10 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Kafka;
+using Topos.Logging;
 using Topos.Tests.Extensions;
+// ReSharper disable ArgumentsStyleOther
+// ReSharper disable ArgumentsStyleStringLiteral
 
 namespace Topos.Tests.Kafka
 {
@@ -15,7 +18,10 @@ namespace Topos.Tests.Kafka
         {
             Logger.Information("Setting up");
 
-            _producer = new KafkaProducer("localhost:9092");
+            _producer = new KafkaProducer(
+                loggerFactory: new ConsoleLoggerFactory(),
+                address: "localhost:9092"
+            );
 
             Using(_producer);
 

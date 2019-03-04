@@ -4,28 +4,31 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Serilog;
-using Topos.EventProcessing;
 using Topos.Internals;
+using Topos.Logging;
+using Topos.EventProcessing;
 // ReSharper disable RedundantAnonymousTypePropertyName
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Topos.Kafka
 {
     public class KafkaConsumer : IDisposable
     {
-        static readonly ILogger Logger = Log.ForContext<KafkaConsumer>();
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
+        
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly string _group;
         readonly Func<KafkaEvent, Position, CancellationToken, Task> _eventHandler;
         readonly Consumer<string, string> _consumer;
         readonly Thread _worker;
+        readonly ILogger _logger;
+        readonly string _group;
 
-        public KafkaConsumer(string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
+        public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
             Func<IEnumerable<Part>, Task> partitionsAssigned = null,
             Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
-            _group = group ?? throw new ArgumentNullException(nameof(@group));
+            _logger = loggerFactory.GetLogger(typeof(KafkaConsumer));
+            _group = group ?? throw new ArgumentNullException(nameof(group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
 
             var consumerConfig = new ConsumerConfig
@@ -39,22 +42,22 @@ namespace Topos.Kafka
             };
 
             _consumer = new ConsumerBuilder<string, string>(consumerConfig)
-                .SetLogHandler((consumer, message) => Handlers.LogHandler(Logger, consumer, message))
-                .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(Logger, consumer, error))
+                .SetLogHandler((consumer, message) => Handlers.LogHandler(_logger, consumer, message))
+                .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(_logger, consumer, error))
                 .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(
-                    logger: Logger,
+                    logger: _logger,
                     consumer: consumer, 
                     rebalanceEvent: rebalanceEvent,
                     partitionsAssigned ?? Noop,
                     partitionsRevoked ?? Noop
                 ))
                 .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
-                    Handlers.OffsetsCommitted(Logger, consumer, committedOffsets))
+                    Handlers.OffsetsCommitted(_logger, consumer, committedOffsets))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(topics);
 
-            Logger.Information("Kafka consumer for group {consumerGroup} subscribing to topics: {@topics}", _group, topicsToSubscribeTo);
+            _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {@topics}", _group, topicsToSubscribeTo);
 
             foreach (var topic in topicsToSubscribeTo)
             {
@@ -77,7 +80,7 @@ namespace Topos.Kafka
         {
             var cancellationToken = _cancellationTokenSource.Token;
 
-            Logger.Information("Starting Kafka consumer worker for group {consumerGroup}", _group);
+            _logger.Info("Starting Kafka consumer worker for group {consumerGroup}", _group);
 
             try
             {
@@ -95,7 +98,7 @@ namespace Topos.Kafka
 
                         var topf = consumeResult.TopicPartitionOffset;
 
-                        Logger.Verbose("Received event: {@event} - {@position}", kafkaEvent, new { Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}" });
+                        _logger.Debug("Received event: {@event} - {@position}", kafkaEvent, new { Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}" });
 
                         var position = new Position(consumeResult.Topic, consumeResult.Partition.Value, consumeResult.Offset.Value);
 
@@ -107,12 +110,12 @@ namespace Topos.Kafka
                     }
                     catch (ThreadAbortException)
                     {
-                        Logger.Warning("Kafka consumer worker aborted!");
+                        _logger.Warn("Kafka consumer worker aborted!");
                         return;
                     }
                     catch (Exception exception)
                     {
-                        Logger.Warning(exception, "Unhandled exception in Kafka consumer loop");
+                        _logger.Warn(exception, "Unhandled exception in Kafka consumer loop");
 
                         try
                         {
@@ -127,11 +130,11 @@ namespace Topos.Kafka
             }
             catch (Exception exception)
             {
-                Logger.Fatal(exception, "Unhandled exception in Kafka consumer");
+                _logger.Error(exception, "Unhandled exception in Kafka consumer");
             }
             finally
             {
-                Logger.Information("Kafka consumer worker for group {consumerGroup} stopped", _group);
+                _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
             }
         }
 
@@ -156,7 +159,7 @@ namespace Topos.Kafka
             {
                 if (!_worker.Join(TimeSpan.FromSeconds(5)))
                 {
-                    Logger.Error("Kafka consumer worker did not finish executing within 5 s");
+                    _logger.Error("Kafka consumer worker did not finish executing within 5 s");
 
                     _worker.Abort();
                 }
