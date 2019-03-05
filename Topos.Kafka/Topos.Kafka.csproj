@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Topos</RootNamespace>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Kafka\" />
+    <PackageReference Include="confluent.kafka" Version="1.0.0-beta3-ci-861" />
   </ItemGroup>
 
   <ItemGroup>

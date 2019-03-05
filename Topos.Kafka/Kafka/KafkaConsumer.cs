@@ -12,13 +12,13 @@ using Topos.EventProcessing;
 
 namespace Topos.Kafka
 {
-    public class KafkaConsumer : IDisposable
+    public class KafkaConsumer : IToposConsumer
     {
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
         
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Func<KafkaEvent, Position, CancellationToken, Task> _eventHandler;
-        readonly Consumer<string, string> _consumer;
+        readonly IConsumer<string, string> _consumer;
         readonly Thread _worker;
         readonly ILogger _logger;
         readonly string _group;
@@ -67,13 +67,16 @@ namespace Topos.Kafka
             _worker = new Thread(Run) { IsBackground = true };
         }
 
-        public void Start()
+        public IDisposable Start()
         {
             if (_worker.ThreadState == ThreadState.Running)
             {
                 throw new InvalidOperationException("Kafka consumer worker is already running");
             }
+            
             _worker.Start();
+
+            return this;
         }
 
         void Run()
@@ -144,7 +147,7 @@ namespace Topos.Kafka
 
             foreach (var kvp in headers)
             {
-                dictionary[kvp.Key] = Encoding.UTF8.GetString(kvp.Value);
+                dictionary[kvp.Key] = Encoding.UTF8.GetString(kvp.GetValueBytes());
             }
 
             return dictionary;

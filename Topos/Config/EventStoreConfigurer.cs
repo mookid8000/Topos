@@ -1,20 +1,19 @@
 ﻿using System;
-using Topos.Broker;
 
 namespace Topos.Config
 {
     public static class EventStoreConfigurer
     {
-        public static ToposConsumerConfigurer EventBroker(this ToposConsumerConfigurer configurer, Action<StandardConfigurer<IEventBroker>> configure)
+        public static ToposProducerConfigurer EventBroker(this ToposProducerConfigurer configurer, Action<StandardConfigurer<IToposProducer>> configure)
         {
-            var standardConfigurer = StandardConfigurer<IEventBroker>.New(configurer);
+            var standardConfigurer = StandardConfigurer<IToposProducer>.New(configurer);
             configure(standardConfigurer);
             return configurer;
         }
 
-        public static ToposProducerConfigurer EventBroker(this ToposProducerConfigurer configurer, Action<StandardConfigurer<IEventBroker>> configure)
+        public static ToposConsumerConfigurer EventBroker(this ToposConsumerConfigurer configurer, Action<StandardConfigurer<IToposConsumer>> configure)
         {
-            var standardConfigurer = StandardConfigurer<IEventBroker>.New(configurer);
+            var standardConfigurer = StandardConfigurer<IToposConsumer>.New(configurer);
             configure(standardConfigurer);
             return configurer;
         }

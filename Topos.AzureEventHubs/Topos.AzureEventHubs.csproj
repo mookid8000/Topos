@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AzureEventHubs\" />
+  </ItemGroup>
+
 </Project>
