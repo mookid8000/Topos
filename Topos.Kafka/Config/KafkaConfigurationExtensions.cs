@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
-using Topos.Kafka;
 using Topos.Logging;
+using Topos.Producer;
+using Topos.Routing;
+using Topos.Serialization;
 
 namespace Topos.Config
 {
@@ -16,8 +18,11 @@ namespace Topos.Config
                 .Register(c =>
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
-                    return new KafkaProducer(loggerFactory, string.Join("; ", bootstrapServers));
-                })
+                    //return new KafkaProducer(loggerFactory, string.Join("; ", bootstrapServers));
+                    var messageSerializer = c.Get<IMessageSerializer>();
+                    var topicMapper = c.Get<ITopicMapper>();
+                    return new DefaultToposProducer(messageSerializer, topicMapper);
+                });
 
             return builder;
         }

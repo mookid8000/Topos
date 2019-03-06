@@ -10,7 +10,7 @@ using Topos.Logging;
 
 namespace Topos.Kafka
 {
-    public class KafkaProducer : IDisposable, IToposProducer
+    public class KafkaProducer : IDisposable
     {
         static readonly Headers EmptyHeaders = new Headers();
         static readonly object EmptyResult = new object();
@@ -32,11 +32,6 @@ namespace Topos.Kafka
                 .Build();
 
             _logger.Info("Kafka producer initialized with {address}", address);
-        }
-
-        public Task Send(object message, IDictionary<string, string> optionalHeaders = null)
-        {
-            throw new NotImplementedException();
         }
 
         public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
