@@ -35,6 +35,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.SqlServer.Tests", "To
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "serilog", "serilog", "{A2136515-ADF8-4CE9-A28E-96F74A7CEEE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.NewtonsoftJson", "Topos.NewtonsoftJson\Topos.NewtonsoftJson.csproj", "{C973CE39-9880-423E-9D79-E372BAF67795}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "newtonsoft json", "newtonsoft json", "{FA062857-39B7-4004-A153-2E0D06A3F252}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.NewtonsoftJson.Tests", "Topos.NewtonsoftJson.Tests\Topos.NewtonsoftJson.Tests.csproj", "{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +83,14 @@ Global
 		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C973CE39-9880-423E-9D79-E372BAF67795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C973CE39-9880-423E-9D79-E372BAF67795}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C973CE39-9880-423E-9D79-E372BAF67795}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C973CE39-9880-423E-9D79-E372BAF67795}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +103,8 @@ Global
 		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0} = {2EF31884-BDB7-47D3-9FC8-494507C67DDA}
 		{6BE267FE-8D07-4577-814F-4E1542330CB9} = {6662246E-1C7C-4609-90E4-9CCBCCEFB9BD}
 		{289009E4-9B1C-40FB-9677-EA3C658DE01D} = {434899A4-A6A6-4179-8018-3A4DE03B507C}
+		{C973CE39-9880-423E-9D79-E372BAF67795} = {FA062857-39B7-4004-A153-2E0D06A3F252}
+		{8D4BC0D6-4CAE-437E-AA09-1071F3B9B069} = {FA062857-39B7-4004-A153-2E0D06A3F252}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F89951B-C638-43F3-BEC1-70A5F8338E10}

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Topos.Serialization
 {
-    public class TransportMessage
+    public class LogicalMessage
     {
         public Dictionary<string, string> Headers { get; }
-        public byte[] Body { get; }
+        public object Body { get; }
 
-        public TransportMessage(Dictionary<string, string> headers, byte[] body)
+        public LogicalMessage(Dictionary<string, string> headers, object body)
         {
             Headers = headers ?? throw new ArgumentNullException(nameof(headers));
             Body = body ?? throw new ArgumentNullException(nameof(body));

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="microsoft.net.test.sdk" Version="16.0.1" />
+    <PackageReference Include="nunit" Version="3.11.0" />
+    <PackageReference Include="nunit3testadapter" Version="3.13.0" />
+    <PackageReference Include="testy" Version="0.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Topos.NewtonsoftJson\Topos.NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
+</Project>
