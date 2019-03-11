@@ -4,6 +4,6 @@ namespace Topos
 {
     public interface IToposConsumer : IDisposable
     {
-        IDisposable Start();
+        void Start();
     }
 }

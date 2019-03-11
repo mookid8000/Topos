@@ -7,6 +7,11 @@ namespace Topos.Config
     {
         internal readonly Injectionist _injectionist = new Injectionist();
 
-        public IDisposable Start() => this.Create().Start();
+        public IDisposable Start()
+        {
+            var consumer = this.Create();
+            consumer.Start();
+            return consumer;
+        }
     }
 }

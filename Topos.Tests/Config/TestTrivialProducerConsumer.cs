@@ -28,8 +28,4 @@ namespace Topos.Tests.Config
             await producer.Send("HEJ MED DIG MIN VEN");
         }
     }
-
-    public class ConsoleEventProcessor : IEventProcessor
-    {
-    }
 }

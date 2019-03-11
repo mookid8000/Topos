@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Topos.Consumer;
 using Topos.Logging;
 using Topos.Producer;
 using Topos.Routing;
@@ -9,6 +10,8 @@ namespace Topos.Config
     public static class KafkaConfigurationExtensions
     {
         public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IToposProducer> configurer, string bootstrapServer) => UseKafka(configurer, new[] {bootstrapServer});
+        
+        public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IToposConsumer> configurer, string bootstrapServer) => UseKafka(configurer, new[] {bootstrapServer});
 
         public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IToposProducer> configurer, IEnumerable<string> bootstrapServers)
         {
@@ -22,6 +25,23 @@ namespace Topos.Config
                     var messageSerializer = c.Get<IMessageSerializer>();
                     var topicMapper = c.Get<ITopicMapper>();
                     return new DefaultToposProducer(messageSerializer, topicMapper);
+                });
+
+            return builder;
+        }
+
+        public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IToposConsumer> configurer, IEnumerable<string> bootstrapServers)
+        {
+            var builder = new KafkaProducerConfigurationBuilder();
+
+            StandardConfigurer.Open(configurer)
+                .Register(c =>
+                {
+                    var loggerFactory = c.Get<ILoggerFactory>();
+                    //return new KafkaProducer(loggerFactory, string.Join("; ", bootstrapServers));
+                    var messageSerializer = c.Get<IMessageSerializer>();
+                    var topicMapper = c.Get<ITopicMapper>();
+                    return new DefaultToposConsumer(messageSerializer, topicMapper);
                 });
 
             return builder;

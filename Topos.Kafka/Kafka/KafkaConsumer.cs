@@ -67,7 +67,7 @@ namespace Topos.Kafka
             _worker = new Thread(Run) { IsBackground = true };
         }
 
-        public IDisposable Start()
+        public void Start()
         {
             if (_worker.ThreadState == ThreadState.Running)
             {
@@ -75,8 +75,6 @@ namespace Topos.Kafka
             }
             
             _worker.Start();
-
-            return this;
         }
 
         void Run()

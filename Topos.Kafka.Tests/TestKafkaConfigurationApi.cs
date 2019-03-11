@@ -9,7 +9,7 @@ namespace Topos.Kafka.Tests
     public class TestKafkaConfigurationApi : FixtureBase
     {
         [Test]
-        public async Task CanGetKafkaProducer()
+        public async Task FullProducerConsumerExample()
         {
             var producer = Configure.Producer()
                 .Logging(l => l.UseSerilog())
@@ -17,6 +17,13 @@ namespace Topos.Kafka.Tests
                 .Create();
 
             Using(producer);
+
+            var consumer = Configure.Consumer()
+                .Logging(l => l.UseSerilog())
+                .EventBroker(e => e.UseKafka(KafkaTestConfig.Address))
+                .Create();
+
+            Using(consumer);
         }
     }
 }

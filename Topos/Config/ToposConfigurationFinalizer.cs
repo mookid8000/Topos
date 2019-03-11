@@ -1,7 +1,5 @@
 ﻿using System;
 using Topos.Internals;
-using Topos.Internals.Consumer;
-using Topos.Internals.Producer;
 using Topos.Logging;
 using Topos.Logging.Console;
 
@@ -13,11 +11,11 @@ namespace Topos.Config
     {
         public static IToposProducer Create(this ToposProducerConfigurer configurer)
         {
-            var injectionist = StandardConfigurer<IToposProducer>.Open(configurer);
+            var injectionist = StandardConfigurer.Open(configurer);
 
             RegisterCommonServices(injectionist);
 
-            injectionist.Register<IToposProducer>(c => new ToposProducer(c.Get<ILoggerFactory>()));
+            //injectionist.Register<IToposProducer>(c => new ToposProducer(c.Get<ILoggerFactory>()));
 
             var resolutionResult = injectionist.Get<IToposProducer>();
 
@@ -26,11 +24,11 @@ namespace Topos.Config
 
         public static IToposConsumer Create(this ToposConsumerConfigurer configurer)
         {
-            var injectionist = StandardConfigurer<IToposConsumer>.Open(configurer);
+            var injectionist = StandardConfigurer.Open(configurer);
 
             RegisterCommonServices(injectionist);
 
-            injectionist.Register<IToposConsumer>(c => new ToposConsumer(c.Get<ILoggerFactory>()));
+            //injectionist.Register<IToposConsumer>(c => new ToposConsumer(c.Get<ILoggerFactory>()));
 
             var resolutionResult = injectionist.Get<IToposConsumer>();
 

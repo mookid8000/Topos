@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Topos.Internals
 {
+    /// <inheritdoc />
     /// <summary>
     /// Exceptions that is thrown when something goes wrong while working with the injectionist
     /// </summary>
