@@ -1,16 +1,17 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Topos.Kafka;
 using Topos.Logging;
+using Topos.Tests;
 using Topos.Tests.Extensions;
+
 // ReSharper disable ArgumentsStyleOther
 // ReSharper disable ArgumentsStyleStringLiteral
 
-namespace Topos.Tests.Kafka
+namespace Topos.Kafka.Tests
 {
     [TestFixture]
-    public class TestKafkaProducer : MyFixtureBase
+    public class TestKafkaProducer : ToposFixtureBase
     {
         KafkaProducer _producer;
 
@@ -20,7 +21,7 @@ namespace Topos.Tests.Kafka
 
             _producer = new KafkaProducer(
                 loggerFactory: new ConsoleLoggerFactory(),
-                address: "localhost:9092"
+                address: KafkaTestConfig.Address
             );
 
             Using(_producer);
@@ -29,14 +30,14 @@ namespace Topos.Tests.Kafka
         }
 
         [Test]
-        [Ignore("hej")]
+        //[Ignore("hej")]
         public async Task CanSendEvents()
         {
             Logger.Information("Sending events");
 
             await Time.Action("produce", async () =>
             {
-                await _producer.SendAsync("test-topic",
+                await _producer.SendAsync("test-topOPic",
                     new[]
                     {
                         new KafkaEvent("key1", "hej"),

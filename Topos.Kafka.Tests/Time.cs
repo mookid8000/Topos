@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 #pragma warning disable 1998
 
-namespace Topos.Tests.Kafka
+namespace Topos.Kafka.Tests
 {
     public static class Time
     {

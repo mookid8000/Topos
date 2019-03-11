@@ -34,6 +34,8 @@ namespace Topos.Kafka
             _logger.Info("Kafka producer initialized with {address}", address);
         }
 
+        public AdminClient GetAdminClient() => new AdminClient(_producer.Handle);
+
         public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
         {
             var taskCompletionSource = new TaskCompletionSource<object>();

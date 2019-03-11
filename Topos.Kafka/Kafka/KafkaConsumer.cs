@@ -160,6 +160,8 @@ namespace Topos.Kafka
             using (_consumer)
             using (_cancellationTokenSource)
             {
+                if (_worker.ThreadState != ThreadState.Running) return;
+
                 if (!_worker.Join(TimeSpan.FromSeconds(5)))
                 {
                     _logger.Error("Kafka consumer worker did not finish executing within 5 s");

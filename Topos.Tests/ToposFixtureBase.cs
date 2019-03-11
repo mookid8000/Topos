@@ -4,11 +4,11 @@ using Serilog.Events;
 using Testy;
 using Testy.General;
 
-namespace Topos.Tests.Kafka
+namespace Topos.Tests
 {
-    public abstract class MyFixtureBase : FixtureBase
+    public abstract class ToposFixtureBase : FixtureBase
     {
-        static MyFixtureBase()
+        static ToposFixtureBase()
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()

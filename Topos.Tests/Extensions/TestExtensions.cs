@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Topos.Tests.Extensions
 {
-    static class TestExtensions
+    public static class TestExtensions
     {
         public static IEnumerable<IReadOnlyCollection<T>> Batch<T>(this IEnumerable<T> items, int batchSize)
         {

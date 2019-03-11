@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Topos.Tests
+namespace Topos.AzureEventHubs.Tests
 {
     public static class AehConfig
     {

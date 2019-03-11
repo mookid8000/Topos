@@ -19,7 +19,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.Serilog", "Topos.Serilog\Topos.Serilog.csproj", "{59D9511B-55E5-4565-9B54-F7E30BFBDA90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.Kafka", "Topos.Kafka\Topos.Kafka.csproj", "{E97CC567-066A-45A6-BE5F-88F3E9D42942}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.Kafka", "Topos.Kafka\Topos.Kafka.csproj", "{E97CC567-066A-45A6-BE5F-88F3E9D42942}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "kafka", "kafka", "{2EF31884-BDB7-47D3-9FC8-494507C67DDA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.Kafka.Tests", "Topos.Kafka.Tests\Topos.Kafka.Tests.csproj", "{70519C38-09F2-4F4C-887B-D99C1C3BF9F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure event hubs", "azure event hubs", "{6662246E-1C7C-4609-90E4-9CCBCCEFB9BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.AzureEventHubs.Tests", "Topos.AzureEventHubs.Tests\Topos.AzureEventHubs.Tests.csproj", "{6BE267FE-8D07-4577-814F-4E1542330CB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "microsoft sql server", "microsoft sql server", "{434899A4-A6A6-4179-8018-3A4DE03B507C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.SqlServer.Tests", "Topos.SqlServer.Tests\Topos.SqlServer.Tests.csproj", "{289009E4-9B1C-40FB-9677-EA3C658DE01D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +63,29 @@ Global
 		{E97CC567-066A-45A6-BE5F-88F3E9D42942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E97CC567-066A-45A6-BE5F-88F3E9D42942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E97CC567-066A-45A6-BE5F-88F3E9D42942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BE267FE-8D07-4577-814F-4E1542330CB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BE267FE-8D07-4577-814F-4E1542330CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BE267FE-8D07-4577-814F-4E1542330CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BE267FE-8D07-4577-814F-4E1542330CB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{289009E4-9B1C-40FB-9677-EA3C658DE01D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C974D0C8-3E18-465B-A958-AD46DF83EE3D} = {434899A4-A6A6-4179-8018-3A4DE03B507C}
+		{2BBCDDE4-637E-424C-96C2-F4D8321B2204} = {6662246E-1C7C-4609-90E4-9CCBCCEFB9BD}
+		{E97CC567-066A-45A6-BE5F-88F3E9D42942} = {2EF31884-BDB7-47D3-9FC8-494507C67DDA}
+		{70519C38-09F2-4F4C-887B-D99C1C3BF9F0} = {2EF31884-BDB7-47D3-9FC8-494507C67DDA}
+		{6BE267FE-8D07-4577-814F-4E1542330CB9} = {6662246E-1C7C-4609-90E4-9CCBCCEFB9BD}
+		{289009E4-9B1C-40FB-9677-EA3C658DE01D} = {434899A4-A6A6-4179-8018-3A4DE03B507C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F89951B-C638-43F3-BEC1-70A5F8338E10}

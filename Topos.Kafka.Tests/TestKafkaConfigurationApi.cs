@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Testy;
 using Topos.Config;
 
-namespace Topos.Tests.Config
+namespace Topos.Kafka.Tests
 {
     [TestFixture]
     public class TestKafkaConfigurationApi : FixtureBase
@@ -13,7 +13,7 @@ namespace Topos.Tests.Config
         {
             var producer = Configure.Producer()
                 .Logging(l => l.UseSerilog())
-                .EventBroker(e => e.UseKafka("localhost:9092"))
+                .EventBroker(e => e.UseKafka(KafkaTestConfig.Address))
                 .Create();
 
             Using(producer);

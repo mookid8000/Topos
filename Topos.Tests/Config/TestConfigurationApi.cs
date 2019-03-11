@@ -38,25 +38,5 @@ namespace Topos.Tests.Config
 
             await producer.Send("hej med dig");
         }
-
-        [Test]
-        public void CanConfigure_Consumer_AzureEventHubs()
-        {
-            var disposable = Configure.Consumer()
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
-                .Start();
-
-            Using(disposable);
-        }
-
-        [Test]
-        public async Task CanConfigure_Producer_AzureEventHubs()
-        {
-            var producer = Configure.Producer()
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
-                .Create();
-
-            await producer.Send("hej med dig");
-        }
     }
 }
