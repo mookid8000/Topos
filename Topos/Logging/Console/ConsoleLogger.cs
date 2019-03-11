@@ -1,7 +1,6 @@
 ﻿using System;
-using Topos.Logging.Console;
 
-namespace Topos.Logging
+namespace Topos.Logging.Console
 {
     public class ConsoleLoggerFactory : ILoggerFactory
     {

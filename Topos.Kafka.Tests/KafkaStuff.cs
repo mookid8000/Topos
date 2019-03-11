@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Logging;
+using Topos.Logging.Console;
 using Topos.Tests;
 
 namespace Topos.Kafka.Tests

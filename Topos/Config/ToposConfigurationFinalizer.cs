@@ -3,6 +3,8 @@ using Topos.Internals;
 using Topos.Internals.Consumer;
 using Topos.Internals.Producer;
 using Topos.Logging;
+using Topos.Logging.Console;
+
 // ReSharper disable RedundantArgumentDefaultValue
 
 namespace Topos.Config

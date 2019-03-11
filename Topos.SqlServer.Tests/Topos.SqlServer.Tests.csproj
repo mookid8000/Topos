@@ -11,4 +11,9 @@
     <PackageReference Include="testy" Version="0.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Topos.SqlServer\Topos.SqlServer.csproj" />
+    <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
 </Project>

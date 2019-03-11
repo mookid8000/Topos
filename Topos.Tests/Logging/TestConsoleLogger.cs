@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Testy;
-using Topos.Logging;
+using Topos.Logging.Console;
 
 namespace Topos.Tests.Logging
 {

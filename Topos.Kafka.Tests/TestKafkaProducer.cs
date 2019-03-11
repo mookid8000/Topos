@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Logging;
+using Topos.Logging.Console;
 using Topos.Tests;
 using Topos.Tests.Extensions;
 

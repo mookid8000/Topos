@@ -3,8 +3,9 @@ using NUnit.Framework;
 using Testy;
 using Topos.Config;
 using Topos.Logging.Console;
+using Topos.SqlServer.Config;
 
-namespace Topos.AzureEventHubs.Tests
+namespace Topos.SqlServer.Tests
 {
     [TestFixture]
     [Ignore("wait with this")]
@@ -15,7 +16,7 @@ namespace Topos.AzureEventHubs.Tests
         {
             var disposable = Configure.Consumer()
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
+                .EventBroker(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Start();
 
             Using(disposable);
@@ -26,7 +27,7 @@ namespace Topos.AzureEventHubs.Tests
         {
             var producer = Configure.Producer()
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
+                .EventBroker(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Create();
 
             await producer.Send("hej med dig");
