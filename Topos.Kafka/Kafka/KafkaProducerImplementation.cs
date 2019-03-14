@@ -45,12 +45,17 @@ namespace Topos.Kafka
             if (partitionKey == null) throw new ArgumentNullException(nameof(partitionKey));
             if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
 
-            await _producer.ProduceAsync(topic, new Message<string, byte[]>
+            var headers = GetHeaders(transportMessage.Headers);
+            var body = transportMessage.Body;
+
+            var kafkaMessage = new Message<string, byte[]>
             {
                 Key = partitionKey,
-                Headers = GetHeaders(transportMessage.Headers),
-                Value = transportMessage.Body
-            });
+                Headers = headers,
+                Value = body
+            };
+
+            await _producer.ProduceAsync(topic, kafkaMessage);
         }
 
         //public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
