@@ -9,7 +9,7 @@ namespace Topos.Kafka.Tests
     {
         protected string GetNewTopic()
         {
-            using (var producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
             using (var adminClient = producer.GetAdminClient())
             {
                 var topics = adminClient

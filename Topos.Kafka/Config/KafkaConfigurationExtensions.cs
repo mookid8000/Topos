@@ -20,7 +20,7 @@ namespace Topos.Config
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
 
-                    return new KafkaProducer(loggerFactory, string.Join(";", bootstrapServers));
+                    return new KafkaProducerImplementation(loggerFactory, string.Join(";", bootstrapServers));
                 });
 
             return builder;
@@ -37,7 +37,7 @@ namespace Topos.Config
                     var topics = c.Get<Topics>();
                     var consumerDispatcher = c.Get<IConsumerDispatcher>();
 
-                    return new KafkaConsumer(loggerFactory, string.Join("; ", bootstrapServers), topics, "group", (evt, token) => consumerDispatcher.Dispatch(evt));
+                    return new KafkaConsumerImplementation(loggerFactory, string.Join("; ", bootstrapServers), topics, "group", (evt, token) => consumerDispatcher.Dispatch(evt));
                 });
 
             return builder;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Topos.EventProcessing
+namespace Topos.Consumer
 {
     public struct Part
     {

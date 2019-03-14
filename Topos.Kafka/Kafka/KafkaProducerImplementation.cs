@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
-
 // ReSharper disable MethodSupportsCancellation
 
 namespace Topos.Kafka
 {
-    public class KafkaProducer : IProducerImplementation
+    public class KafkaProducerImplementation : IProducerImplementation
     {
         static readonly Headers EmptyHeaders = new Headers();
         static readonly object EmptyResult = new object();
@@ -24,9 +22,9 @@ namespace Topos.Kafka
 
         bool _disposed;
 
-        public KafkaProducer(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
+        public KafkaProducerImplementation(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
         {
-            _logger = loggerFactory.GetLogger(typeof(KafkaProducer));
+            _logger = loggerFactory.GetLogger(typeof(KafkaProducerImplementation));
             _sendTimeoutSeconds = sendTimeoutSeconds;
             var config = new ProducerConfig { BootstrapServers = address };
 

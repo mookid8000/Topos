@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Topos.EventProcessing;
+using Topos.Consumer;
 using Topos.Logging;
 
 namespace Topos.Internals

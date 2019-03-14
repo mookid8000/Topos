@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using Topos.EventProcessing;
+using Topos.Consumer;
 
 namespace Topos.Tests
 {

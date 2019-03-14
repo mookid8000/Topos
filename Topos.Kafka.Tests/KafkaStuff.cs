@@ -13,7 +13,7 @@ namespace Topos.Kafka.Tests
         [Test]
         public async Task ListTopics()
         {
-            var producer = new KafkaProducer(new ConsoleLoggerFactory(), KafkaTestConfig.Address);
+            var producer = new KafkaProducerImplementation(new ConsoleLoggerFactory(), KafkaTestConfig.Address);
 
             Using(producer);
 

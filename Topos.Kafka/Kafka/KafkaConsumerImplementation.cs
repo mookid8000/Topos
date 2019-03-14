@@ -4,9 +4,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
-using Topos.EventProcessing;
 using Topos.Serialization;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -14,7 +14,7 @@ using Topos.Serialization;
 
 namespace Topos.Kafka
 {
-    public class KafkaConsumer : IConsumerImplementation, IDisposable
+    public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
 
@@ -27,12 +27,12 @@ namespace Topos.Kafka
 
         bool _disposed;
 
-        public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
+        public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
             Action<ReceivedTransportMessage, CancellationToken> eventHandler,
             Func<IEnumerable<Part>, Task> partitionsAssigned = null,
             Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
-            _logger = loggerFactory.GetLogger(typeof(KafkaConsumer));
+            _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
             _group = group ?? throw new ArgumentNullException(nameof(group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
 

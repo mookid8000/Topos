@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Topos.EventProcessing;
+using Topos.Consumer;
 
 namespace Topos.Serialization
 {

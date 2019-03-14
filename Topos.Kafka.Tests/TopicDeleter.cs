@@ -22,7 +22,7 @@ namespace Topos.Kafka.Tests
 
         public void Dispose()
         {
-            using (var producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
             using (var adminClient = producer.GetAdminClient())
             {
                 var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
