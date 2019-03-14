@@ -6,6 +6,7 @@ using Confluent.Kafka;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
+using static Topos.Internals.Callbacks;
 // ReSharper disable MethodSupportsCancellation
 
 namespace Topos.Kafka
@@ -29,8 +30,8 @@ namespace Topos.Kafka
             var config = new ProducerConfig { BootstrapServers = address };
 
             _producer = new ProducerBuilder<string, byte[]>(config)
-                .SetLogHandler((producer, message) => Handlers.LogHandler(_logger, producer, message))
-                .SetErrorHandler((producer, message) => Handlers.ErrorHandler(_logger, producer, message))
+                .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
+                .SetErrorHandler((producer, message) => ErrorHandler(_logger, producer, message))
                 .Build();
 
             _logger.Info("Kafka producer initialized with {address}", address);

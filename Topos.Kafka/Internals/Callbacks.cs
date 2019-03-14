@@ -8,7 +8,7 @@ using Topos.Logging;
 
 namespace Topos.Internals
 {
-    static class Handlers
+    static class Callbacks
     {
         public static void LogHandler<T1, T2>(ILogger logger, IProducer<T1, T2> producer, LogMessage logMessage)
         {

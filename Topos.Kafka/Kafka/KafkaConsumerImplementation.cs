@@ -5,10 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
-using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
-
+using static Topos.Internals.Callbacks;
 // ReSharper disable RedundantAnonymousTypePropertyName
 // ReSharper disable ArgumentsStyleNamedExpression
 
@@ -47,9 +46,9 @@ namespace Topos.Kafka
             };
 
             _consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
-                .SetLogHandler((consumer, message) => Handlers.LogHandler(_logger, consumer, message))
-                .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(_logger, consumer, error))
-                .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(
+                .SetLogHandler((consumer, message) => LogHandler(_logger, consumer, message))
+                .SetErrorHandler((consumer, error) => ErrorHandler(_logger, consumer, error))
+                .SetRebalanceHandler((consumer, rebalanceEvent) => RebalanceHandler(
                     logger: _logger,
                     consumer: consumer,
                     rebalanceEvent: rebalanceEvent,
@@ -57,7 +56,7 @@ namespace Topos.Kafka
                     partitionsRevoked ?? Noop
                 ))
                 .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
-                    Handlers.OffsetsCommitted(_logger, consumer, committedOffsets))
+                    OffsetsCommitted(_logger, consumer, committedOffsets))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(topics);
