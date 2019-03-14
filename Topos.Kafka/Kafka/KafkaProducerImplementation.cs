@@ -27,7 +27,12 @@ namespace Topos.Kafka
         {
             _logger = loggerFactory.GetLogger(typeof(KafkaProducerImplementation));
             _sendTimeoutSeconds = sendTimeoutSeconds;
-            var config = new ProducerConfig { BootstrapServers = address };
+
+            var config = new ProducerConfig
+            {
+                BootstrapServers = address,
+                MessageTimeoutMs = sendTimeoutSeconds * 1000
+            };
 
             _producer = new ProducerBuilder<string, byte[]>(config)
                 .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
