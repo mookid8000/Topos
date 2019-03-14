@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -49,7 +50,11 @@ namespace Topos.Kafka.Tests
 
             await producer.Send("hej med dig min ven!");
 
-            await receivedEvents.WaitOrDie(c => c.Count == 1, timeoutSeconds: 10);
+            await receivedEvents.WaitOrDie(c => c.Count >= 1, timeoutSeconds: 10);
+
+            Console.WriteLine($@"Got these events:
+
+{string.Join(Environment.NewLine, receivedEvents)}");
         }
     }
 }

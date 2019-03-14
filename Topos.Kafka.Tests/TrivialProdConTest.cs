@@ -43,31 +43,31 @@ namespace Topos.Kafka.Tests
         //    Assert.That(receivedEvents, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
         //}
         
-        KafkaProducer CreateProducer()
-        {
-            var producer = new KafkaProducer(
-                loggerFactory: new SerilogLoggerFactory(),
-                address: KafkaTestConfig.Address
-            );
+        //KafkaProducer CreateProducer()
+        //{
+        //    var producer = new KafkaProducer(
+        //        loggerFactory: new SerilogLoggerFactory(),
+        //        address: KafkaTestConfig.Address
+        //    );
 
-            Using(producer);
+        //    Using(producer);
 
-            return producer;
-        }
+        //    return producer;
+        //}
 
-        void StartConsumer(Func<KafkaEvent, Position, CancellationToken, Task> eventHandler, string group = "default-group")
-        {
-            var consumer = new KafkaConsumer(
-                loggerFactory: new SerilogLoggerFactory(),
-                address: KafkaTestConfig.Address,
-                topics: new[] { _topic },
-                group: group,
-                eventHandler: eventHandler
-            );
+        //void StartConsumer(Func<KafkaEvent, Position, CancellationToken, Task> eventHandler, string group = "default-group")
+        //{
+        //    var consumer = new KafkaConsumer(
+        //        loggerFactory: new SerilogLoggerFactory(),
+        //        address: KafkaTestConfig.Address,
+        //        topics: new[] { _topic },
+        //        group: group,
+        //        eventHandler: eventHandler
+        //    );
 
-            Using(consumer);
+        //    Using(consumer);
 
-            consumer.Start();
-        }
+        //    consumer.Start();
+        //}
     }
 }

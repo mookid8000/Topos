@@ -47,11 +47,6 @@ namespace Topos.Config
             _logger.Info("Stopping message handler");
 
             _cancellationTokenSource.Cancel();
-            
-            if (!_messageHandlerStopped.WaitOne(TimeSpan.FromSeconds(5)))
-            {
-                _logger.Warn("Message handler did not stop within 5 s timeout");
-            }
         }
 
         async Task ProcessMessages()
@@ -108,6 +103,11 @@ namespace Topos.Config
                 using (_cancellationTokenSource)
                 {
                     Stop();
+
+                    if (!_messageHandlerStopped.WaitOne(TimeSpan.FromSeconds(5)))
+                    {
+                        _logger.Warn("Message handler did not stop within 5 s timeout");
+                    }
                 }
             }
             finally

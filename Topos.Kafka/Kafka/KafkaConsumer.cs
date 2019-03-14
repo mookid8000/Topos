@@ -7,6 +7,8 @@ using Confluent.Kafka;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.EventProcessing;
+using Topos.Serialization;
+
 // ReSharper disable RedundantAnonymousTypePropertyName
 // ReSharper disable ArgumentsStyleNamedExpression
 
@@ -17,8 +19,8 @@ namespace Topos.Kafka
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
 
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly Func<KafkaEvent, Position, CancellationToken, Task> _eventHandler;
-        readonly IConsumer<string, string> _consumer;
+        readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
+        readonly IConsumer<string, byte[]> _consumer;
         readonly Thread _worker;
         readonly ILogger _logger;
         readonly string _group;
@@ -26,7 +28,7 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
+            Action<ReceivedTransportMessage, CancellationToken> eventHandler,
             Func<IEnumerable<Part>, Task> partitionsAssigned = null,
             Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
@@ -44,7 +46,7 @@ namespace Topos.Kafka
                 EnableAutoCommit = true
             };
 
-            _consumer = new ConsumerBuilder<string, string>(consumerConfig)
+            _consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((consumer, message) => Handlers.LogHandler(_logger, consumer, message))
                 .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(_logger, consumer, error))
                 .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(
@@ -93,26 +95,23 @@ namespace Topos.Kafka
                     try
                     {
                         var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(0.5));
-                        if (consumeResult == null)
-                        {
-                            continue;
-                        }
+                        if (consumeResult == null) continue;
 
-                        var kafkaEvent = new KafkaEvent(
-                            consumeResult.Key,
-                            consumeResult.Value,
-                            GetHeaders(consumeResult.Headers)
+                        var position = new Position(
+                            topic: consumeResult.Topic,
+                            partition: consumeResult.Partition.Value,
+                            offset: consumeResult.Offset.Value
                         );
 
-                        var topf = consumeResult.TopicPartitionOffset;
+                        var message = new ReceivedTransportMessage(
+                            position: position,
+                            headers: GetHeaders(consumeResult.Headers),
+                            body: consumeResult.Value
+                        );
 
-                        _logger.Debug("Received event: {@event} - {@position}", kafkaEvent,
-                            new {Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}"});
+                        _logger.Debug("Received event {position}", position);
 
-                        var position = new Position(consumeResult.Topic, consumeResult.Partition.Value,
-                            consumeResult.Offset.Value);
-
-                        _eventHandler(kafkaEvent, position, cancellationToken).Wait(cancellationToken);
+                        _eventHandler(message, cancellationToken);
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {

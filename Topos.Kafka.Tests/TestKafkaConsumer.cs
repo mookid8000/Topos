@@ -19,63 +19,63 @@ namespace Topos.Kafka.Tests
     [TestFixture]
     public class TestKafkaConsumer : ToposFixtureBase
     {
-        [Test]
-        public async Task CanConsumeEvent()
-        {
-            var receivedEvents = new ConcurrentQueue<string>();
+        //[Test]
+        //public async Task CanConsumeEvent()
+        //{
+        //    var receivedEvents = new ConcurrentQueue<string>();
 
-            var consumer = new KafkaConsumer(
-                loggerFactory: new ConsoleLoggerFactory(),
-                address: KafkaTestConfig.Address,
-                topics: new[] { "test-topic" },
-                @group: "default3",
-                eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
-            );
+        //    var consumer = new KafkaConsumer(
+        //        loggerFactory: new ConsoleLoggerFactory(),
+        //        address: KafkaTestConfig.Address,
+        //        topics: new[] { "test-topic" },
+        //        @group: "default3",
+        //        eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
+        //    );
 
-            Using(consumer);
+        //    Using(consumer);
 
-            consumer.Start();
+        //    consumer.Start();
 
-            await receivedEvents.WaitOrDie(q => q.Count == 3, timeoutSeconds: 7);
+        //    await receivedEvents.WaitOrDie(q => q.Count == 3, timeoutSeconds: 7);
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
-        }
+        //    await Task.Delay(TimeSpan.FromSeconds(5));
+        //}
 
-        [Test]
-        public async Task CanConsumeEvent_Lots()
-        {
-            SetLogLevelTo(LogEventLevel.Information);
+        //[Test]
+        //public async Task CanConsumeEvent_Lots()
+        //{
+        //    SetLogLevelTo(LogEventLevel.Information);
 
-            var receivedEvents = new ConcurrentQueue<string>();
+        //    var receivedEvents = new ConcurrentQueue<string>();
 
-            const string groupName = "default6";
+        //    const string groupName = "default6";
 
-            var consumer1 = new KafkaConsumer(
-                loggerFactory: new ConsoleLoggerFactory(),
-                address: KafkaTestConfig.Address,
-                topics: new[] { "lots" },
-                @group: groupName,
-                eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
-            );
+        //    var consumer1 = new KafkaConsumer(
+        //        loggerFactory: new ConsoleLoggerFactory(),
+        //        address: KafkaTestConfig.Address,
+        //        topics: new[] { "lots" },
+        //        @group: groupName,
+        //        eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
+        //    );
 
-            Using(consumer1);
+        //    Using(consumer1);
 
-            var consumer2 = new KafkaConsumer(
-                loggerFactory: new ConsoleLoggerFactory(),
-                address: KafkaTestConfig.Address,
-                topics: new[] { "lots" },
-                @group: groupName,
-                eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
-            );
+        //    var consumer2 = new KafkaConsumer(
+        //        loggerFactory: new ConsoleLoggerFactory(),
+        //        address: KafkaTestConfig.Address,
+        //        topics: new[] { "lots" },
+        //        @group: groupName,
+        //        eventHandler: async (evt, pos, token) => receivedEvents.Enqueue(evt.Body)
+        //    );
 
-            Using(consumer2);
+        //    Using(consumer2);
 
-            consumer1.Start();
-            consumer2.Start();
+        //    consumer1.Start();
+        //    consumer2.Start();
 
-            await receivedEvents.WaitOrDie(q => q.Count == 100000, timeoutSeconds: 70);
+        //    await receivedEvents.WaitOrDie(q => q.Count == 100000, timeoutSeconds: 70);
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
-        }
+        //    await Task.Delay(TimeSpan.FromSeconds(5));
+        //}
     }
 }

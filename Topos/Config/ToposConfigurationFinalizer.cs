@@ -53,6 +53,15 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
+            PossiblyRegisterDefault<IConsumerDispatcher>(injectionist, c =>
+            {
+                var loggerFactory = c.Get<ILoggerFactory>();
+                var messageSerializer = c.Get<IMessageSerializer>();
+                var handlers = c.Get<Handlers>();
+
+                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers);
+            });
+
             injectionist.Register<IToposConsumer>(c =>
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
@@ -75,6 +84,11 @@ namespace Topos.Config
             });
 
             var resolutionResult = injectionist.Get<IToposConsumer>();
+
+            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+            {
+                initializable.Initialize();
+            }
 
             return resolutionResult.Instance;
         }

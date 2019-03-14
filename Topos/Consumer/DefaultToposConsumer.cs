@@ -8,6 +8,8 @@ namespace Topos.Consumer
         readonly IConsumerImplementation _consumerImplementation;
         readonly IMessageSerializer _messageSerializer;
 
+        bool _isStarted;
+
         bool _disposing;
         bool _disposed;
 
@@ -19,7 +21,14 @@ namespace Topos.Consumer
             _consumerImplementation = consumerImplementation;
         }
 
-        public void Start() => _consumerImplementation.Start();
+        public void Start()
+        {
+            if (_isStarted) return;
+
+            _consumerImplementation.Start();
+
+            _isStarted = true;
+        }
 
         public void Dispose()
         {

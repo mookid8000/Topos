@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
+using Topos.Consumer;
 using Topos.Kafka;
 using Topos.Logging;
 
@@ -35,11 +35,9 @@ namespace Topos.Config
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
                     var topics = c.Get<Topics>();
-                    var handlers = c.Get<Handlers>();
+                    var consumerDispatcher = c.Get<IConsumerDispatcher>();
 
-                    return new KafkaConsumer(loggerFactory, string.Join("; ", bootstrapServers), topics, "group", async (evt, position, token) =>
-                    {
-                    });
+                    return new KafkaConsumer(loggerFactory, string.Join("; ", bootstrapServers), topics, "group", (evt, token) => consumerDispatcher.Dispatch(evt));
                 });
 
             return builder;
