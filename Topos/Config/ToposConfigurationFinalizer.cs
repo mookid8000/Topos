@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Linq;
+using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Logging.Console;
-
+using Topos.Producer;
+using Topos.Routing;
+using Topos.Serialization;
 // ReSharper disable RedundantArgumentDefaultValue
 
 namespace Topos.Config
@@ -15,7 +19,23 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
-            //injectionist.Register<IToposProducer>(c => new ToposProducer(c.Get<ILoggerFactory>()));
+            injectionist.Register<IToposProducer>(c =>
+            {
+                var messageSerializer = c.Get<IMessageSerializer>();
+                var topicMapper = c.Get<ITopicMapper>();
+
+                var defaultToposProducer = new DefaultToposProducer(messageSerializer, topicMapper);
+
+                defaultToposProducer.Disposing += () =>
+                {
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>())
+                    {
+                        instance.Dispose();
+                    }
+                };
+
+                return defaultToposProducer;
+            });
 
             var resolutionResult = injectionist.Get<IToposProducer>();
 
@@ -28,7 +48,22 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
-            //injectionist.Register<IToposConsumer>(c => new ToposConsumer(c.Get<ILoggerFactory>()));
+            injectionist.Register<IToposConsumer>(c =>
+            {
+                var messageSerializer = c.Get<IMessageSerializer>();
+                var topicMapper = c.Get<ITopicMapper>();
+                var defaultToposConsumer = new DefaultToposConsumer(messageSerializer, topicMapper);
+
+                defaultToposConsumer.Disposing += () =>
+                {
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>())
+                    {
+                        instance.Dispose();
+                    }
+                };
+
+                return defaultToposConsumer;
+            });
 
             var resolutionResult = injectionist.Get<IToposConsumer>();
 

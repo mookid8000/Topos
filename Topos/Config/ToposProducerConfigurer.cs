@@ -7,9 +7,9 @@ namespace Topos.Config
     {
         internal readonly Injectionist _injectionist = new Injectionist();
 
-        public ToposProducerConfigurer(Action<StandardConfigurer<IToposProducer>> configure)
+        public ToposProducerConfigurer(Action<StandardConfigurer<IToposProducerImplementation>> configure)
         {
-            var configurer = StandardConfigurer<IToposProducer>.New(_injectionist);
+            var configurer = StandardConfigurer<IToposProducerImplementation>.New(_injectionist);
 
             configure(configurer);
         }

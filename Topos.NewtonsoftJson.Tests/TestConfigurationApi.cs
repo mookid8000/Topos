@@ -12,8 +12,7 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Producer()
         {
-            var consumer = Configure.Consumer()
-                .EventBroker(t => t.UseInMemory(new InMemEventBroker()))
+            var consumer = Configure.Consumer(t => t.UseInMemory(new InMemEventBroker()))
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Start();
 
@@ -23,8 +22,7 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Consumer()
         {
-            var consumer = Configure.Consumer()
-                .EventBroker(t => t.UseInMemory(new InMemEventBroker()))
+            var consumer = Configure.Consumer(t => t.UseInMemory(new InMemEventBroker()))
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Start();
 

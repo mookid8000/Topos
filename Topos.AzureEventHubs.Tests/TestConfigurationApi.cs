@@ -13,9 +13,8 @@ namespace Topos.AzureEventHubs.Tests
         [Test]
         public void CanConfigure_Consumer_AzureEventHubs()
         {
-            var disposable = Configure.Consumer()
+            var disposable = Configure.Consumer(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Start();
 
             Using(disposable);
@@ -24,9 +23,8 @@ namespace Topos.AzureEventHubs.Tests
         [Test]
         public async Task CanConfigure_Producer_AzureEventHubs()
         {
-            var producer = Configure.Producer()
+            var producer = Configure.Producer(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Create();
 
             await producer.Send("hej med dig");

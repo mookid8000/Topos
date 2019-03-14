@@ -11,16 +11,14 @@ namespace Topos.Kafka.Tests
         [Test]
         public async Task FullProducerConsumerExample()
         {
-            var producer = Configure.Producer()
+            var producer = Configure.Producer(e => e.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .EventBroker(e => e.UseKafka(KafkaTestConfig.Address))
                 .Create();
 
             Using(producer);
 
-            var consumer = Configure.Consumer()
+            var consumer = Configure.Consumer(e => e.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .EventBroker(e => e.UseKafka(KafkaTestConfig.Address))
                 .Create();
 
             Using(consumer);

@@ -13,9 +13,8 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Logging()
         {
-            var consumer = Configure.Consumer()
+            var consumer = Configure.Consumer(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Logging(l => l.UseSerilog())
-                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Start();
 
             Using(consumer);
@@ -24,8 +23,7 @@ namespace Topos.Tests.Config
         [Test]
         public void CanConfigure_Consumer_Sql()
         {
-            var consumer = Configure.Consumer()
-                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+            var consumer = Configure.Consumer(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Start();
 
             Using(consumer);
@@ -34,8 +32,7 @@ namespace Topos.Tests.Config
         [Test]
         public async Task CanConfigure_Producer_Sql()
         {
-            var producer = Configure.Producer()
-                .EventBroker(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
+            var producer = Configure.Producer(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Create();
 
             await producer.Send("hej med dig");

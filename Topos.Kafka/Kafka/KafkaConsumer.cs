@@ -13,7 +13,7 @@ using Topos.EventProcessing;
 
 namespace Topos.Kafka
 {
-    public class KafkaConsumer : IToposConsumer
+    public class KafkaConsumer : IToposConsumerImplementation
     {
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
 

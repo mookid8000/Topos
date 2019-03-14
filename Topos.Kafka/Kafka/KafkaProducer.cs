@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Internals;
 using Topos.Logging;
+using Topos.Serialization;
+
 // ReSharper disable MethodSupportsCancellation
 
 namespace Topos.Kafka
 {
-    public class KafkaProducer : IDisposable
+    public class KafkaProducer : IToposProducerImplementation
     {
         static readonly Headers EmptyHeaders = new Headers();
         static readonly object EmptyResult = new object();
@@ -103,6 +105,11 @@ namespace Topos.Kafka
             _logger.Info("Disposing Kafka producer");
 
             _producer.Dispose();
+        }
+
+        public Task Send(TransportMessage transportMessage)
+        {
+            throw new NotImplementedException();
         }
     }
 }

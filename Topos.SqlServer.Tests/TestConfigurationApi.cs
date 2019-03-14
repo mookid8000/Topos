@@ -14,9 +14,8 @@ namespace Topos.SqlServer.Tests
         [Test]
         public void CanConfigure_Consumer_AzureEventHubs()
         {
-            var disposable = Configure.Consumer()
+            var disposable = Configure.Consumer(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Start();
 
             Using(disposable);
@@ -25,9 +24,8 @@ namespace Topos.SqlServer.Tests
         [Test]
         public async Task CanConfigure_Producer_AzureEventHubs()
         {
-            var producer = Configure.Producer()
+            var producer = Configure.Producer(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Logging(l => l.UseConsole())
-                .EventBroker(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Create();
 
             await producer.Send("hej med dig");

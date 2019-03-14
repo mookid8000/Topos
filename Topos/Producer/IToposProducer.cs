@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Topos
+namespace Topos.Producer
 {
     public interface IToposProducer : IDisposable
     {
-        Task Send(object message, IDictionary<string, string> optionalHeaders = null);
+        Task Send(object message, Dictionary<string, string> heaoptionalHeadersders = null);
     }
 }

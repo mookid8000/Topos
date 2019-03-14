@@ -11,29 +11,33 @@ namespace Topos.Producer
         readonly IMessageSerializer _messageSerializer;
         readonly ITopicMapper _topicMapper;
 
+        bool _disposed;
+
+        public event Action Disposing;
+
         public DefaultToposProducer(IMessageSerializer messageSerializer, ITopicMapper topicMapper)
         {
             _messageSerializer = messageSerializer ?? throw new ArgumentNullException(nameof(messageSerializer));
             _topicMapper = topicMapper ?? throw new ArgumentNullException(nameof(topicMapper));
         }
 
-        public async Task Send(object message, IDictionary<string, string> optionalHeaders = null)
+        public async Task Send(object message, Dictionary<string, string> heaoptionalHeadersders = null)
         {
             var topic = _topicMapper.GetTopic(message);
-
-
-        }
-
-        public async Task SendMany(object message, IDictionary<string, string> optionalHeaders = null)
-        {
-            var topic = _topicMapper.GetTopic(message);
-
-
         }
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            if (_disposed) return;
+
+            try
+            {
+                Disposing?.Invoke();
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
     }
 }
