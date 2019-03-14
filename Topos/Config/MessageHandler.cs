@@ -22,7 +22,6 @@ namespace Topos.Config
         ILogger _logger = new NullLogger();
 
         bool _disposed;
-        bool _stopped;
 
         public MessageHandler(Func<IReadOnlyCollection<LogicalMessage>, CancellationToken, Task> callback)
         {
@@ -77,6 +76,8 @@ namespace Topos.Config
                             _logger.Warn(exception, "Error when handling messages");
                         }
                     }
+
+                    messages.Clear();
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
