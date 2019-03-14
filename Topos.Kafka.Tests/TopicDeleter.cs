@@ -14,19 +14,17 @@ namespace Topos.Kafka.Tests
     {
         static readonly ILogger Logger = Log.ForContext<TopicDeleter>();
         readonly string _topicName;
-        readonly KafkaProducer _producer;
 
         public TopicDeleter(string topicName)
         {
-            _producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address);
             _topicName = topicName;
         }
 
         public void Dispose()
         {
-            using (_producer)
+            using (var producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+            using (var adminClient = producer.GetAdminClient())
             {
-                var adminClient = _producer.GetAdminClient();
                 var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
 
                 if (!metadata.Topics.Select(t => t.Topic).Contains(_topicName)) return;
@@ -41,7 +39,7 @@ namespace Topos.Kafka.Tests
                     try
                     {
                         await adminClient
-                            .DeleteTopicsAsync(new[] {_topicName}, new DeleteTopicsOptions
+                            .DeleteTopicsAsync(new[] { _topicName }, new DeleteTopicsOptions
                             {
                                 OperationTimeout = TimeSpan.FromSeconds(10)
                             });

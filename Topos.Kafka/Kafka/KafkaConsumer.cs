@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace Topos.Kafka
     public class KafkaConsumer : IToposConsumer
     {
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
-        
+
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Func<KafkaEvent, Position, CancellationToken, Task> _eventHandler;
         readonly IConsumer<string, string> _consumer;
@@ -23,7 +24,8 @@ namespace Topos.Kafka
         readonly ILogger _logger;
         readonly string _group;
 
-        public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group, Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
+        public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
+            Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
             Func<IEnumerable<Part>, Task> partitionsAssigned = null,
             Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
@@ -46,7 +48,7 @@ namespace Topos.Kafka
                 .SetErrorHandler((consumer, error) => Handlers.ErrorHandler(_logger, consumer, error))
                 .SetRebalanceHandler((consumer, rebalanceEvent) => Handlers.RebalanceHandler(
                     logger: _logger,
-                    consumer: consumer, 
+                    consumer: consumer,
                     rebalanceEvent: rebalanceEvent,
                     partitionsAssigned ?? Noop,
                     partitionsRevoked ?? Noop
@@ -73,7 +75,7 @@ namespace Topos.Kafka
             {
                 throw new InvalidOperationException("Kafka consumer worker is already running");
             }
-            
+
             _worker.Start();
         }
 
@@ -89,7 +91,11 @@ namespace Topos.Kafka
                 {
                     try
                     {
-                        var consumeResult = _consumer.Consume(cancellationToken);
+                        var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(0.5));
+                        if (consumeResult == null)
+                        {
+                            continue;
+                        }
 
                         var kafkaEvent = new KafkaEvent(
                             consumeResult.Key,

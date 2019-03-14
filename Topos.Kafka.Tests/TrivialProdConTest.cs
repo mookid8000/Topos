@@ -42,7 +42,7 @@ namespace Topos.Kafka.Tests
 
             Assert.That(receivedEvents, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
         }
-
+        
         KafkaProducer CreateProducer()
         {
             var producer = new KafkaProducer(
@@ -54,7 +54,6 @@ namespace Topos.Kafka.Tests
 
             return producer;
         }
-
 
         void StartConsumer(Func<KafkaEvent, Position, CancellationToken, Task> eventHandler, string group = "default-group")
         {

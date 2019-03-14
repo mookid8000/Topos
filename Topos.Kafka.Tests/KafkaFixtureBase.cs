@@ -1,22 +1,43 @@
 ﻿using System;
-using Serilog;
+using System.Linq;
+using Topos.Serilog;
 using Topos.Tests;
 
 namespace Topos.Kafka.Tests
 {
     public abstract class KafkaFixtureBase : ToposFixtureBase
     {
-        static readonly ILogger Logger = Log.ForContext<KafkaFixtureBase>();
-
         protected string GetNewTopic()
         {
-            var topicName = $"topic-{new Random(DateTime.Now.GetHashCode()).Next(100)}";
+            using (var producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+            using (var adminClient = producer.GetAdminClient())
+            {
 
-            Using(new TopicDeleter(topicName));
+                var topics = adminClient
+                    .GetMetadata(TimeSpan.FromSeconds(10))
+                    .Topics.Select(topic => topic.Topic)
+                    .Select(topic => topic.Split('-'))
+                    .Where(parts => parts.Length == 2 && int.TryParse(parts[1], out _))
+                    .Select(parts => int.Parse(parts[1]))
+                    .ToList();
 
-            Logger.Information("Using temp topic {topic}", topicName);
+                var number = topics.Any() ? topics.Max() : 0;
 
-            return topicName;
+                var topicName = $"testtopic-{number + 1}";
+
+                Logger.Information("Using topic named {topic}", topicName);
+
+                return topicName;
+            }
+
+
+            //var topicName = $"topic-{new Random(DateTime.Now.GetHashCode()).Next(100)}";
+
+            //Using(new TopicDeleter(topicName));
+
+            //Logger.Information("Using temp topic {topic}", topicName);
+
+            //return topicName;
         }
     }
 }

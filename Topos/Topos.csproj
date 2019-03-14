@@ -7,8 +7,4 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="1.0.0-beta3-test-alpine" />
-  </ItemGroup>
-
 </Project>

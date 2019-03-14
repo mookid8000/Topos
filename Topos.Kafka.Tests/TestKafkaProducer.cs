@@ -1,11 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Topos.Logging;
 using Topos.Logging.Console;
 using Topos.Tests;
 using Topos.Tests.Extensions;
-
 // ReSharper disable ArgumentsStyleOther
 // ReSharper disable ArgumentsStyleStringLiteral
 
@@ -38,7 +36,7 @@ namespace Topos.Kafka.Tests
 
             await Time.Action("produce", async () =>
             {
-                await _producer.SendAsync("test-topOPic",
+                await _producer.SendAsync("test-topic",
                     new[]
                     {
                         new KafkaEvent("key1", "hej"),

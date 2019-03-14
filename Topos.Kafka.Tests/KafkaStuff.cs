@@ -19,6 +19,8 @@ namespace Topos.Kafka.Tests
 
             var adminClient = producer.GetAdminClient();
 
+            Using(adminClient);
+
             var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
 
             Console.WriteLine($@"Topics:
