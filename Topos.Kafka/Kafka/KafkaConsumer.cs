@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -13,7 +12,7 @@ using Topos.EventProcessing;
 
 namespace Topos.Kafka
 {
-    public class KafkaConsumer : IToposConsumerImplementation
+    public class KafkaConsumer : IConsumerImplementation, IDisposable
     {
         static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
 
@@ -23,6 +22,8 @@ namespace Topos.Kafka
         readonly Thread _worker;
         readonly ILogger _logger;
         readonly string _group;
+
+        bool _disposed;
 
         public KafkaConsumer(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
             Func<KafkaEvent, Position, CancellationToken, Task> eventHandler,
@@ -105,9 +106,11 @@ namespace Topos.Kafka
 
                         var topf = consumeResult.TopicPartitionOffset;
 
-                        _logger.Debug("Received event: {@event} - {@position}", kafkaEvent, new { Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}" });
+                        _logger.Debug("Received event: {@event} - {@position}", kafkaEvent,
+                            new {Topic = topf.Topic, Offset = $"{topf.Partition.Value}/{topf.Offset.Value}"});
 
-                        var position = new Position(consumeResult.Topic, consumeResult.Partition.Value, consumeResult.Offset.Value);
+                        var position = new Position(consumeResult.Topic, consumeResult.Partition.Value,
+                            consumeResult.Offset.Value);
 
                         _eventHandler(kafkaEvent, position, cancellationToken).Wait(cancellationToken);
                     }
@@ -135,6 +138,10 @@ namespace Topos.Kafka
                     }
                 }
             }
+            catch (AccessViolationException exception)
+            {
+                _logger.Error(exception, "CAN WE EVEN CATCH THIS?");
+            }
             catch (Exception exception)
             {
                 _logger.Error(exception, "Unhandled exception in Kafka consumer");
@@ -159,19 +166,30 @@ namespace Topos.Kafka
 
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
+            if (_disposed) return;
 
-            using (_consumer)
-            using (_cancellationTokenSource)
+            _logger.Info("Stopping Kafka consumer worker for group {consumerGroup}", _group);
+
+            try
             {
-                if (_worker.ThreadState != ThreadState.Running) return;
+                _cancellationTokenSource.Cancel();
 
-                if (!_worker.Join(TimeSpan.FromSeconds(5)))
+                using (_consumer)
+                using (_cancellationTokenSource)
                 {
-                    _logger.Error("Kafka consumer worker did not finish executing within 5 s");
+                    if (_worker.ThreadState != ThreadState.Running) return;
 
-                    _worker.Abort();
+                    if (!_worker.Join(TimeSpan.FromSeconds(5)))
+                    {
+                        _logger.Error("Kafka consumer worker did not finish executing within 5 s");
+
+                        _worker.Abort();
+                    }
                 }
+            }
+            finally
+            {
+                _disposed = true;
             }
         }
     }

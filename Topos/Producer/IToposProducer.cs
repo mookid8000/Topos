@@ -6,6 +6,6 @@ namespace Topos.Producer
 {
     public interface IToposProducer : IDisposable
     {
-        Task Send(object message, Dictionary<string, string> heaoptionalHeadersders = null);
+        Task Send(object message, Dictionary<string, string> optionalHeaders = null);
     }
 }

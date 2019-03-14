@@ -20,28 +20,28 @@ namespace Topos.Kafka.Tests
             _topic = GetNewTopic();
         }
 
-        [Test]
-        public async Task CanDoIt()
-        {
-            var producer = CreateProducer();
+        //[Test]
+        //public async Task CanDoIt()
+        //{
+        //    var producer = CreateProducer();
 
-            await producer.SendAsync(_topic, new[]
-            {
-                new KafkaEvent("key1", "hej"),
-                new KafkaEvent("key1", "med"),
-                new KafkaEvent("key1", "dig"),
-                new KafkaEvent("key1", "min"),
-                new KafkaEvent("key1", "ven"),
-            });
+        //    await producer.SendAsync(_topic, new[]
+        //    {
+        //        new KafkaEvent("key1", "hej"),
+        //        new KafkaEvent("key1", "med"),
+        //        new KafkaEvent("key1", "dig"),
+        //        new KafkaEvent("key1", "min"),
+        //        new KafkaEvent("key1", "ven"),
+        //    });
 
-            var receivedEvents = new ConcurrentQueue<string>();
+        //    var receivedEvents = new ConcurrentQueue<string>();
 
-            StartConsumer(async (evt, pos, token) => receivedEvents.Enqueue(evt.Body));
+        //    StartConsumer(async (evt, pos, token) => receivedEvents.Enqueue(evt.Body));
 
-            await receivedEvents.WaitOrDie(q => q.Count == 5, timeoutSeconds: 10);
+        //    await receivedEvents.WaitOrDie(q => q.Count == 5, timeoutSeconds: 10);
 
-            Assert.That(receivedEvents, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
-        }
+        //    Assert.That(receivedEvents, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
+        //}
         
         KafkaProducer CreateProducer()
         {

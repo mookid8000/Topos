@@ -12,7 +12,6 @@ namespace Topos.Kafka.Tests
             using (var producer = new KafkaProducer(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
             using (var adminClient = producer.GetAdminClient())
             {
-
                 var topics = adminClient
                     .GetMetadata(TimeSpan.FromSeconds(10))
                     .Topics.Select(topic => topic.Topic)

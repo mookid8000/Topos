@@ -1,31 +1,32 @@
 ﻿using System;
-using Topos.Routing;
 using Topos.Serialization;
 
 namespace Topos.Consumer
 {
     public class DefaultToposConsumer : IToposConsumer
     {
+        readonly IConsumerImplementation _consumerImplementation;
         readonly IMessageSerializer _messageSerializer;
-        readonly ITopicMapper _topicMapper;
 
+        bool _disposing;
         bool _disposed;
 
         public event Action Disposing;
 
-        public DefaultToposConsumer(IMessageSerializer messageSerializer, ITopicMapper topicMapper)
+        public DefaultToposConsumer(IMessageSerializer messageSerializer, IConsumerImplementation consumerImplementation)
         {
             _messageSerializer = messageSerializer;
-            _topicMapper = topicMapper;
+            _consumerImplementation = consumerImplementation;
         }
 
-        public void Start()
-        {
-        }
+        public void Start() => _consumerImplementation.Start();
 
         public void Dispose()
         {
             if (_disposed) return;
+            if (_disposing) return;
+
+            _disposing = true;
 
             try
             {

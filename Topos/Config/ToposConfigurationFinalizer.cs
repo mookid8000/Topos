@@ -23,8 +23,13 @@ namespace Topos.Config
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
                 var topicMapper = c.Get<ITopicMapper>();
+                var producerImplementation = c.Get<IProducerImplementation>();
 
-                var defaultToposProducer = new DefaultToposProducer(messageSerializer, topicMapper);
+                var defaultToposProducer = new DefaultToposProducer(
+                    messageSerializer,
+                    topicMapper,
+                    producerImplementation
+                );
 
                 defaultToposProducer.Disposing += () =>
                 {
@@ -51,8 +56,12 @@ namespace Topos.Config
             injectionist.Register<IToposConsumer>(c =>
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
-                var topicMapper = c.Get<ITopicMapper>();
-                var defaultToposConsumer = new DefaultToposConsumer(messageSerializer, topicMapper);
+                var toposConsumerImplementation = c.Get<IConsumerImplementation>();
+
+                var defaultToposConsumer = new DefaultToposConsumer(
+                    messageSerializer,
+                    toposConsumerImplementation
+                );
 
                 defaultToposConsumer.Disposing += () =>
                 {
@@ -73,7 +82,7 @@ namespace Topos.Config
         static void RegisterCommonServices(Injectionist injectionist)
         {
             PossiblyRegisterDefault<ILoggerFactory>(injectionist, c => new ConsoleLoggerFactory());
-
+            PossiblyRegisterDefault<IMessageSerializer>(injectionist, c => new Utf8StringEncoder());
         }
 
         static void PossiblyRegisterDefault<TService>(Injectionist injectionist, Func<IResolutionContext, TService> factory)

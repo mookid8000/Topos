@@ -12,15 +12,17 @@ using Topos.Serialization;
 
 namespace Topos.Kafka
 {
-    public class KafkaProducer : IToposProducerImplementation
+    public class KafkaProducer : IProducerImplementation
     {
         static readonly Headers EmptyHeaders = new Headers();
         static readonly object EmptyResult = new object();
 
-        readonly IProducer<string, string> _producer;
+        readonly IProducer<string, byte[]> _producer;
         readonly int _sendTimeoutSeconds;
 
         readonly ILogger _logger;
+
+        bool _disposed;
 
         public KafkaProducer(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
         {
@@ -28,7 +30,7 @@ namespace Topos.Kafka
             _sendTimeoutSeconds = sendTimeoutSeconds;
             var config = new ProducerConfig { BootstrapServers = address };
 
-            _producer = new ProducerBuilder<string, string>(config)
+            _producer = new ProducerBuilder<string, byte[]>(config)
                 .SetLogHandler((producer, message) => Handlers.LogHandler(_logger, producer, message))
                 .SetErrorHandler((producer, message) => Handlers.ErrorHandler(_logger, producer, message))
                 .Build();
@@ -38,53 +40,68 @@ namespace Topos.Kafka
 
         public AdminClient GetAdminClient() => new AdminClient(_producer.Handle);
 
-        public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
+        public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
-            var taskCompletionSource = new TaskCompletionSource<object>();
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+            if (partitionKey == null) throw new ArgumentNullException(nameof(partitionKey));
+            if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
 
-            foreach (var evt in events)
+            await _producer.ProduceAsync(topic, new Message<string, byte[]>
             {
-                var message = new Message<string, string>
-                {
-                    Key = evt.Key,
-                    Headers = GetHeaders(evt.Headers),
-                    Value = evt.Body
-                };
-                _producer.BeginProduce(topic, message);
-            }
-
-            // is disposed in the finally block on the thread pool
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(_sendTimeoutSeconds));
-
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                var cancellationToken = cancellationTokenSource.Token;
-
-                try
-                {
-                    _producer.Flush(cancellationToken);
-
-                    taskCompletionSource.SetResult(EmptyResult);
-                }
-                catch (OperationCanceledException exception) when (cancellationToken.IsCancellationRequested)
-                {
-                    taskCompletionSource.SetException(
-                        new TimeoutException($"Could not send events within {_sendTimeoutSeconds} s timeout", exception));
-                }
-                catch (Exception exception)
-                {
-                    taskCompletionSource.SetException(exception);
-                }
-                finally
-                {
-                    cancellationTokenSource.Dispose();
-                }
+                Key = partitionKey,
+                Headers = GetHeaders(transportMessage.Headers),
+                Value = transportMessage.Body
             });
-
-            return taskCompletionSource.Task;
         }
+
+        //public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
+        //{
+        //    var taskCompletionSource = new TaskCompletionSource<object>();
+
+        //    foreach (var evt in events)
+        //    {
+        //        var message = new Message<string, string>
+        //        {
+        //            Key = evt.Key,
+        //            Headers = GetHeaders(evt.Headers),
+        //            Value = evt.Body
+        //        };
+        //        _producer.BeginProduce(topic, message);
+        //    }
+
+        //    // is disposed in the finally block on the thread pool
+        //    var cancellationTokenSource = new CancellationTokenSource();
+
+        //    cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(_sendTimeoutSeconds));
+
+        //    Task.Run(() =>
+        //    {
+        //        var cancellationToken = cancellationTokenSource.Token;
+
+        //        try
+        //        {
+        //            _producer.Flush(cancellationToken);
+
+        //            taskCompletionSource.SetResult(EmptyResult);
+        //        }
+        //        catch (OperationCanceledException exception) when (cancellationToken.IsCancellationRequested)
+        //        {
+        //            taskCompletionSource.SetException(
+        //                new TimeoutException($"Could not send events within {_sendTimeoutSeconds} s timeout",
+        //                    exception));
+        //        }
+        //        catch (Exception exception)
+        //        {
+        //            taskCompletionSource.SetException(exception);
+        //        }
+        //        finally
+        //        {
+        //            cancellationTokenSource.Dispose();
+        //        }
+        //    });
+
+        //    return taskCompletionSource.Task;
+        //}
 
         static Headers GetHeaders(Dictionary<string, string> dictionary)
         {
@@ -102,14 +119,18 @@ namespace Topos.Kafka
 
         public void Dispose()
         {
-            _logger.Info("Disposing Kafka producer");
+            if (_disposed) return;
 
-            _producer.Dispose();
-        }
+            try
+            {
+                _logger.Info("Disposing Kafka producer");
 
-        public Task Send(TransportMessage transportMessage)
-        {
-            throw new NotImplementedException();
+                _producer.Dispose();
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
     }
 }
