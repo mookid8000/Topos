@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Topos.Routing;
 
-namespace Topos.Config
+namespace Topos.Producer
 {
     public class TopicMappings : IEnumerable<TopicMapping>
     {

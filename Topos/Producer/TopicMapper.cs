@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Topos.Config
+namespace Topos.Producer
 {
     public class TopicMapper
     {

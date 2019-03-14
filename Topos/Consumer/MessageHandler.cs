@@ -8,7 +8,7 @@ using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
 
-namespace Topos.Config
+namespace Topos.Consumer
 {
     public class MessageHandler : IDisposable
     {

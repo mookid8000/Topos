@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Topos.Config
+namespace Topos.Consumer
 {
     public class Handlers : IEnumerable<MessageHandler>
     {

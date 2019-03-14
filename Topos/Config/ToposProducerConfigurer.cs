@@ -1,5 +1,6 @@
 ﻿using System;
 using Topos.Internals;
+using Topos.Producer;
 using Topos.Routing;
 
 namespace Topos.Config
