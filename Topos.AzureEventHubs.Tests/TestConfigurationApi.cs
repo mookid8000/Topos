@@ -13,7 +13,7 @@ namespace Topos.AzureEventHubs.Tests
         [Test]
         public void CanConfigure_Consumer_AzureEventHubs()
         {
-            var disposable = Configure.Consumer(t => t.UseAzureEventHubs(AehConfig.ConnectionString))
+            var disposable = Configure.Consumer("default-group", t => t.UseAzureEventHubs(AehConfig.ConnectionString))
                 .Logging(l => l.UseConsole())
                 .Start();
 

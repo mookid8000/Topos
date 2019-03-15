@@ -14,7 +14,7 @@ namespace Topos.SqlServer.Tests
         [Test]
         public void CanConfigure_Consumer_AzureEventHubs()
         {
-            var disposable = Configure.Consumer(t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
+            var disposable = Configure.Consumer("default-group", t => t.UseSqlServer("server=.; database=topoc; trusted_connection=true"))
                 .Logging(l => l.UseConsole())
                 .Start();
 

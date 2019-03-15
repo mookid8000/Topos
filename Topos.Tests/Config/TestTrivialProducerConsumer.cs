@@ -17,7 +17,7 @@ namespace Topos.Tests.Config
             var producer = Configure.Producer(e => e.UseInMemory(eventBroker))
                 .Create();
 
-            var consumer = Configure.Consumer(e => e.UseInMemory(eventBroker))
+            var consumer = Configure.Consumer("default-group", e => e.UseInMemory(eventBroker))
                 .Start();
 
             Using(consumer);

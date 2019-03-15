@@ -34,7 +34,7 @@ namespace Topos.Kafka.Tests
             Using(producer);
 
             var consumer = Configure
-                .Consumer(e => e.UseKafka(KafkaTestConfig.Address))
+                .Consumer("default-group", e => e.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
                 .Subscribe(_topic)
                 .Handle(async (messages, token) =>
