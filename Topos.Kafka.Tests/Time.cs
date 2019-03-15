@@ -8,7 +8,7 @@ namespace Topos.Kafka.Tests
 {
     public static class Time
     {
-        public static async Task Action(string label, Func<Task> action)
+        public static async Task Action(string label, Func<Task> action, int? count = null)
         {
             Console.WriteLine($"Action '{label}' starting");
 
@@ -18,9 +18,16 @@ namespace Topos.Kafka.Tests
 
             var elapsed = stopwatch.Elapsed;
 
-            Console.WriteLine($"Action '{label}' took {elapsed.TotalSeconds:0.0} s");
+            if (count == null)
+            {
+                Console.WriteLine($"Action '{label}' took {elapsed.TotalSeconds:0.0} s");
+            }
+            else
+            {
+                Console.WriteLine($"Action '{label}' for {count} took {elapsed.TotalSeconds:0.0} s - that's {count/elapsed.TotalSeconds:0.0} /s");
+            }
         }
 
-        public static void Action(string label, Action action) => Action(label, async () => action()).Wait();
+        public static void Action(string label, Action action, int? count = null) => Action(label, async () => action(), count).Wait();
     }
 }

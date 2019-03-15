@@ -39,7 +39,7 @@ namespace Topos.Producer
             var logicalMessage = new LogicalMessage(headers, message);
             var transportMessage = _messageSerializer.Serialize(logicalMessage);
 
-            await _producerImplementation.Send(topic, partitionKey, transportMessage);
+            await _producerImplementation.Send(topic, partitionKey ?? "", transportMessage);
         }
 
         /// <summary>
