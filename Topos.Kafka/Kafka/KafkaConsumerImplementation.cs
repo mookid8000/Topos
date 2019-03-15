@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,9 +21,11 @@ namespace Topos.Kafka
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
         readonly ManualResetEvent _consumerLoopExited = new ManualResetEvent(false);
-        readonly IConsumer<string, byte[]> _consumer;
+        //readonly IConsumer<string, byte[]> _consumer;
         readonly Thread _worker;
         readonly ILogger _logger;
+        readonly string _address;
+        readonly string[] _topics;
         readonly string _group;
 
         bool _disposed;
@@ -32,42 +35,45 @@ namespace Topos.Kafka
             Func<IEnumerable<Part>, Task> partitionsAssigned = null,
             Func<IEnumerable<Part>, Task> partitionsRevoked = null)
         {
+            if (topics == null) throw new ArgumentNullException(nameof(topics));
             _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
+            _address = address ?? throw new ArgumentNullException(nameof(address));
+            _topics = topics.ToArray();
             _group = group ?? throw new ArgumentNullException(nameof(group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
 
-            var consumerConfig = new ConsumerConfig
-            {
-                BootstrapServers = address,
-                GroupId = group,
+            //var consumerConfig = new ConsumerConfig
+            //{
+            //    BootstrapServers = address,
+            //    GroupId = group,
 
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                //AutoCommitIntervalMs = 2000,
-                EnableAutoCommit = false
-            };
+            //    AutoOffsetReset = AutoOffsetReset.Earliest,
+            //    //AutoCommitIntervalMs = 2000,
+            //    EnableAutoCommit = false
+            //};
 
-            _consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
-                .SetLogHandler((consumer, message) => LogHandler(_logger, consumer, message))
-                .SetErrorHandler((consumer, error) => ErrorHandler(_logger, consumer, error))
-                .SetRebalanceHandler((consumer, rebalanceEvent) => RebalanceHandler(
-                    logger: _logger,
-                    consumer: consumer,
-                    rebalanceEvent: rebalanceEvent,
-                    partitionsAssigned ?? Noop,
-                    partitionsRevoked ?? Noop
-                ))
-                .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
-                    OffsetsCommitted(_logger, consumer, committedOffsets))
-                .Build();
+            //_consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
+            //    .SetLogHandler((consumer, message) => LogHandler(_logger, consumer, message))
+            //    .SetErrorHandler((consumer, error) => ErrorHandler(_logger, consumer, error))
+            //    .SetRebalanceHandler((consumer, rebalanceEvent) => RebalanceHandler(
+            //        logger: _logger,
+            //        consumer: consumer,
+            //        rebalanceEvent: rebalanceEvent,
+            //        partitionsAssigned ?? Noop,
+            //        partitionsRevoked ?? Noop
+            //    ))
+            //    .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
+            //        OffsetsCommitted(_logger, consumer, committedOffsets))
+            //    .Build();
 
-            var topicsToSubscribeTo = new HashSet<string>(topics);
+            //var topicsToSubscribeTo = new HashSet<string>(topics);
 
-            _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
+            //_logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
 
-            foreach (var topic in topicsToSubscribeTo)
-            {
-                _consumer.Subscribe(topic);
-            }
+            //foreach (var topic in topicsToSubscribeTo)
+            //{
+            //    _consumer.Subscribe(topic);
+            //}
 
             _worker = new Thread(Run) { IsBackground = true };
         }
@@ -84,55 +90,90 @@ namespace Topos.Kafka
 
         void Run()
         {
+            var consumerConfig = new ConsumerConfig
+            {
+                BootstrapServers = _address,
+                GroupId = _group,
+
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                //AutoCommitIntervalMs = 2000,
+                EnableAutoCommit = false
+            };
+
+            var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
+                .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
+                .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
+                .SetRebalanceHandler((cns, rebalanceEvent) => RebalanceHandler(
+                    logger: _logger,
+                    consumer: cns,
+                    rebalanceEvent: rebalanceEvent,
+                    Noop,
+                    Noop
+                ))
+                .SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
+                .Build();
+
+            var topicsToSubscribeTo = new HashSet<string>(_topics);
+
+            _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
+
+            foreach (var topic in topicsToSubscribeTo)
+            {
+                consumer.Subscribe(topic);
+            }
+
             var cancellationToken = _cancellationTokenSource.Token;
 
             _logger.Info("Starting Kafka consumer worker for group {consumerGroup}", _group);
 
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                using (consumer)
                 {
-                    try
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(0.5));
-                        if (consumeResult == null) continue;
-
-                        var position = new Position(
-                            topic: consumeResult.Topic,
-                            partition: consumeResult.Partition.Value,
-                            offset: consumeResult.Offset.Value
-                        );
-
-                        var message = new ReceivedTransportMessage(
-                            position: position,
-                            headers: GetHeaders(consumeResult.Headers),
-                            body: consumeResult.Value
-                        );
-
-                        _logger.Debug("Received event {position}", position);
-
-                        _eventHandler(message, cancellationToken);
-                    }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                    {
-                        // it's alright
-                    }
-                    catch (ThreadAbortException)
-                    {
-                        _logger.Warn("Kafka consumer worker aborted!");
-                        return;
-                    }
-                    catch (Exception exception)
-                    {
-                        _logger.Warn(exception, "Unhandled exception in Kafka consumer loop");
-
                         try
                         {
-                            Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)
-                                .Wait(cancellationToken);
+                            var consumeResult = consumer.Consume(TimeSpan.FromSeconds(0.5));
+                            if (consumeResult == null) continue;
+
+                            var position = new Position(
+                                topic: consumeResult.Topic,
+                                partition: consumeResult.Partition.Value,
+                                offset: consumeResult.Offset.Value
+                            );
+
+                            var message = new ReceivedTransportMessage(
+                                position: position,
+                                headers: GetHeaders(consumeResult.Headers),
+                                body: consumeResult.Value
+                            );
+
+                            _logger.Debug("Received event {position}", position);
+
+                            _eventHandler(message, cancellationToken);
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                         {
+                            // it's alright
+                        }
+                        catch (ThreadAbortException)
+                        {
+                            _logger.Warn("Kafka consumer worker aborted!");
+                            return;
+                        }
+                        catch (Exception exception)
+                        {
+                            _logger.Warn(exception, "Unhandled exception in Kafka consumer loop");
+
+                            try
+                            {
+                                Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)
+                                    .Wait(cancellationToken);
+                            }
+                            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                            {
+                            }
                         }
                     }
                 }
@@ -171,7 +212,6 @@ namespace Topos.Kafka
             {
                 _cancellationTokenSource.Cancel();
 
-                using (_consumer)
                 using (_cancellationTokenSource)
                 {
                     if (_worker.ThreadState != ThreadState.Running) return;
