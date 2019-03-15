@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Topos.Kafka\Topos.Kafka.csproj" />
+    <ProjectReference Include="..\Topos.Serilog\Topos.Serilog.csproj" />
     <ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
   </ItemGroup>
 

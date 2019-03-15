@@ -192,7 +192,7 @@ namespace Topos.Internals
                 return ResolverHaveRegistrationFor<TService>(primary, _resolvers);
             }
 
-            public TService Get<TService>()
+            public TService Get<TService>(string errorMessage = null)
             {
                 var serviceType = typeof(TService);
 
@@ -203,7 +203,7 @@ namespace Topos.Internals
 
                 if (!_resolvers.ContainsKey(serviceType))
                 {
-                    throw new ResolutionException($"Could not find resolver for {serviceType}");
+                    throw new ResolutionException($"Could not find resolver for {serviceType}", errorMessage);
                 }
 
                 if (!_decoratorDepth.ContainsKey(serviceType))

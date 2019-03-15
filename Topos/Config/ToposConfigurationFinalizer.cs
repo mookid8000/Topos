@@ -33,7 +33,7 @@ namespace Topos.Config
 
                 defaultToposProducer.Disposing += () =>
                 {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>())
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
                     {
                         instance.Dispose();
                     }
@@ -57,7 +57,17 @@ namespace Topos.Config
             {
                 var loggerFactory = c.Get<ILoggerFactory>();
                 var messageSerializer = c.Get<IMessageSerializer>();
-                var handlers = c.Get<Handlers>();
+                var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
+
+Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
+
+    Configure.Consumer(...)
+        .Handle(async (messages, cancellationToken) =>
+        {
+            // handle messages
+        })
+        .Start()
+");
 
                 return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers);
             });

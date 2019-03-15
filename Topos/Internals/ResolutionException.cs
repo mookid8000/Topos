@@ -13,17 +13,26 @@ namespace Topos.Internals
         /// <summary>
         /// Constructs the exception
         /// </summary>
-        public ResolutionException(string message)
-            : base(message)
+        public ResolutionException(string message, string explanation = null)
+            : base(GetMessage(message, explanation))
         {
         }
 
         /// <summary>
         /// Constructs the exception
         /// </summary>
-        public ResolutionException(Exception innerException, string message)
-            : base(message, innerException)
+        public ResolutionException(Exception innerException, string message, string explanation = null)
+            : base(GetMessage(message, explanation), innerException)
         {
+        }
+
+        static string GetMessage(string message, string explanation)
+        {
+            return string.IsNullOrWhiteSpace(explanation)
+                ? message
+                : $@"{message}
+
+{explanation}";
         }
 
         /// <summary>

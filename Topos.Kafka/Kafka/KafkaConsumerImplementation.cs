@@ -19,6 +19,7 @@ namespace Topos.Kafka
 
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
+        readonly ManualResetEvent _consumerLoopExited = new ManualResetEvent(false);
         readonly IConsumer<string, byte[]> _consumer;
         readonly Thread _worker;
         readonly ILogger _logger;
@@ -61,7 +62,7 @@ namespace Topos.Kafka
 
             var topicsToSubscribeTo = new HashSet<string>(topics);
 
-            _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {@topics}", _group, topicsToSubscribeTo);
+            _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
 
             foreach (var topic in topicsToSubscribeTo)
             {
@@ -136,16 +137,14 @@ namespace Topos.Kafka
                     }
                 }
             }
-            catch (AccessViolationException exception)
-            {
-                _logger.Error(exception, "CAN WE EVEN CATCH THIS?");
-            }
             catch (Exception exception)
             {
                 _logger.Error(exception, "Unhandled exception in Kafka consumer");
             }
             finally
             {
+                _consumerLoopExited.Set();
+
                 _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
             }
         }
@@ -179,9 +178,14 @@ namespace Topos.Kafka
 
                     if (!_worker.Join(TimeSpan.FromSeconds(5)))
                     {
-                        _logger.Error("Kafka consumer worker did not finish executing within 5 s");
+                        _logger.Error("Kafka consumer worker for group {consumerGroup} did not finish executing within 5 s", _group);
 
                         _worker.Abort();
+                    }
+
+                    if (!_consumerLoopExited.WaitOne(TimeSpan.FromSeconds(2)))
+                    {
+                        _logger.Warn("Consumer loop for group {consumerGroup} did not exit within 2 s timeout", _group);
                     }
                 }
             }

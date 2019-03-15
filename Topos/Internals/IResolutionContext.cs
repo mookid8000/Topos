@@ -10,7 +10,7 @@ namespace Topos.Internals
         /// <summary>
         /// Gets an instance of the specified <typeparamref name="TService"/>.
         /// </summary>
-        TService Get<TService>();
+        TService Get<TService>(string errorMessage = null);
 
         /// <summary>
         /// Gets all instances resolved within this resolution context at this time.

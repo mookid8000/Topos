@@ -22,18 +22,20 @@ namespace Topos.Internals
 
         public static void ErrorHandler<T1, T2>(ILogger logger, IProducer<T1, T2> producer, Error error)
         {
-            logger.Error("Error in Kafka producer: {@error}", error);
+            logger.Error("Error in Kafka producer: {error}", error);
         }
 
         public static void ErrorHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, Error error)
         {
-            logger.Error("Error in Kafka consumer: {@error}", error);
+            logger.Error("Error in Kafka consumer: {error}", error);
         }
 
         public static void OffsetsCommitted<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, CommittedOffsets committedOffsets)
         {
-            var offsetsByTopic = committedOffsets.Offsets.GroupBy(o => o.Topic)
-                .Select(g => new { Topic = g.Key, Offsets = g.Select(o => $"{o.Partition.Value}={o.Offset.Value}") });
+            var offsetsByTopic = committedOffsets.Offsets
+                .GroupBy(o => o.Topic)
+                .Select(g => new {Topic = g.Key, Offsets = g.Select(o => $"{o.Partition.Value}={o.Offset.Value}").ToList()})
+                .ToList();
 
             logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
         }
@@ -43,24 +45,27 @@ namespace Topos.Internals
             Func<IEnumerable<Part>, Task> partitionsAssigned,
             Func<IEnumerable<Part>, Task> partitionsRevoked)
         {
-            var partitiongByTopic = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
+            var partitionsByTopic = rebalanceEvent.Partitions
+                .GroupBy(p => p.Topic)
                 .Select(g => new
                 {
                     Topic = g.Key,
                     Partitions = g.Select(p => p.Partition.Value).ToArray()
-                });
+                })
+                .ToList();
 
-            var parts = rebalanceEvent.Partitions.Select(p => new Part(p.Topic, p.Partition.Value));
+            var parts = rebalanceEvent.Partitions
+                .Select(p => new Part(p.Topic, p.Partition.Value));
 
             if (rebalanceEvent.IsAssignment)
             {
-                logger.Info("Assignment: {@partitions}", partitiongByTopic);
+                logger.Info("Assignment: {partitions}", partitionsByTopic);
 
                 partitionsAssigned(parts);
             }
             else if (rebalanceEvent.IsRevocation)
             {
-                logger.Info("Revocation: {@partitions}", partitiongByTopic);
+                logger.Info("Revocation: {partitions}", partitionsByTopic);
 
                 partitionsRevoked(parts);
             }
