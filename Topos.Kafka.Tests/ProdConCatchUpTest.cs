@@ -40,10 +40,12 @@ namespace Topos.Kafka.Tests
 {string.Join(Environment.NewLine, receivedEvents.Select(e => $"    {e}"))}";
 
 
+            var partitionKey = "test";
+
             // send three mewsages
-            await _producer.Send("HEJ", partitionKey: "test");
-            await _producer.Send("MED", partitionKey: "test");
-            await _producer.Send("DIG", partitionKey: "test");
+            await _producer.Send("HEJ", partitionKey: partitionKey);
+            await _producer.Send("MED", partitionKey: partitionKey);
+            await _producer.Send("DIG", partitionKey: partitionKey);
 
             // wait until they're received
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 3);
@@ -53,11 +55,11 @@ namespace Topos.Kafka.Tests
             // now clear the events and send 5 additional events
             receivedEvents.Clear();
 
-            await _producer.Send("HEJ", partitionKey: "test");
-            await _producer.Send("IGEN", partitionKey: "test");
-            await _producer.Send("IGEN", partitionKey: "test");
-            await _producer.Send("OG", partitionKey: "test");
-            await _producer.Send("SÅ IGEN", partitionKey: "test");
+            await _producer.Send("HEJ", partitionKey: partitionKey);
+            await _producer.Send("IGEN", partitionKey: partitionKey);
+            await _producer.Send("IGEN", partitionKey: partitionKey);
+            await _producer.Send("OG", partitionKey: partitionKey);
+            await _producer.Send("SÅ IGEN", partitionKey: partitionKey);
 
             // ... and then wait for them to arrive
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 5);

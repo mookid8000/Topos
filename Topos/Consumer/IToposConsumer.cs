@@ -2,8 +2,15 @@
 
 namespace Topos.Consumer
 {
+    /// <summary>
+    /// This is a message consumer.
+    /// </summary>
     public interface IToposConsumer : IDisposable
     {
-        void Start();
+        /// <summary>
+        /// Starts the consumer.
+        /// </summary>
+        /// <returns>A disposable that will stop message consumption when disposed.</returns>
+        IDisposable Start();
     }
 }

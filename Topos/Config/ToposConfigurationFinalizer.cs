@@ -74,17 +74,13 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
 
             injectionist.Register<IToposConsumer>(c =>
             {
-                var messageSerializer = c.Get<IMessageSerializer>();
                 var toposConsumerImplementation = c.Get<IConsumerImplementation>();
 
-                var defaultToposConsumer = new DefaultToposConsumer(
-                    messageSerializer,
-                    toposConsumerImplementation
-                );
+                var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
 
                 defaultToposConsumer.Disposing += () =>
                 {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>())
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
                     {
                         instance.Dispose();
                     }

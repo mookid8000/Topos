@@ -42,8 +42,8 @@ namespace Topos.Kafka
                 GroupId = group,
 
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                AutoCommitIntervalMs = 2000,
-                EnableAutoCommit = true
+                //AutoCommitIntervalMs = 2000,
+                EnableAutoCommit = false
             };
 
             _consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)

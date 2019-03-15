@@ -6,7 +6,6 @@ namespace Topos.Consumer
     public class DefaultToposConsumer : IToposConsumer
     {
         readonly IConsumerImplementation _consumerImplementation;
-        readonly IMessageSerializer _messageSerializer;
 
         bool _isStarted;
 
@@ -15,19 +14,19 @@ namespace Topos.Consumer
 
         public event Action Disposing;
 
-        public DefaultToposConsumer(IMessageSerializer messageSerializer, IConsumerImplementation consumerImplementation)
+        public DefaultToposConsumer(IConsumerImplementation consumerImplementation)
         {
-            _messageSerializer = messageSerializer;
             _consumerImplementation = consumerImplementation;
         }
 
-        public void Start()
+        public IDisposable Start()
         {
-            if (_isStarted) return;
+            if (_isStarted) return this;
 
             _consumerImplementation.Start();
-
             _isStarted = true;
+
+            return this;
         }
 
         public void Dispose()
