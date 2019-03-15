@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Topos.Extensions;
 using Topos.Routing;
 using Topos.Serialization;
 
@@ -27,10 +26,15 @@ namespace Topos.Producer
 
         public async Task Send(object message, string partitionKey = null, Dictionary<string, string> optionalHeaders = null)
         {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+
             var topic = _topicMapper.GetTopic(message);
             var headers = optionalHeaders ?? new Dictionary<string, string>();
 
-            headers[ToposHeaders.MessageId] = Guid.NewGuid().ToString();
+            if (!headers.ContainsKey(ToposHeaders.MessageId))
+            {
+                headers[ToposHeaders.MessageId] = Guid.NewGuid().ToString();
+            }
 
             var logicalMessage = new LogicalMessage(headers, message);
             var transportMessage = _messageSerializer.Serialize(logicalMessage);

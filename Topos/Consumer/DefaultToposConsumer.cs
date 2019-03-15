@@ -1,5 +1,4 @@
 ﻿using System;
-using Topos.Serialization;
 
 namespace Topos.Consumer
 {
@@ -16,7 +15,7 @@ namespace Topos.Consumer
 
         public DefaultToposConsumer(IConsumerImplementation consumerImplementation)
         {
-            _consumerImplementation = consumerImplementation;
+            _consumerImplementation = consumerImplementation ?? throw new ArgumentNullException(nameof(consumerImplementation));
         }
 
         public IDisposable Start()
