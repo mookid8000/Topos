@@ -26,7 +26,7 @@ Let's go through the different configuration parts:
 var producer = Configure
 
 	// we configure a producer that uses Kafka, seeding it with a couple of brokers
-    .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092))
+    .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
 
 	// tell Topos to JSON-serialize messages
     .Serialization(s => s.UseNewtonsoftJson())
@@ -46,7 +46,7 @@ just `Configure.` and then let the fluent API guide you.
 Check this out - here we set up a corresponding consumer that just prints out the contents from the received messages:
 ```csharp
 var consumer = Configure
-    .Consumer("default-group", c => c.UseKafka("localhost:9092"))
+    .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
     .Subscribe("someevents")
     .Handle(async (messages, token) =>
@@ -73,7 +73,7 @@ Let's go through the configuration again:
 var consumer = Configure
 
 	// configure a consumer instance as part of the group 'default-group', and use Kafka
-    .Consumer("default-group", c => c.UseKafka("kafkahost01:9092"))
+    .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
 
 	// use JSON
     .Serialization(s => s.UseNewtonsoftJson())
