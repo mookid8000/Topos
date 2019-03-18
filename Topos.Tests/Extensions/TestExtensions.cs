@@ -21,7 +21,7 @@ namespace Topos.Tests.Extensions
                 if (list.Count < batchSize) continue;
 
                 yield return list.ToArray();
-             
+
                 list.Clear();
             }
 
@@ -32,7 +32,8 @@ namespace Topos.Tests.Extensions
         }
 
         public static async Task WaitOrDie<T>(this ConcurrentQueue<T> queue,
-            Expression<Func<ConcurrentQueue<T>, bool>> completionExpression, int timeoutSeconds = 5)
+            Expression<Func<ConcurrentQueue<T>, bool>> completionExpression,
+            int timeoutSeconds = 5)
         {
             var completionPredicate = completionExpression.Compile();
             var cancellationTokenSource = new CancellationTokenSource();

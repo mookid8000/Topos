@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Topos.Consumer;
+using Topos.InMem;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Logging.Console;
@@ -53,7 +54,7 @@ namespace Topos.Config
 
             RegisterCommonServices(injectionist);
 
-            PossiblyRegisterDefault<IConsumerDispatcher>(injectionist, c =>
+            injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
             {
                 var loggerFactory = c.Get<ILoggerFactory>();
                 var messageSerializer = c.Get<IMessageSerializer>();
@@ -71,6 +72,8 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
 
                 return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers);
             });
+
+            injectionist.PossiblyRegisterDefault<IPositionManager>(c => new InMemPositionsManager());
 
             injectionist.Register<IToposConsumer>(c =>
             {
@@ -101,15 +104,8 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
 
         static void RegisterCommonServices(Injectionist injectionist)
         {
-            PossiblyRegisterDefault<ILoggerFactory>(injectionist, c => new ConsoleLoggerFactory());
-            PossiblyRegisterDefault<IMessageSerializer>(injectionist, c => new Utf8StringEncoder());
-        }
-
-        static void PossiblyRegisterDefault<TService>(Injectionist injectionist, Func<IResolutionContext, TService> factory)
-        {
-            if (injectionist.Has<TService>(primary: true)) return;
-
-            injectionist.Register(factory);
+            injectionist.PossiblyRegisterDefault<ILoggerFactory>(c => new ConsoleLoggerFactory());
+            injectionist.PossiblyRegisterDefault<IMessageSerializer>(c => new Utf8StringEncoder());
         }
     }
 }

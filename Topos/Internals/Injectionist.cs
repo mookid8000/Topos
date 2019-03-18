@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+// ReSharper disable RedundantArgumentDefaultValue
+// ReSharper disable RedundantTypeArgumentsOfMethod
 
 namespace Topos.Internals
 {
@@ -71,6 +73,13 @@ namespace Topos.Internals
         public void Register<TService>(Func<IResolutionContext, TService> resolverMethod, string description = null)
         {
             Register(resolverMethod, description: description, isDecorator: false);
+        }
+
+        public void PossiblyRegisterDefault<TService>(Func<IResolutionContext, TService> factory)
+        {
+            if (Has<TService>(primary: true)) return;
+
+            Register(factory);
         }
 
         /// <summary>

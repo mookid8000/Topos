@@ -21,7 +21,6 @@ namespace Topos.Kafka.Tests
         }
 
         [Test]
-        [Repeat(10)]
         public async Task ItWorks()
         {
             var receivedEvents = new ConcurrentQueue<string>();

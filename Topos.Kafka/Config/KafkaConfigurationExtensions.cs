@@ -2,6 +2,7 @@
 using Topos.Consumer;
 using Topos.Kafka;
 using Topos.Logging;
+// ReSharper disable ArgumentsStyleAnonymousFunction
 
 namespace Topos.Config
 {
@@ -34,10 +35,18 @@ namespace Topos.Config
                 .Register(c =>
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
-                    var topics = c.Get<Topics>();
+                    var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
                     var consumerDispatcher = c.Get<IConsumerDispatcher>();
+                    var positionManager = c.Get<IPositionManager>();
 
-                    return new KafkaConsumerImplementation(loggerFactory, string.Join("; ", bootstrapServers), topics, "group", (evt, token) => consumerDispatcher.Dispatch(evt));
+                    return new KafkaConsumerImplementation(
+                        loggerFactory: loggerFactory,
+                        address: string.Join("; ", bootstrapServers),
+                        topics: topics,
+                        group: "group",
+                        eventHandler: (evt, token) => consumerDispatcher.Dispatch(evt),
+                        positionManager: positionManager
+                    );
                 });
 
             return builder;

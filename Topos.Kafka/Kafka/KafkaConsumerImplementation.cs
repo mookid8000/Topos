@@ -21,7 +21,7 @@ namespace Topos.Kafka
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
         readonly ManualResetEvent _consumerLoopExited = new ManualResetEvent(false);
-        //readonly IConsumer<string, byte[]> _consumer;
+        readonly IPositionManager _positionManager;
         readonly Thread _worker;
         readonly ILogger _logger;
         readonly string _address;
@@ -31,9 +31,7 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            Action<ReceivedTransportMessage, CancellationToken> eventHandler,
-            Func<IEnumerable<Part>, Task> partitionsAssigned = null,
-            Func<IEnumerable<Part>, Task> partitionsRevoked = null)
+            Action<ReceivedTransportMessage, CancellationToken> eventHandler, IPositionManager positionManager)
         {
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
@@ -41,40 +39,7 @@ namespace Topos.Kafka
             _topics = topics.ToArray();
             _group = group ?? throw new ArgumentNullException(nameof(group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
-
-            //var consumerConfig = new ConsumerConfig
-            //{
-            //    BootstrapServers = address,
-            //    GroupId = group,
-
-            //    AutoOffsetReset = AutoOffsetReset.Earliest,
-            //    //AutoCommitIntervalMs = 2000,
-            //    EnableAutoCommit = false
-            //};
-
-            //_consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
-            //    .SetLogHandler((consumer, message) => LogHandler(_logger, consumer, message))
-            //    .SetErrorHandler((consumer, error) => ErrorHandler(_logger, consumer, error))
-            //    .SetRebalanceHandler((consumer, rebalanceEvent) => RebalanceHandler(
-            //        logger: _logger,
-            //        consumer: consumer,
-            //        rebalanceEvent: rebalanceEvent,
-            //        partitionsAssigned ?? Noop,
-            //        partitionsRevoked ?? Noop
-            //    ))
-            //    .SetOffsetsCommittedHandler((consumer, committedOffsets) =>
-            //        OffsetsCommitted(_logger, consumer, committedOffsets))
-            //    .Build();
-
-            //var topicsToSubscribeTo = new HashSet<string>(topics);
-
-            //_logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
-
-            //foreach (var topic in topicsToSubscribeTo)
-            //{
-            //    _consumer.Subscribe(topic);
-            //}
-
+            _positionManager = positionManager;
             _worker = new Thread(Run) { IsBackground = true };
         }
 
@@ -96,8 +61,7 @@ namespace Topos.Kafka
                 GroupId = _group,
 
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                //AutoCommitIntervalMs = 2000,
-                EnableAutoCommit = false
+                EnableAutoCommit = false,
             };
 
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
@@ -107,8 +71,9 @@ namespace Topos.Kafka
                     logger: _logger,
                     consumer: cns,
                     rebalanceEvent: rebalanceEvent,
-                    Noop,
-                    Noop
+                    partitionsAssigned: Noop,
+                    partitionsRevoked: Noop,
+                    positionManager: _positionManager
                 ))
                 .SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
                 .Build();

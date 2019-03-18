@@ -40,10 +40,11 @@ namespace Topos.Internals
             logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
         }
 
-        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, 
+        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer,
             RebalanceEvent rebalanceEvent,
             Func<IEnumerable<Part>, Task> partitionsAssigned,
-            Func<IEnumerable<Part>, Task> partitionsRevoked)
+            Func<IEnumerable<Part>, Task> partitionsRevoked,
+            IPositionManager positionManager)
         {
             var partitionsByTopic = rebalanceEvent.Partitions
                 .GroupBy(p => p.Topic)

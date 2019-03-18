@@ -48,9 +48,9 @@ namespace Topos.Kafka.Tests
             await _producer.Send("DIG", partitionKey: partitionKey);
 
             // wait until they're received
-            await ConsumeForSomeTime(receivedEvents, c => c.Count == 3);
+            await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, FormatReceivedEvents);
 
-            Assert.That(receivedEvents, Is.EqualTo(new[] {"HEJ", "MED", "DIG"}), FormatReceivedEvents);
+            Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "MED", "DIG" }), FormatReceivedEvents);
 
             // now clear the events and send 5 additional events
             receivedEvents.Clear();
@@ -62,12 +62,13 @@ namespace Topos.Kafka.Tests
             await _producer.Send("SÅ IGEN", partitionKey: partitionKey);
 
             // ... and then wait for them to arrive
-            await ConsumeForSomeTime(receivedEvents, c => c.Count == 5);
+            await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, FormatReceivedEvents);
 
+            Assert.That(receivedEvents.Count, Is.EqualTo(5), FormatReceivedEvents);
             Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "IGEN", "IGEN", "OG", "SÅ IGEN" }), FormatReceivedEvents);
         }
 
-        async Task ConsumeForSomeTime(ConcurrentQueue<string> receivedEvents, Expression<Func<ConcurrentQueue<string>, bool>> completionExpression)
+        async Task ConsumeForSomeTime(ConcurrentQueue<string> receivedEvents, Expression<Func<ConcurrentQueue<string>, bool>> completionExpression, Func<string> errorDetailsFactory)
         {
             var consumer = Configure
                 .Consumer("default-group", c => c.UseKafka(KafkaTestConfig.Address))
@@ -88,7 +89,14 @@ namespace Topos.Kafka.Tests
 
             using (consumer)
             {
-                await receivedEvents.WaitOrDie(completionExpression, timeoutSeconds: 10);
+                try
+                {
+                    await receivedEvents.WaitOrDie(completionExpression, timeoutSeconds: 10);
+                }
+                catch (TimeoutException exception)
+                {
+                    throw new TimeoutException($"Failed with details: {errorDetailsFactory()}", exception);
+                }
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
