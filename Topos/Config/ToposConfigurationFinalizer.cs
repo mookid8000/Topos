@@ -69,8 +69,9 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
         })
         .Start()
 ");
+                var positionManager = c.Get<IPositionManager>();
 
-                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers);
+                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
             });
 
             injectionist.PossiblyRegisterDefault<IPositionManager>(c => new InMemPositionsManager());

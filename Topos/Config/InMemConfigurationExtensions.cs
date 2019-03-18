@@ -1,4 +1,5 @@
-﻿using Topos.InMem;
+﻿using Topos.Consumer;
+using Topos.InMem;
 
 namespace Topos.Config
 {
@@ -12,6 +13,11 @@ namespace Topos.Config
         public static void UseInMemory(this StandardConfigurer<IConsumerImplementation> configurer, InMemEventBroker eventBroker)
         {
 
+        }
+
+        public static void StoreInMemory(this StandardConfigurer<IPositionManager> configurer)
+        {
+            
         }
     }
 }

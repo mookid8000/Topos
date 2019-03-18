@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Topos.Config;
+using System.Threading.Tasks;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -10,25 +10,64 @@ namespace Topos.Consumer
 {
     public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, IDisposable
     {
+        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ILoggerFactory _loggerFactory;
         readonly IMessageSerializer _messageSerializer;
+        readonly IPositionManager _positionManager;
         readonly MessageHandler[] _handlers;
         readonly ILogger _logger;
 
-        public DefaultConsumerDispatcher(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer, Handlers handlers)
+        public DefaultConsumerDispatcher(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer, Handlers handlers, IPositionManager positionManager)
         {
             if (handlers == null) throw new ArgumentNullException(nameof(handlers));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _messageSerializer = messageSerializer ?? throw new ArgumentNullException(nameof(messageSerializer));
+            _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
             _handlers = handlers.ToArray();
             _logger = loggerFactory.GetLogger(typeof(DefaultConsumerDispatcher));
         }
 
         public void Initialize()
         {
-            foreach(var handler in _handlers)
+            foreach (var handler in _handlers)
             {
-                handler.Start(_loggerFactory.GetLogger(handler.GetType()));
+                var handlerType = handler.GetType();
+                var logger = _loggerFactory.GetLogger(handlerType);
+
+                handler.Start(logger);
+            }
+
+            Task.Run(async () => await RunPositionsFlusher());
+        }
+
+        async Task RunPositionsFlusher()
+        {
+            try
+            {
+                var token = _cancellationTokenSource.Token;
+
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
+
+                    var positions = _handlers
+                        .SelectMany(h => h.GetPositions())
+                        .GroupBy(p => new { p.Topic, p.Partition })
+                        .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
+                        .ToList();
+
+                    _logger.Debug("Setting positions {@positions}", positions);
+
+                    await Task.WhenAll(positions.Select(position => _positionManager.Set(position)));
+                }
+            }
+            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+            {
+                // it's fine
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Error in positions flusher");
             }
         }
 
@@ -47,7 +86,7 @@ namespace Topos.Consumer
                         Thread.Sleep(100);
                     }
 
-                    handler.Enqueue(logicalMessage);
+                    handler.Enqueue(logicalMessage, transportMessage.Position);
                 }
             }
             catch (Exception exception)

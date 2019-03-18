@@ -34,41 +34,43 @@ namespace Topos.Internals
         {
             var offsetsByTopic = committedOffsets.Offsets
                 .GroupBy(o => o.Topic)
-                .Select(g => new {Topic = g.Key, Offsets = g.Select(o => $"{o.Partition.Value}={o.Offset.Value}").ToList()})
+                .Select(g => new { Topic = g.Key, Offsets = g.Select(o => $"{o.Partition.Value}={o.Offset.Value}").ToList() })
                 .ToList();
 
             logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
         }
 
-        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer,
-            RebalanceEvent rebalanceEvent,
-            Func<IEnumerable<Part>, Task> partitionsAssigned,
-            Func<IEnumerable<Part>, Task> partitionsRevoked,
-            IPositionManager positionManager)
+        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent, IPositionManager positionManager)
         {
             var partitionsByTopic = rebalanceEvent.Partitions
                 .GroupBy(p => p.Topic)
                 .Select(g => new
                 {
                     Topic = g.Key,
-                    Partitions = g.Select(p => p.Partition.Value).ToArray()
+                    Partitions = g.Select(p => p.Partition.Value)
                 })
                 .ToList();
 
-            var parts = rebalanceEvent.Partitions
-                .Select(p => new Part(p.Topic, p.Partition.Value));
-
             if (rebalanceEvent.IsAssignment)
             {
-                logger.Info("Assignment: {partitions}", partitionsByTopic);
+                logger.Info("Assignment: {@partitions}", partitionsByTopic);
 
-                partitionsAssigned(parts);
+                var positions = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
+                    .Select(g => new
+                    {
+                        Topic = g.Key,
+                        Partitions = g.Select(a => a.Partition.Value).ToList()
+                    })
+                    .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
+                    .ToList();
+
+                var topicPartitionOffsets = positions.Select(p => p.ToTopicPartitionOffset());
+
+                consumer.Assign(topicPartitionOffsets);
             }
             else if (rebalanceEvent.IsRevocation)
             {
-                logger.Info("Revocation: {partitions}", partitionsByTopic);
-
-                partitionsRevoked(parts);
+                logger.Info("Revocation: {@partitions}", partitionsByTopic);
             }
         }
 

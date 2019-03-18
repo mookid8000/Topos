@@ -16,7 +16,10 @@ namespace Topos.InMem
         public async Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions)
         {
             var positions = GetPositions(topic);
-            return partitions.Select(p => positions.GetOrAdd(p, _ => new Position(topic, p, -1))).ToList();
+            
+            return partitions
+                .Select(partition => positions.GetOrAdd(partition, _ => Position.Default(topic, partition)))
+                .ToList();
         }
 
         public async Task<IReadOnlyCollection<Position>> GetAll(string topic) => GetPositions(topic).Values.ToList();

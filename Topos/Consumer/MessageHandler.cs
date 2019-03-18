@@ -14,7 +14,8 @@ namespace Topos.Consumer
     {
         const int MaxQueueLength = 10000;
 
-        readonly ConcurrentQueue<LogicalMessage> _messages = new ConcurrentQueue<LogicalMessage>();
+        readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
+        readonly ConcurrentQueue<(LogicalMessage message, Position position)> _messages = new ConcurrentQueue<(LogicalMessage message, Position position)>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ManualResetEvent _messageHandlerStopped = new ManualResetEvent(false);
         readonly Func<IReadOnlyCollection<LogicalMessage>, CancellationToken, Task> _callback;
@@ -30,7 +31,7 @@ namespace Topos.Consumer
 
         public bool IsReadyForMore => _messages.Count < MaxQueueLength;
 
-        public void Enqueue(LogicalMessage message) => _messages.Enqueue(message);
+        public void Enqueue(LogicalMessage message, Position position) => _messages.Enqueue((message, position));
 
         public void Start(ILogger logger)
         {
@@ -56,7 +57,7 @@ namespace Topos.Consumer
 
             try
             {
-                var messages = new List<LogicalMessage>(MaxQueueLength);
+                var messages = new List<(LogicalMessage message, Position position)>(MaxQueueLength);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -69,7 +70,26 @@ namespace Topos.Consumer
                     {
                         try
                         {
-                            await _callback(messages, cancellationToken);
+                            var list = messages.Select(m => m.message).ToList();
+
+                            await _callback(list, cancellationToken);
+
+                            var maxPositionByPartition = messages.GroupBy(m => new { m.position.Topic, m.position.Partition })
+                                .Select(a => new
+                                {
+                                    Topic = a.Key.Topic,
+                                    Partition = a.Key.Partition,
+                                    Offset = a.Max(p => p.position.Offset)
+                                })
+                                .ToList();
+
+                            foreach (var max in maxPositionByPartition)
+                            {
+                                _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[
+                                    max.Partition] = max.Offset;
+
+                                Console.WriteLine($"SETTING POSITION: {max}");
+                            }
                         }
                         catch (Exception exception)
                         {
@@ -115,6 +135,13 @@ namespace Topos.Consumer
             {
                 _disposed = true;
             }
+        }
+
+        public IEnumerable<Position> GetPositions()
+        {
+            return _positions
+                .SelectMany(topic => topic.Value
+                    .Select(partition => new Position(topic.Key, partition.Key, partition.Value)));
         }
     }
 }

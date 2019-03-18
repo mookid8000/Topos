@@ -4,9 +4,14 @@ namespace Topos.Consumer
 {
     public struct Position
     {
+        const int DefaultOffset = -1;
+
+        public static Position Default(string topic, int partition) => new Position(topic, partition, DefaultOffset);
+
         public string Topic { get; }
         public int Partition { get; }
         public long Offset { get; }
+        public bool IsDefault => Offset == DefaultOffset;
 
         public Position(string topic, int partition, long offset)
         {

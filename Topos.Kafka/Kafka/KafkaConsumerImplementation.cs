@@ -71,8 +71,6 @@ namespace Topos.Kafka
                     logger: _logger,
                     consumer: cns,
                     rebalanceEvent: rebalanceEvent,
-                    partitionsAssigned: Noop,
-                    partitionsRevoked: Noop,
                     positionManager: _positionManager
                 ))
                 .SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
