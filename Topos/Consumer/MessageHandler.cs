@@ -15,23 +15,23 @@ namespace Topos.Consumer
         const int MaxQueueLength = 10000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
-        readonly ConcurrentQueue<(LogicalMessage message, Position position)> _messages = new ConcurrentQueue<(LogicalMessage message, Position position)>();
+        readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ManualResetEvent _messageHandlerStopped = new ManualResetEvent(false);
-        readonly Func<IReadOnlyCollection<LogicalMessage>, CancellationToken, Task> _callback;
+        readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> _callback;
 
         ILogger _logger = new NullLogger();
 
         bool _disposed;
 
-        public MessageHandler(Func<IReadOnlyCollection<LogicalMessage>, CancellationToken, Task> callback)
+        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> callback)
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
         }
 
         public bool IsReadyForMore => _messages.Count < MaxQueueLength;
 
-        public void Enqueue(LogicalMessage message, Position position) => _messages.Enqueue((message, position));
+        public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
 
         public void Start(ILogger logger)
         {
@@ -57,7 +57,7 @@ namespace Topos.Consumer
 
             try
             {
-                var messages = new List<(LogicalMessage message, Position position)>(MaxQueueLength);
+                var messages = new List<ReceivedLogicalMessage>(MaxQueueLength);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -70,16 +70,14 @@ namespace Topos.Consumer
                     {
                         try
                         {
-                            var list = messages.Select(m => m.message).ToList();
+                            await _callback(messages, cancellationToken);
 
-                            await _callback(list, cancellationToken);
-
-                            var maxPositionByPartition = messages.GroupBy(m => new { m.position.Topic, m.position.Partition })
+                            var maxPositionByPartition = messages.GroupBy(m => new { m.Position.Topic, m.Position.Partition })
                                 .Select(a => new
                                 {
                                     Topic = a.Key.Topic,
                                     Partition = a.Key.Partition,
-                                    Offset = a.Max(p => p.position.Offset)
+                                    Offset = a.Max(p => p.Position.Offset)
                                 })
                                 .ToList();
 

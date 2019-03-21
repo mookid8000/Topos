@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Topos.Extensions;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -102,7 +103,7 @@ namespace Topos.Consumer
                         Thread.Sleep(100);
                     }
 
-                    handler.Enqueue(logicalMessage, transportMessage.Position);
+                    handler.Enqueue(logicalMessage.AsReceivedLogicalMessage(transportMessage.Position));
                 }
             }
             catch (Exception exception)
