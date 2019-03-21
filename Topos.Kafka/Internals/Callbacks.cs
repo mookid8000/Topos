@@ -64,7 +64,9 @@ namespace Topos.Internals
                     .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
                     .ToList();
 
-                var topicPartitionOffsets = positions.Select(p => p.ToTopicPartitionOffset());
+                var topicPartitionOffsets = positions
+                    .Select(p => p.Advance(1)) //< no need to read this again
+                    .Select(p => p.ToTopicPartitionOffset());
 
                 consumer.Assign(topicPartitionOffsets);
             }

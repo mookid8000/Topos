@@ -87,8 +87,6 @@ namespace Topos.Consumer
                             {
                                 _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[
                                     max.Partition] = max.Offset;
-
-                                Console.WriteLine($"SETTING POSITION: {max}");
                             }
                         }
                         catch (Exception exception)

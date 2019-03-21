@@ -80,6 +80,8 @@ namespace Topos.Consumer
                 .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
                 .ToList();
 
+            if (!positions.Any()) return;
+
             _logger.Debug("Setting positions {@positions}", positions);
 
             await Task.WhenAll(positions.Select(position => _positionManager.Set(position)));

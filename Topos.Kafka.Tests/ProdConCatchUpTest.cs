@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
+using Topos.Consumer;
 using Topos.InMem;
 using Topos.Producer;
 using Topos.Tests.Extensions;
@@ -93,7 +95,14 @@ namespace Topos.Kafka.Tests
                         receivedEvents.Enqueue(str);
                     }
                 })
-                .Positions(p => p.StoreInMemory(_positionsStorage))
+                .Positions(p =>
+                {
+                    p.StoreInMemory(_positionsStorage);
+
+                    var registrar = StandardConfigurer.Open(p);
+
+                    registrar.Decorate(c => new WireTapPositionsManager(c.Get<IPositionManager>()));
+                })
                 .Start();
 
             using (consumer)
@@ -123,6 +132,29 @@ was no longer true!
 
 Failed with details: {errorDetailsFactory()}
 ");
+            }
+        }
+
+        class WireTapPositionsManager : IPositionManager
+        {
+            readonly IPositionManager _positionManager;
+
+            public WireTapPositionsManager(IPositionManager positionManager) => _positionManager = positionManager;
+
+            public Task Set(Position position)
+            {
+                Console.WriteLine($"SET: {position}");
+                return _positionManager.Set(position);
+            }
+
+            public Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions)
+            {
+                return _positionManager.Get(topic, partitions);
+            }
+
+            public Task<IReadOnlyCollection<Position>> GetAll(string topic)
+            {
+                return _positionManager.GetAll(topic);
             }
         }
     }

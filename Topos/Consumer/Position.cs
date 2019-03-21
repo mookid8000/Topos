@@ -53,5 +53,7 @@ namespace Topos.Consumer
         {
             return !left.Equals(right);
         }
+
+        public Position Advance(int offset) => new Position(Topic, Partition, Offset + offset);
     }
 }
