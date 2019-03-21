@@ -48,7 +48,7 @@ namespace Topos.Kafka.Tests
             await _producer.Send("DIG", partitionKey: partitionKey);
 
             // wait until they're received
-            await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, FormatReceivedEvents);
+            await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, c => c.Count > 3, FormatReceivedEvents);
 
             Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "MED", "DIG" }), FormatReceivedEvents);
 
@@ -62,13 +62,17 @@ namespace Topos.Kafka.Tests
             await _producer.Send("SÅ IGEN", partitionKey: partitionKey);
 
             // ... and then wait for them to arrive
-            await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, FormatReceivedEvents);
+            await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, c => c.Count > 5, FormatReceivedEvents);
 
             Assert.That(receivedEvents.Count, Is.EqualTo(5), FormatReceivedEvents);
             Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "IGEN", "IGEN", "OG", "SÅ IGEN" }), FormatReceivedEvents);
         }
 
-        async Task ConsumeForSomeTime(ConcurrentQueue<string> receivedEvents, Expression<Func<ConcurrentQueue<string>, bool>> completionExpression, Func<string> errorDetailsFactory)
+        async Task ConsumeForSomeTime(
+            ConcurrentQueue<string> receivedEvents,
+            Expression<Func<ConcurrentQueue<string>, bool>> completionExpression,
+            Expression<Func<ConcurrentQueue<string>, bool>> failExpression,
+            Func<string> errorDetailsFactory)
         {
             var consumer = Configure
                 .Consumer("default-group", c => c.UseKafka(KafkaTestConfig.Address))
@@ -91,7 +95,7 @@ namespace Topos.Kafka.Tests
             {
                 try
                 {
-                    await receivedEvents.WaitOrDie(completionExpression, timeoutSeconds: 10);
+                    await receivedEvents.WaitOrDie(completionExpression, failExpression, timeoutSeconds: 10);
                 }
                 catch (TimeoutException exception)
                 {

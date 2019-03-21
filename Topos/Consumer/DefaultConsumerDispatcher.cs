@@ -50,15 +50,7 @@ namespace Topos.Consumer
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
 
-                    var positions = _handlers
-                        .SelectMany(h => h.GetPositions())
-                        .GroupBy(p => new { p.Topic, p.Partition })
-                        .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
-                        .ToList();
-
-                    _logger.Debug("Setting positions {@positions}", positions);
-
-                    await Task.WhenAll(positions.Select(position => _positionManager.Set(position)));
+                    await SetPositions();
                 }
             }
             catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
@@ -69,6 +61,28 @@ namespace Topos.Consumer
             {
                 _logger.Error(exception, "Error in positions flusher");
             }
+            finally
+            {
+                // set the positions one last time
+                try
+                {
+                    await SetPositions();
+                }
+                catch { }
+            }
+        }
+
+        async Task SetPositions()
+        {
+            var positions = _handlers
+                .SelectMany(h => h.GetPositions())
+                .GroupBy(p => new {p.Topic, p.Partition})
+                .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
+                .ToList();
+
+            _logger.Debug("Setting positions {@positions}", positions);
+
+            await Task.WhenAll(positions.Select(position => _positionManager.Set(position)));
         }
 
         public void Dispatch(ReceivedTransportMessage transportMessage)
