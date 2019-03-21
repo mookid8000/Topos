@@ -69,12 +69,18 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
         })
         .Start()
 ");
-                var positionManager = c.Get<IPositionManager>();
+                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'high water mark' position for each topic/partition.
+
+It can be configured by invoking the .Positions(..) configurer like this:
+
+    Configure.Consumer(...)
+        .Positions(p => p.StoreIn(...))
+        .Start()
+
+");
 
                 return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
             });
-
-            injectionist.PossiblyRegisterDefault<IPositionManager>(c => new InMemPositionsManager());
 
             injectionist.Register<IToposConsumer>(c =>
             {

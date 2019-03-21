@@ -15,9 +15,11 @@ namespace Topos.Config
 
         }
 
-        public static void StoreInMemory(this StandardConfigurer<IPositionManager> configurer)
+        public static void StoreInMemory(this StandardConfigurer<IPositionManager> configurer, InMemPositionsStorage positionsStorage = null)
         {
-            
+            var registrar = StandardConfigurer.Open(configurer);
+
+            registrar.Register(c => new InMemPositionsManager(positionsStorage ?? new InMemPositionsStorage()));
         }
     }
 }

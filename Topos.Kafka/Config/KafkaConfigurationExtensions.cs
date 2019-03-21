@@ -37,7 +37,7 @@ namespace Topos.Config
                     var loggerFactory = c.Get<ILoggerFactory>();
                     var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
                     var consumerDispatcher = c.Get<IConsumerDispatcher>();
-                    var positionManager = c.Get<IPositionManager>();
+                    var positionManager = c.Get<IPositionManager>(errorMessage: @"The Kafka consumer needs access to a positions manager, so it can figure out which offsets to pick up from when starting up.");
 
                     return new KafkaConsumerImplementation(
                         loggerFactory: loggerFactory,

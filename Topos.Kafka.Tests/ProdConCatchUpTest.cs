@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
+using Topos.InMem;
 using Topos.Producer;
 using Topos.Tests.Extensions;
 #pragma warning disable 1998
@@ -16,9 +17,12 @@ namespace Topos.Kafka.Tests
     {
         string _topic;
         IToposProducer _producer;
+        InMemPositionsStorage _positionsStorage;
 
         protected override void SetUp()
         {
+            _positionsStorage = new InMemPositionsStorage();
+
             _topic = GetNewTopic();
 
             _producer = Configure
@@ -89,6 +93,7 @@ namespace Topos.Kafka.Tests
                         receivedEvents.Enqueue(str);
                     }
                 })
+                .Positions(p => p.StoreInMemory(_positionsStorage))
                 .Start();
 
             using (consumer)
@@ -101,6 +106,10 @@ namespace Topos.Kafka.Tests
                 {
                     throw new TimeoutException($"Failed with details: {errorDetailsFactory()}", exception);
                 }
+                catch (Exception exception)
+                {
+                    throw new ApplicationException($"Failed with details: {errorDetailsFactory()}", exception);
+                }
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
@@ -110,9 +119,9 @@ namespace Topos.Kafka.Tests
 
     {compiledExpression}
 
-was no longer true! Got these events:
+was no longer true! 
 
-{string.Join(Environment.NewLine, receivedEvents.Select(e => $"    {e}"))}
+Failed with details: {errorDetailsFactory()}
 ");
             }
         }

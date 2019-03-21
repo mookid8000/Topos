@@ -1,6 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Topos.Consumer;
 #pragma warning disable 1998
@@ -9,25 +8,17 @@ namespace Topos.InMem
 {
     public class InMemPositionsManager : IPositionManager
     {
-        readonly ConcurrentDictionary<string, ConcurrentDictionary<int, Position>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, Position>>();
+        readonly InMemPositionsStorage _positionsStorage;
 
-        public async Task Set(Position position) => GetPositions(position.Topic)[position.Partition] = position;
-
-        public async Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions)
+        public InMemPositionsManager(InMemPositionsStorage positionsStorage)
         {
-            var positions = GetPositions(topic);
-            
-            return partitions
-                .Select(partition => positions.GetOrAdd(partition, _ => Position.Default(topic, partition)))
-                .ToList();
+            _positionsStorage = positionsStorage ?? throw new ArgumentNullException(nameof(positionsStorage));
         }
 
-        public async Task<IReadOnlyCollection<Position>> GetAll(string topic) => GetPositions(topic).Values.ToList();
+        public async Task Set(Position position) => _positionsStorage.Set(position);
 
-        ConcurrentDictionary<int, Position> GetPositions(string topic)
-        {
-            return _positions
-                .GetOrAdd(topic, _ => new ConcurrentDictionary<int, Position>());
-        }
+        public async Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions) => _positionsStorage.Get(topic, partitions);
+
+        public async Task<IReadOnlyCollection<Position>> GetAll(string topic) => _positionsStorage.GetAll(topic);
     }
 }

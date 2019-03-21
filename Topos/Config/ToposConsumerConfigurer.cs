@@ -34,6 +34,15 @@ namespace Topos.Config
             return this;
         }
 
+        public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
+        {
+            var configurer = StandardConfigurer<IPositionManager>.New(_injectionist);
+            
+            configure(configurer);
+            
+            return this;
+        }
+
         public ToposConsumerConfigurer Handle(Func<IReadOnlyCollection<LogicalMessage>, CancellationToken, Task> messageHandler)
         {
             if (!_injectionist.Has<Handlers>())
