@@ -68,7 +68,8 @@ namespace Topos.Kafka
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
-                .SetPartitionsAssignedHandler((cns, partitions) => GetOffsets(_logger, cns, partitions, _positionManager))
+                .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, cns, partitions, _positionManager))
+                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, cns, partitions))
                 //.SetRebalanceHandler((cns, rebalanceEvent) => RebalanceHandler(
                 //    logger: _logger,
                 //    consumer: cns,
