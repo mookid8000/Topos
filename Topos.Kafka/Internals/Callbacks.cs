@@ -40,16 +40,6 @@ namespace Topos.Internals
             logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
         }
 
-        public static void PartitionsRevoked<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, List<TopicPartitionOffset> partitions)
-        {
-            var partitionsByTopic = partitions
-                .GroupBy(p => p.Topic)
-                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
-                .ToList();
-
-            logger.Info("Revocation: {@partitions}", partitionsByTopic);
-        }
-
         public static IEnumerable<TopicPartitionOffset> PartitionsAssigned<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, IEnumerable<TopicPartition> partitions, IPositionManager positionManager)
         {
             var partitionsByTopic = partitions
@@ -73,6 +63,16 @@ namespace Topos.Internals
                 .Select(p => p.ToTopicPartitionOffset());
 
             return topicPartitionOffsets;
+        }
+
+        public static void PartitionsRevoked<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, List<TopicPartitionOffset> partitions)
+        {
+            var partitionsByTopic = partitions
+                .GroupBy(p => p.Topic)
+                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
+                .ToList();
+
+            logger.Info("Revocation: {@partitions}", partitionsByTopic);
         }
 
         //public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent, IPositionManager positionManager)
