@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="1.0.0-beta3-ci-880" />
+    <PackageReference Include="confluent.kafka" Version="1.0.0-RC1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="nunit3testadapter" Version="3.13.0" />
   </ItemGroup>

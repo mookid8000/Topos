@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.5-beta
+## 0.0.7-beta
 * it's early
 * add position
 * ability to report assignment/revocation

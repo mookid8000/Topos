@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="1.0.0-beta3-ci-880" />
+    <PackageReference Include="confluent.kafka" Version="1.0.0-RC1" />
   </ItemGroup>
 
   <ItemGroup>

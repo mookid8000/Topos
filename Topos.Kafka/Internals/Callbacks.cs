@@ -40,41 +40,66 @@ namespace Topos.Internals
             logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
         }
 
-        public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent, IPositionManager positionManager)
+        public static IEnumerable<TopicPartitionOffset> GetOffsets<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, IEnumerable<TopicPartition> partitions, IPositionManager positionManager)
         {
-            var partitionsByTopic = rebalanceEvent.Partitions
+            var partitionsByTopic = partitions
                 .GroupBy(p => p.Topic)
+                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
+                .ToList();
+
+            logger.Info("Assignment: {@partitions}", partitionsByTopic);
+
+            var positions = partitions.GroupBy(p => p.Topic)
                 .Select(g => new
                 {
                     Topic = g.Key,
-                    Partitions = g.Select(p => p.Partition.Value)
+                    Partitions = g.Select(a => a.Partition.Value).ToList()
                 })
+                .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
                 .ToList();
 
-            if (rebalanceEvent.IsAssignment)
-            {
-                logger.Info("Assignment: {@partitions}", partitionsByTopic);
+            var topicPartitionOffsets = positions
+                .Select(p => p.Advance(1)) //< no need to read this again
+                .Select(p => p.ToTopicPartitionOffset());
 
-                var positions = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
-                    .Select(g => new
-                    {
-                        Topic = g.Key,
-                        Partitions = g.Select(a => a.Partition.Value).ToList()
-                    })
-                    .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
-                    .ToList();
-
-                var topicPartitionOffsets = positions
-                    .Select(p => p.Advance(1)) //< no need to read this again
-                    .Select(p => p.ToTopicPartitionOffset());
-
-                consumer.Assign(topicPartitionOffsets);
-            }
-            else if (rebalanceEvent.IsRevocation)
-            {
-                logger.Info("Revocation: {@partitions}", partitionsByTopic);
-            }
+            return topicPartitionOffsets;
         }
+
+        //public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent, IPositionManager positionManager)
+        //{
+        //    var partitionsByTopic = rebalanceEvent.Partitions
+        //        .GroupBy(p => p.Topic)
+        //        .Select(g => new
+        //        {
+        //            Topic = g.Key,
+        //            Partitions = g.Select(p => p.Partition.Value)
+        //        })
+        //        .ToList();
+
+        //    if (rebalanceEvent.IsAssignment)
+        //    {
+        //        logger.Info("Assignment: {@partitions}", partitionsByTopic);
+
+        //        var positions = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
+        //            .Select(g => new
+        //            {
+        //                Topic = g.Key,
+        //                Partitions = g.Select(a => a.Partition.Value).ToList()
+        //            })
+        //            .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
+        //            .ToList();
+
+        //        var topicPartitionOffsets = positions
+        //            .Select(p => p.Advance(1)) //< no need to read this again
+        //            .Select(p => p.ToTopicPartitionOffset());
+
+        //        consumer.Assign(topicPartitionOffsets);
+        //    }
+        //    else if (rebalanceEvent.IsRevocation)
+        //    {
+        //        logger.Info("Revocation: {@partitions}", partitionsByTopic);
+        //    }
+        //}
 
         static void WriteToLogger(ILogger logger, SyslogLevel level, string message)
         {

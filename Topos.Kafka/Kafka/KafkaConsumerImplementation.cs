@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -67,12 +68,13 @@ namespace Topos.Kafka
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
-                .SetRebalanceHandler((cns, rebalanceEvent) => RebalanceHandler(
-                    logger: _logger,
-                    consumer: cns,
-                    rebalanceEvent: rebalanceEvent,
-                    positionManager: _positionManager
-                ))
+                .SetPartitionsAssignedHandler((cns, partitions) => GetOffsets(_logger, cns, partitions, _positionManager))
+                //.SetRebalanceHandler((cns, rebalanceEvent) => RebalanceHandler(
+                //    logger: _logger,
+                //    consumer: cns,
+                //    rebalanceEvent: rebalanceEvent,
+                //    positionManager: _positionManager
+                //))
                 .SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
                 .Build();
 
