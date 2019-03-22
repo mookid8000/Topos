@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,8 +16,6 @@ namespace Topos.Kafka
 {
     public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
-        static readonly Func<IEnumerable<Part>, Task> Noop = _ => Task.CompletedTask;
-
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
         readonly ManualResetEvent _consumerLoopExited = new ManualResetEvent(false);
@@ -70,13 +67,7 @@ namespace Topos.Kafka
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
                 .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, cns, partitions, _positionManager))
                 .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, cns, partitions))
-                //.SetRebalanceHandler((cns, rebalanceEvent) => RebalanceHandler(
-                //    logger: _logger,
-                //    consumer: cns,
-                //    rebalanceEvent: rebalanceEvent,
-                //    positionManager: _positionManager
-                //))
-                .SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
+                //.SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(_topics);
@@ -101,7 +92,11 @@ namespace Topos.Kafka
                         try
                         {
                             var consumeResult = consumer.Consume(TimeSpan.FromSeconds(0.5));
-                            if (consumeResult == null) continue;
+                            if (consumeResult == null)
+                            {
+                                Thread.Sleep(23);
+                                continue;
+                            }
 
                             var position = new Position(
                                 topic: consumeResult.Topic,

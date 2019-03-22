@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 using Topos.Logging;
@@ -42,14 +41,18 @@ namespace Topos.Internals
 
         public static IEnumerable<TopicPartitionOffset> PartitionsAssigned<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, IEnumerable<TopicPartition> partitions, IPositionManager positionManager)
         {
-            var partitionsByTopic = partitions
+            var partitionsList = partitions.ToList();
+
+            if (!partitionsList.Any()) return Enumerable.Empty<TopicPartitionOffset>();
+
+            var partitionsByTopic = partitionsList
                 .GroupBy(p => p.Topic)
                 .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                 .ToList();
 
             logger.Info("Assignment: {@partitions}", partitionsByTopic);
 
-            var positions = partitions.GroupBy(p => p.Topic)
+            var positions = partitionsList.GroupBy(p => p.Topic)
                 .Select(g => new
                 {
                     Topic = g.Key,
@@ -67,49 +70,17 @@ namespace Topos.Internals
 
         public static void PartitionsRevoked<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, List<TopicPartitionOffset> partitions)
         {
-            var partitionsByTopic = partitions
+            var partitionsList = partitions.ToList();
+
+            if (!partitionsList.Any()) return;
+
+            var partitionsByTopic = partitionsList
                 .GroupBy(p => p.Topic)
                 .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                 .ToList();
 
             logger.Info("Revocation: {@partitions}", partitionsByTopic);
         }
-
-        //public static void RebalanceHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, RebalanceEvent rebalanceEvent, IPositionManager positionManager)
-        //{
-        //    var partitionsByTopic = rebalanceEvent.Partitions
-        //        .GroupBy(p => p.Topic)
-        //        .Select(g => new
-        //        {
-        //            Topic = g.Key,
-        //            Partitions = g.Select(p => p.Partition.Value)
-        //        })
-        //        .ToList();
-
-        //    if (rebalanceEvent.IsAssignment)
-        //    {
-        //        logger.Info("Assignment: {@partitions}", partitionsByTopic);
-
-        //        var positions = rebalanceEvent.Partitions.GroupBy(p => p.Topic)
-        //            .Select(g => new
-        //            {
-        //                Topic = g.Key,
-        //                Partitions = g.Select(a => a.Partition.Value).ToList()
-        //            })
-        //            .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
-        //            .ToList();
-
-        //        var topicPartitionOffsets = positions
-        //            .Select(p => p.Advance(1)) //< no need to read this again
-        //            .Select(p => p.ToTopicPartitionOffset());
-
-        //        consumer.Assign(topicPartitionOffsets);
-        //    }
-        //    else if (rebalanceEvent.IsRevocation)
-        //    {
-        //        logger.Info("Revocation: {@partitions}", partitionsByTopic);
-        //    }
-        //}
 
         static void WriteToLogger(ILogger logger, SyslogLevel level, string message)
         {
