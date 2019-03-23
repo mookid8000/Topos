@@ -61,9 +61,19 @@ namespace Topos.Internals
                 .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
                 .ToList();
 
-            var topicPartitionOffsets = positions
-                .Select(p => p.Advance(1)) //< no need to read this again
-                .Select(p => p.ToTopicPartitionOffset());
+            var topicPartitionOffsets = partitionsList
+                .Select(partition =>
+                {
+                    var position = positions
+                        .FirstOrDefault(p => p.Topic == partition.Topic
+                                             && p.Partition == partition.Partition.Value);
+
+                    return position.IsDefault
+                        ? new TopicPartitionOffset(partition, Offset.Beginning)
+                        : position
+                            .Advance(1) //< no need to read this again
+                            .ToTopicPartitionOffset();
+                });
 
             return topicPartitionOffsets;
         }

@@ -4,6 +4,8 @@ namespace Topos.Consumer
 {
     public struct Position
     {
+        readonly bool _hasValue;
+
         const int DefaultOffset = -1;
 
         public static Position Default(string topic, int partition) => new Position(topic, partition, DefaultOffset);
@@ -11,13 +13,15 @@ namespace Topos.Consumer
         public string Topic { get; }
         public int Partition { get; }
         public long Offset { get; }
-        public bool IsDefault => Offset == DefaultOffset;
+
+        public bool IsDefault => !_hasValue || Offset == DefaultOffset;
 
         public Position(string topic, int partition, long offset)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             Partition = partition;
             Offset = offset;
+            _hasValue = true;
         }
 
         public override string ToString() => $"{Topic}: {Partition}/{Offset}";
