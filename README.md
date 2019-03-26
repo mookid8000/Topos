@@ -7,7 +7,7 @@ It's something with topics.
 Could e.g. be Apache Kafka, where we send a JSON-serialized message:
 ```csharp
 var producer = Configure
-    .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092))
+    .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
     .Topics(m => m.Map<SomeEvent>("someevents"))
     .Create();
