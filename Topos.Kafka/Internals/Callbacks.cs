@@ -11,22 +11,22 @@ namespace Topos.Internals
     {
         public static void LogHandler<T1, T2>(ILogger logger, IProducer<T1, T2> producer, LogMessage logMessage)
         {
-            WriteToLogger(logger, logMessage.Level, logMessage.Message);
+            WriteToLogger(logger, logMessage.Level, $"{logMessage.Name}/{logMessage.Facility}: {logMessage.Message}");
         }
 
         public static void LogHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, LogMessage logMessage)
         {
-            WriteToLogger(logger, logMessage.Level, logMessage.Message);
+            WriteToLogger(logger, logMessage.Level, $"{logMessage.Name}/{logMessage.Facility}: {logMessage.Message}");
         }
 
         public static void ErrorHandler<T1, T2>(ILogger logger, IProducer<T1, T2> producer, Error error)
         {
-            logger.Error("Error in Kafka producer: {error}", error);
+            logger.Error("Error in Kafka producer: {@error}", error);
         }
 
         public static void ErrorHandler<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, Error error)
         {
-            logger.Error("Error in Kafka consumer: {error}", error);
+            logger.Error("Error in Kafka consumer: {@error}", error);
         }
 
         public static void OffsetsCommitted<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, CommittedOffsets committedOffsets)
