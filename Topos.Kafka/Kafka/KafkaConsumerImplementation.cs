@@ -11,6 +11,7 @@ using Topos.Serialization;
 using static Topos.Internals.Callbacks;
 // ReSharper disable RedundantAnonymousTypePropertyName
 // ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable ArgumentsStyleOther
 
 namespace Topos.Kafka
 {
@@ -18,7 +19,6 @@ namespace Topos.Kafka
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
-        readonly ManualResetEvent _consumerLoopExited = new ManualResetEvent(false);
         readonly IPositionManager _positionManager;
         readonly Thread _worker;
         readonly ILogger _logger;
@@ -83,71 +83,89 @@ namespace Topos.Kafka
 
             _logger.Info("Starting Kafka consumer worker for group {consumerGroup}", _group);
 
-            try
+            using (consumer)
             {
-                using (consumer)
+                try
                 {
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        try
-                        {
-                            var consumeResult = consumer.Consume(TimeSpan.FromSeconds(0.5));
-                            if (consumeResult == null)
-                            {
-                                Thread.Sleep(23);
-                                continue;
-                            }
-
-                            var position = new Position(
-                                topic: consumeResult.Topic,
-                                partition: consumeResult.Partition.Value,
-                                offset: consumeResult.Offset.Value
-                            );
-
-                            var message = new ReceivedTransportMessage(
-                                position: position,
-                                headers: GetHeaders(consumeResult.Headers),
-                                body: consumeResult.Value
-                            );
-
-                            _logger.Debug("Received event {position}", position);
-
-                            _eventHandler(message, cancellationToken);
-                        }
-                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                        {
-                            // it's alright
-                        }
-                        catch (ThreadAbortException)
-                        {
-                            _logger.Warn("Kafka consumer worker aborted!");
-                            return;
-                        }
-                        catch (Exception exception)
-                        {
-                            _logger.Warn(exception, "Unhandled exception in Kafka consumer loop");
-
-                            try
-                            {
-                                Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)
-                                    .Wait(cancellationToken);
-                            }
-                            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                            {
-                            }
-                        }
+                        TryProcessNextMessage(consumer, cancellationToken);
                     }
                 }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // it's alright
+                }
+                catch (ThreadAbortException)
+                {
+                    _logger.Warn("Kafka consumer worker aborted!");
+                }
+                catch (Exception exception)
+                {
+                    _logger.Error(exception, "Unhandled exception in Kafka consumer");
+                }
+                finally
+                {
+                    try
+                    {
+                        consumer.Close();
+                    }
+                    catch
+                    {
+                    }
+
+                    _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
+                }
+            }
+        }
+
+        void TryProcessNextMessage(IConsumer<string, byte[]> consumer, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var consumeResult = consumer.Consume(cancellationToken);
+                if (consumeResult == null)
+                {
+                    Thread.Sleep(100); //< chill (but it should not happen)
+                    return;
+                }
+
+                var position = new Position(
+                    topic: consumeResult.Topic,
+                    partition: consumeResult.Partition.Value,
+                    offset: consumeResult.Offset.Value
+                );
+
+                var message = new ReceivedTransportMessage(
+                    position: position,
+                    headers: GetHeaders(consumeResult.Headers),
+                    body: consumeResult.Value
+                );
+
+                _logger.Debug("Received event {position}", position);
+
+                _eventHandler(message, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // it's alright
+            }
+            catch (ThreadAbortException)
+            {
+                _logger.Warn("Kafka consumer worker aborted!");
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Unhandled exception in Kafka consumer");
-            }
-            finally
-            {
-                _consumerLoopExited.Set();
+                _logger.Warn(exception, "Unhandled exception in Kafka consumer loop - waiting 30 s");
 
-                _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
+                try
+                {
+                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)
+                        .Wait(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                }
             }
         }
 
@@ -180,13 +198,7 @@ namespace Topos.Kafka
                     if (!_worker.Join(TimeSpan.FromSeconds(5)))
                     {
                         _logger.Error("Kafka consumer worker for group {consumerGroup} did not finish executing within 5 s", _group);
-
                         _worker.Abort();
-                    }
-
-                    if (!_consumerLoopExited.WaitOne(TimeSpan.FromSeconds(2)))
-                    {
-                        _logger.Warn("Consumer loop for group {consumerGroup} did not exit within 2 s timeout", _group);
                     }
                 }
             }
