@@ -17,8 +17,9 @@ namespace Topos.Kafka.Tests
     {
         [TestCase(100, 5)]
         [TestCase(1000, 10)]
-        [TestCase(10000, 15)]
-        [TestCase(100000, 20)]
+        //[TestCase(10000, 15)]
+        //[TestCase(100000, 20)]
+        //[TestCase(1000000, 30)]
         public async Task TakeTime(int eventCount, int consumeTimeoutSeconds)
         {
             SetLogLevelTo(LogEventLevel.Information);
