@@ -21,6 +21,9 @@ namespace Topos.Internals
 
         public static void ErrorHandler<T1, T2>(ILogger logger, IProducer<T1, T2> producer, Error error)
         {
+            // the producer
+            // [Error] Error in Kafka producer: Error { Code: Local_AllBrokersDown, IsFatal: False, Reason: "1/1 brokers are down", IsError: True, IsLocalError: True, IsBrokerError: False }
+
             logger.Error("Error in Kafka producer: {@error}", error);
         }
 

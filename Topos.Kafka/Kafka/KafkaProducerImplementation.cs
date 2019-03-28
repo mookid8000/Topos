@@ -31,7 +31,8 @@ namespace Topos.Kafka
             var config = new ProducerConfig
             {
                 BootstrapServers = address,
-                MessageTimeoutMs = sendTimeoutSeconds * 1000
+                MessageTimeoutMs = sendTimeoutSeconds * 1000,
+                LogConnectionClose = false
             };
 
             _producer = new ProducerBuilder<string, byte[]>(config)
