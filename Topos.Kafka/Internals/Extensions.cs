@@ -15,5 +15,7 @@ namespace Topos.Internals
                     : new Offset(position.Offset)
             );
         }
+
+        public static TopicPartitionOffset WithOffset(this TopicPartition topicPartition, Offset offset) => new TopicPartitionOffset(topicPartition, offset);
     }
 }

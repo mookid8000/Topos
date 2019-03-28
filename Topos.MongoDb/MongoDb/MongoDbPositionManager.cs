@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -35,14 +34,7 @@ namespace Topos.MongoDb
             await _positions.UpdateOneAsync(criteria, update, new UpdateOptions { IsUpsert = true });
         }
 
-        public async Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions)
-        {
-            var array = partitions.ToArray();
-            var allPositions = await GetAll(topic);
-            return allPositions.Where(p => array.Contains(p.Partition)).ToArray();
-        }
-
-        public async Task<IReadOnlyCollection<Position>> GetAll(string topic)
+        public async Task<Position?> Get(string topic, int partition)
         {
             var query = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
             {
@@ -50,19 +42,13 @@ namespace Topos.MongoDb
             });
 
             var document = await _positions.Find(query).FirstOrDefaultAsync();
-            if (document == null) return EmptyListOfPositions;
+            if (document == null) return null;
 
-            return document
-                .Where(element => element.Name != "_id")
-                .Select(element =>
-                {
-                    if (!int.TryParse(element.Name, out var partition))
-                    {
-                        throw new ArgumentException($"Could not parse partition '{element.Name}' into an integer partition number!");
-                    }
-                    return new Position(topic, partition, element.Value.AsInt64);
-                })
-                .ToArray();
+            var fieldName = partition.ToString();
+
+            return document.Contains(fieldName)
+                ? new Position(topic, partition, document[fieldName].AsInt64)
+                : default(Position?);
         }
     }
 }

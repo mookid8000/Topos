@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Topos.Consumer;
 #pragma warning disable 1998
@@ -17,8 +17,11 @@ namespace Topos.InMem
 
         public async Task Set(Position position) => _positionsStorage.Set(position);
 
-        public async Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions) => _positionsStorage.Get(topic, partitions);
+        public async Task<Position?> Get(string topic, int partition)
+        {
+            var results = _positionsStorage.Get(topic, new[] { partition });
 
-        public async Task<IReadOnlyCollection<Position>> GetAll(string topic) => _positionsStorage.GetAll(topic);
+            return results.FirstOrDefault();
+        }
     }
 }

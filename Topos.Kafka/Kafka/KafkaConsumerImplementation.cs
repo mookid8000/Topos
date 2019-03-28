@@ -12,6 +12,7 @@ using static Topos.Internals.Callbacks;
 // ReSharper disable RedundantAnonymousTypePropertyName
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
+// ReSharper disable EmptyGeneralCatchClause
 
 namespace Topos.Kafka
 {
@@ -31,12 +32,13 @@ namespace Topos.Kafka
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
             Action<ReceivedTransportMessage, CancellationToken> eventHandler, IPositionManager positionManager)
         {
+            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            _topics = topics.ToArray();
             _group = group ?? throw new ArgumentNullException(nameof(group));
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
+            _topics = topics.ToArray();
             _positionManager = positionManager;
             _worker = new Thread(Run) { IsBackground = true };
         }
@@ -67,7 +69,6 @@ namespace Topos.Kafka
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
                 .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, cns, partitions, _positionManager))
                 .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, cns, partitions))
-                //.SetOffsetsCommittedHandler((cns, committedOffsets) => OffsetsCommitted(_logger, cns, committedOffsets))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(_topics);

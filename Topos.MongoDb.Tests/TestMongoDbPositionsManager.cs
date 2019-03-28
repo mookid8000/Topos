@@ -27,9 +27,9 @@ namespace Topos.MongoDb.Tests
         [Test]
         public async Task GetsNothingWhenAskingForPositionsInitially()
         {
-            var positions = await _positionManager.GetAll("test-topic");
+            var position = await _positionManager.Get("test-topic", 1);
 
-            Assert.That(positions.Any(), Is.False, $"Did not expect to receive anything - got this: {string.Join(", ", positions)}");
+            Assert.That(position, Is.Null, $"Did not expect to receive anything - got this: {position}");
         }
 
         [Test]
@@ -37,14 +37,12 @@ namespace Topos.MongoDb.Tests
         {
             await _positionManager.Set(new Position("test-topic", 2, 100));
 
-            var positions = await _positionManager.GetAll("test-topic");
+            var position = await _positionManager.Get("test-topic", 2);
 
-            Assert.That(positions.Count, Is.EqualTo(1));
+            Assert.That(position, Is.Not.Null);
 
-            var position = positions.First();
-
-            Assert.That(position.Partition, Is.EqualTo(2));
-            Assert.That(position.Offset, Is.EqualTo(100));
+            Assert.That(position.Value.Partition, Is.EqualTo(2));
+            Assert.That(position.Value.Offset, Is.EqualTo(100));
         }
 
         [Test]
@@ -54,14 +52,12 @@ namespace Topos.MongoDb.Tests
             await _positionManager.Set(new Position("test-topic", 2, 101));
             await _positionManager.Set(new Position("test-topic", 2, 110));
 
-            var positions = await _positionManager.GetAll("test-topic");
+            var position = await _positionManager.Get("test-topic", 2);
 
-            Assert.That(positions.Count, Is.EqualTo(1));
+            Assert.That(position, Is.Not.Null);
 
-            var position = positions.First();
-
-            Assert.That(position.Partition, Is.EqualTo(2));
-            Assert.That(position.Offset, Is.EqualTo(110));
+            Assert.That(position.Value.Partition, Is.EqualTo(2));
+            Assert.That(position.Value.Offset, Is.EqualTo(110));
         }
     }
 }

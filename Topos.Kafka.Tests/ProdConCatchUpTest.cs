@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -147,14 +146,9 @@ Failed with details: {errorDetailsFactory()}
                 return _positionManager.Set(position);
             }
 
-            public Task<IReadOnlyCollection<Position>> Get(string topic, IEnumerable<int> partitions)
+            public Task<Position?> Get(string topic, int partition)
             {
-                return _positionManager.Get(topic, partitions);
-            }
-
-            public Task<IReadOnlyCollection<Position>> GetAll(string topic)
-            {
-                return _positionManager.GetAll(topic);
+                return _positionManager.Get(topic, partition);
             }
         }
     }

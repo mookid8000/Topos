@@ -29,16 +29,6 @@ namespace Topos.Internals
             logger.Error("Error in Kafka consumer: {@error}", error);
         }
 
-        public static void OffsetsCommitted<T1, T2>(ILogger logger, IConsumer<T1, T2> producer, CommittedOffsets committedOffsets)
-        {
-            var offsetsByTopic = committedOffsets.Offsets
-                .GroupBy(o => o.Topic)
-                .Select(g => new { Topic = g.Key, Offsets = g.Select(o => $"{o.Partition.Value}={o.Offset.Value}").ToList() })
-                .ToList();
-
-            logger.Debug("Committed offsets: {@offsets}", offsetsByTopic);
-        }
-
         public static IEnumerable<TopicPartitionOffset> PartitionsAssigned<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, IEnumerable<TopicPartition> partitions, IPositionManager positionManager)
         {
             var partitionsList = partitions.ToList();
@@ -52,30 +42,14 @@ namespace Topos.Internals
 
             logger.Info("Assignment: {@partitions}", partitionsByTopic);
 
-            var positions = partitionsList.GroupBy(p => p.Topic)
-                .Select(g => new
+            return partitionsList
+                .Select(tp => new
                 {
-                    Topic = g.Key,
-                    Partitions = g.Select(a => a.Partition.Value).ToList()
+                    TopicPartition = tp,
+                    Position = AsyncHelpers.GetAsync(() => positionManager.Get(tp.Topic, tp.Partition.Value))
                 })
-                .SelectMany(a => AsyncHelpers.GetAsync(() => positionManager.Get(a.Topic, a.Partitions)))
-                .ToList();
-
-            var topicPartitionOffsets = partitionsList
-                .Select(partition =>
-                {
-                    var position = positions
-                        .FirstOrDefault(p => p.Topic == partition.Topic
-                                             && p.Partition == partition.Partition.Value);
-
-                    return position.IsDefault
-                        ? new TopicPartitionOffset(partition, Offset.Beginning)
-                        : position
-                            .Advance(1) //< no need to read this again
-                            .ToTopicPartitionOffset();
-                });
-
-            return topicPartitionOffsets;
+                .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committedf
+                             ?? a.TopicPartition.WithOffset(Offset.Beginning)); // or just resume from the beginning
         }
 
         public static void PartitionsRevoked<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, List<TopicPartitionOffset> partitions)

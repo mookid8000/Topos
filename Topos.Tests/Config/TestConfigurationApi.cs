@@ -14,7 +14,7 @@ namespace Topos.Tests.Config
         public void CanConfigure_Logging()
         {
             var consumer = Configure.Consumer("default-group", t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
-                .Logging(l => l.UseSerilog())
+                //.Logging(l => l.UseSerilog())
                 .Start();
 
             Using(consumer);

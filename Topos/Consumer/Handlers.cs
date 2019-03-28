@@ -12,7 +12,5 @@ namespace Topos.Consumer
         public IEnumerator<MessageHandler> GetEnumerator() => _messageHandlers.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        internal IPositionManager PositionsManager { get; set; }
     }
 }

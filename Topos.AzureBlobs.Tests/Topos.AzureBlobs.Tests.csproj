@@ -1,26 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.3" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="9.4.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="nunit" Version="3.11.0" />
     <PackageReference Include="nunit3testadapter" Version="3.13.0" />
-    <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
-    <PackageReference Include="serilog.sinks.rollingfile" Version="3.3.0" />
     <PackageReference Include="testy" Version="0.0.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Topos.AzureEventHubs\Topos.AzureEventHubs.csproj" />
-    <ProjectReference Include="..\Topos.SqlServer\Topos.SqlServer.csproj" />
-    <ProjectReference Include="..\Topos\Topos.csproj" />
+    <ProjectReference Include="..\Topos.AzureBlobs\Topos.AzureBlobs.csproj" />
+    <ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="azure_event_hubs_connection_string.secret.txt">
+    <None Update="azure_storage_account_connection_string.secret.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

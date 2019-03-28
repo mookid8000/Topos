@@ -56,6 +56,12 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
+dotnet pack "%root%/Topos.AzureBlobs" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+if %ERRORLEVEL% neq 0 (
+	popd
+ 	goto exit_fail
+)
+
 call scripts\push.cmd "%version%"
 popd
 

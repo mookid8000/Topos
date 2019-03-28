@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.3" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="9.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
+</Project>
