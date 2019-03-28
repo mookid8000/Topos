@@ -39,7 +39,7 @@ namespace Topos.NewtonsoftJson
             return new TransportMessage(headers, bytes);
         }
 
-        public LogicalMessage Deserialize(TransportMessage message)
+        public ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message)
         {
             var headers = message.Headers.Clone();
 
@@ -59,7 +59,8 @@ namespace Topos.NewtonsoftJson
             {
                 var type = messageType.ParseType();
                 var body = JsonConvert.DeserializeObject(json, type, _settings);
-                return new LogicalMessage(headers, body);
+                var position = message.Position;
+                return new ReceivedLogicalMessage(headers, body, position);
             }
             catch (Exception exception)
             {

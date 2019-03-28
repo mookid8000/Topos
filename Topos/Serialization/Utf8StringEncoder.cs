@@ -25,7 +25,7 @@ namespace Topos.Serialization
             return new TransportMessage(headers, Encoding.GetBytes(str));
         }
 
-        public LogicalMessage Deserialize(TransportMessage message)
+        public ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message)
         {
             var headers = message.Headers.Clone();
             var body = message.Body;
@@ -38,7 +38,7 @@ namespace Topos.Serialization
             // quick path
             if (contentType == ContentType)
             {
-                return new LogicalMessage(headers, Encoding.GetString(body));
+                return new ReceivedLogicalMessage(headers, Encoding.GetString(body), message.Position);
             }
 
             // otherwise, we need to parse the content type
@@ -56,7 +56,7 @@ namespace Topos.Serialization
 
             var encoding = GetEncoding(parts[1], contentType);
 
-            return new LogicalMessage(headers, encoding.GetString(body));
+            return new ReceivedLogicalMessage(headers, encoding.GetString(body), message.Position);
         }
 
         static Encoding GetEncoding(string encodingName, string contentType)

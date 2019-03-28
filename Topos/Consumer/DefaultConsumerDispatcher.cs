@@ -92,7 +92,7 @@ namespace Topos.Consumer
         {
             try
             {
-                var logicalMessage = _messageSerializer.Deserialize(transportMessage);
+                var receivedLogicalMessage = _messageSerializer.Deserialize(transportMessage);
 
                 for (var index = 0; index < _handlers.Length; index++)
                 {
@@ -103,7 +103,7 @@ namespace Topos.Consumer
                         Thread.Sleep(100);
                     }
 
-                    handler.Enqueue(logicalMessage.AsReceivedLogicalMessage(transportMessage.Position));
+                    handler.Enqueue(receivedLogicalMessage);
                 }
             }
             catch (Exception exception)

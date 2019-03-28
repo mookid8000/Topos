@@ -3,6 +3,6 @@
     public interface IMessageSerializer
     {
         TransportMessage Serialize(LogicalMessage message);
-        LogicalMessage Deserialize(TransportMessage message);
+        ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message);
     }
 }
