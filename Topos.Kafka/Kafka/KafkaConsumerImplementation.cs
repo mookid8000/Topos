@@ -206,6 +206,8 @@ namespace Topos.Kafka
             finally
             {
                 _disposed = true;
+
+                _logger.Info("Kafka consumer for group {consumerGroup} stopped", _group);
             }
         }
     }

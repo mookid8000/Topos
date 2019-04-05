@@ -14,10 +14,8 @@ namespace Topos.Kafka
     public class KafkaProducerImplementation : IProducerImplementation
     {
         static readonly Headers EmptyHeaders = new Headers();
-        static readonly object EmptyResult = new object();
 
         readonly IProducer<string, byte[]> _producer;
-        readonly int _sendTimeoutSeconds;
 
         readonly ILogger _logger;
 
@@ -26,7 +24,6 @@ namespace Topos.Kafka
         public KafkaProducerImplementation(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
         {
             _logger = loggerFactory.GetLogger(typeof(KafkaProducerImplementation));
-            _sendTimeoutSeconds = sendTimeoutSeconds;
 
             var config = new ProducerConfig
             {
@@ -63,55 +60,6 @@ namespace Topos.Kafka
 
             await _producer.ProduceAsync(topic, kafkaMessage);
         }
-
-        //public Task SendAsync(string topic, IEnumerable<KafkaEvent> events)
-        //{
-        //    var taskCompletionSource = new TaskCompletionSource<object>();
-
-        //    foreach (var evt in events)
-        //    {
-        //        var message = new Message<string, string>
-        //        {
-        //            Key = evt.Key,
-        //            Headers = GetHeaders(evt.Headers),
-        //            Value = evt.Body
-        //        };
-        //        _producer.BeginProduce(topic, message);
-        //    }
-
-        //    // is disposed in the finally block on the thread pool
-        //    var cancellationTokenSource = new CancellationTokenSource();
-
-        //    cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(_sendTimeoutSeconds));
-
-        //    Task.Run(() =>
-        //    {
-        //        var cancellationToken = cancellationTokenSource.Token;
-
-        //        try
-        //        {
-        //            _producer.Flush(cancellationToken);
-
-        //            taskCompletionSource.SetResult(EmptyResult);
-        //        }
-        //        catch (OperationCanceledException exception) when (cancellationToken.IsCancellationRequested)
-        //        {
-        //            taskCompletionSource.SetException(
-        //                new TimeoutException($"Could not send events within {_sendTimeoutSeconds} s timeout",
-        //                    exception));
-        //        }
-        //        catch (Exception exception)
-        //        {
-        //            taskCompletionSource.SetException(exception);
-        //        }
-        //        finally
-        //        {
-        //            cancellationTokenSource.Dispose();
-        //        }
-        //    });
-
-        //    return taskCompletionSource.Task;
-        //}
 
         static Headers GetHeaders(Dictionary<string, string> dictionary)
         {
