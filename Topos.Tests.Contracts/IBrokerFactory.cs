@@ -6,5 +6,6 @@ namespace Topos.Tests.Contracts
     public interface IBrokerFactory : IDisposable
     {
         ToposProducerConfigurer ConfigureProducer();
+        ToposConsumerConfigurer ConfigureConsumer(string groupName);
     }
 }

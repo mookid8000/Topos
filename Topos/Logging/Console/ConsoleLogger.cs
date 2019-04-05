@@ -12,9 +12,11 @@ namespace Topos.Logging.Console
         public class ConsoleLogger : ILogger
         {
             readonly StringRenderer _stringRenderer = new StringRenderer();
+            readonly Type _type;
 
             public ConsoleLogger(Type type)
             {
+                _type = type;
             }
 
             public void Debug(string message, params object[] args)

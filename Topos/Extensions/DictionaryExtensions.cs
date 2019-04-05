@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Topos.Extensions
 {
@@ -19,6 +20,16 @@ namespace Topos.Extensions
             return dictionary.TryGetValue(key, out var value)
                 ? value
                 : defaultValue;
+        }
+
+        public static string GetValue(this Dictionary<string, string> headers, string key)
+        {
+            if (headers == null) throw new ArgumentNullException(nameof(headers));
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
+            return headers.TryGetValue(key, out var value)
+                ? value
+                : throw new KeyNotFoundException($"Could not find '{key}' header among these keys: {string.Join(", ", headers.Keys.Select(k => $"'{k}'"))}");
         }
     }
 }

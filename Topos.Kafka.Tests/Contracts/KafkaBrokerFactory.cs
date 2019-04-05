@@ -7,7 +7,16 @@ namespace Topos.Kafka.Tests.Contracts
     {
         public ToposProducerConfigurer ConfigureProducer()
         {
-            return null;
+            return Configure
+                .Producer(c => c.UseKafka(KafkaTestConfig.Address))
+                .Logging(l => l.UseSerilog());
+        }
+
+        public ToposConsumerConfigurer ConfigureConsumer(string groupName)
+        {
+            return Configure
+                .Consumer(groupName, c => c.UseKafka(KafkaTestConfig.Address))
+                .Logging(l => l.UseSerilog());
         }
     }
 }

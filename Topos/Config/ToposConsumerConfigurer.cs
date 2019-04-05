@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
+using Topos.Routing;
 using Topos.Serialization;
 
 namespace Topos.Config
@@ -26,6 +27,7 @@ namespace Topos.Config
 
         public ToposConsumerConfigurer Subscribe(params string[] topics)
         {
+            if (topics == null) throw new ArgumentNullException(nameof(topics));
             if (!_injectionist.Has<Topics>())
             {
                 _injectionist.Register(c => _topics);
@@ -38,9 +40,24 @@ namespace Topos.Config
 
         public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
         {
+            if (configure == null) throw new ArgumentNullException(nameof(configure));
             var configurer = StandardConfigurer<IPositionManager>.New(_injectionist);
 
             configure(configurer);
+
+            return this;
+        }
+
+        public ToposConsumerConfigurer Topics(Action<SubscriptionsRegistrar> topicRegistrarCallback)
+        {
+            if (topicRegistrarCallback == null) throw new ArgumentNullException(nameof(topicRegistrarCallback));
+
+            if (!_injectionist.Has<Topics>())
+            {
+                _injectionist.Register(c => _topics);
+            }
+
+            topicRegistrarCallback(new SubscriptionsRegistrar(_topics));
 
             return this;
         }

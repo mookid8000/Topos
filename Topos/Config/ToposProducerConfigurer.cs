@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Topos.Internals;
+using Topos.Logging;
 using Topos.Producer;
 using Topos.Routing;
 using Topos.Serialization;
@@ -38,16 +39,20 @@ namespace Topos.Config
         {
             ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
 
+            _injectionist.PossiblyRegisterDefault<ITopicMapper>(c => new SimpleTopicMapper());
+
             _injectionist.Register<IToposProducer>(c =>
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
                 var topicMapper = c.Get<ITopicMapper>();
                 var producerImplementation = c.Get<IProducerImplementation>();
+                var loggerFactory = c.Get<ILoggerFactory>();
 
                 var defaultToposProducer = new DefaultToposProducer(
                     messageSerializer,
                     topicMapper,
-                    producerImplementation
+                    producerImplementation,
+                    loggerFactory
                 );
 
                 defaultToposProducer.Disposing += () =>
