@@ -45,7 +45,9 @@ namespace Topos.Kafka.Tests
                 .Positions(p => p.StoreInMemory())
                 .Create();
 
-            Using(consumer.Start());
+            Using(consumer);
+
+            consumer.Start();
 
             var stopwatch = Stopwatch.StartNew();
             var timeout = TimeSpan.FromSeconds(consumeTimeoutSeconds);

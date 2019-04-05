@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Topos.Config;
 
 namespace Topos.Tests.Contracts.Broker
 {
@@ -11,7 +12,8 @@ namespace Topos.Tests.Contracts.Broker
         [Test]
         public async Task CanStartProducer()
         {
-            var producer = BrokerFactory.Create();
+            var producer = BrokerFactory.ConfigureProducer()
+                .Create();
 
             await Task.Delay(TimeSpan.FromSeconds(1));
         }

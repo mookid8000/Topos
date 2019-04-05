@@ -1,10 +1,10 @@
 ﻿using System;
-using Topos.Producer;
+using Topos.Config;
 
 namespace Topos.Tests.Contracts
 {
     public interface IBrokerFactory : IDisposable
     {
-        IToposProducer Create();
+        ToposProducerConfigurer ConfigureProducer();
     }
 }

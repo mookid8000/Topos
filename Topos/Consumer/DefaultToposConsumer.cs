@@ -18,14 +18,12 @@ namespace Topos.Consumer
             _consumerImplementation = consumerImplementation ?? throw new ArgumentNullException(nameof(consumerImplementation));
         }
 
-        public IDisposable Start()
+        public void Start()
         {
-            if (_isStarted) return this;
+            if (_isStarted) return;
 
             _consumerImplementation.Start();
             _isStarted = true;
-
-            return this;
         }
 
         public void Dispose()

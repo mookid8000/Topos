@@ -11,6 +11,6 @@ namespace Topos.Consumer
         /// Starts the consumer.
         /// </summary>
         /// <returns>A disposable that will stop message consumption when disposed.</returns>
-        IDisposable Start();
+        void Start();
     }
 }

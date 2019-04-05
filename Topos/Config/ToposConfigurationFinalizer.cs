@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Topos.Consumer;
-using Topos.InMem;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Logging.Console;
@@ -14,100 +13,100 @@ namespace Topos.Config
 {
     public static class ToposConfigurationFinalizer
     {
-        public static IToposProducer Create(this ToposProducerConfigurer configurer)
-        {
-            var injectionist = StandardConfigurer.Open(configurer);
+        //public static IToposProducer Create(this ToposProducerConfigurer configurer)
+        //{
+        //    var injectionist = StandardConfigurer.Open(configurer);
 
-            RegisterCommonServices(injectionist);
+        //    RegisterCommonServices(injectionist);
 
-            injectionist.Register<IToposProducer>(c =>
-            {
-                var messageSerializer = c.Get<IMessageSerializer>();
-                var topicMapper = c.Get<ITopicMapper>();
-                var producerImplementation = c.Get<IProducerImplementation>();
+        //    injectionist.Register<IToposProducer>(c =>
+        //    {
+        //        var messageSerializer = c.Get<IMessageSerializer>();
+        //        var topicMapper = c.Get<ITopicMapper>();
+        //        var producerImplementation = c.Get<IProducerImplementation>();
 
-                var defaultToposProducer = new DefaultToposProducer(
-                    messageSerializer,
-                    topicMapper,
-                    producerImplementation
-                );
+        //        var defaultToposProducer = new DefaultToposProducer(
+        //            messageSerializer,
+        //            topicMapper,
+        //            producerImplementation
+        //        );
 
-                defaultToposProducer.Disposing += () =>
-                {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
-                    {
-                        instance.Dispose();
-                    }
-                };
+        //        defaultToposProducer.Disposing += () =>
+        //        {
+        //            foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
+        //            {
+        //                instance.Dispose();
+        //            }
+        //        };
 
-                return defaultToposProducer;
-            });
+        //        return defaultToposProducer;
+        //    });
 
-            var resolutionResult = injectionist.Get<IToposProducer>();
+        //    var resolutionResult = injectionist.Get<IToposProducer>();
 
-            return resolutionResult.Instance;
-        }
+        //    return resolutionResult.Instance;
+        //}
 
-        public static IToposConsumer Create(this ToposConsumerConfigurer configurer)
-        {
-            var injectionist = StandardConfigurer.Open(configurer);
+//        public static IToposConsumer Create(this ToposConsumerConfigurer configurer)
+//        {
+//            var injectionist = StandardConfigurer.Open(configurer);
 
-            RegisterCommonServices(injectionist);
+//            RegisterCommonServices(injectionist);
 
-            injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
-            {
-                var loggerFactory = c.Get<ILoggerFactory>();
-                var messageSerializer = c.Get<IMessageSerializer>();
-                var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
+//            injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
+//            {
+//                var loggerFactory = c.Get<ILoggerFactory>();
+//                var messageSerializer = c.Get<IMessageSerializer>();
+//                var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
 
-Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
+//Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
 
-    Configure.Consumer(...)
-        .Handle(async (messages, cancellationToken) =>
-        {
-            // handle messages
-        })
-        .Start()
-");
-                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'high water mark' position for each topic/partition.
+//    Configure.Consumer(...)
+//        .Handle(async (messages, cancellationToken) =>
+//        {
+//            // handle messages
+//        })
+//        .Start()
+//");
+//                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'high water mark' position for each topic/partition.
 
-It can be configured by invoking the .Positions(..) configurer like this:
+//It can be configured by invoking the .Positions(..) configurer like this:
 
-    Configure.Consumer(...)
-        .Positions(p => p.StoreIn(...))
-        .Start()
+//    Configure.Consumer(...)
+//        .Positions(p => p.StoreIn(...))
+//        .Start()
 
-");
+//");
 
-                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
-            });
+//                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
+//            });
 
-            injectionist.Register<IToposConsumer>(c =>
-            {
-                var toposConsumerImplementation = c.Get<IConsumerImplementation>();
+//            injectionist.Register<IToposConsumer>(c =>
+//            {
+//                var toposConsumerImplementation = c.Get<IConsumerImplementation>();
 
-                var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
+//                var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
 
-                defaultToposConsumer.Disposing += () =>
-                {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
-                    {
-                        instance.Dispose();
-                    }
-                };
+//                defaultToposConsumer.Disposing += () =>
+//                {
+//                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
+//                    {
+//                        instance.Dispose();
+//                    }
+//                };
 
-                return defaultToposConsumer;
-            });
+//                return defaultToposConsumer;
+//            });
 
-            var resolutionResult = injectionist.Get<IToposConsumer>();
+//            var resolutionResult = injectionist.Get<IToposConsumer>();
 
-            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
-            {
-                initializable.Initialize();
-            }
+//            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+//            {
+//                initializable.Initialize();
+//            }
 
-            return resolutionResult.Instance;
-        }
+//            return resolutionResult.Instance;
+//        }
 
         static void RegisterCommonServices(Injectionist injectionist)
         {

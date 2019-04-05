@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Topos.Consumer;
 using Topos.Internals;
+using Topos.Logging;
 using Topos.Serialization;
 
 namespace Topos.Config
 {
-    public class ToposConsumerConfigurer 
+    public class ToposConsumerConfigurer
     {
         internal readonly Injectionist _injectionist = new Injectionist();
 
@@ -37,9 +39,9 @@ namespace Topos.Config
         public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
         {
             var configurer = StandardConfigurer<IPositionManager>.New(_injectionist);
-            
+
             configure(configurer);
-            
+
             return this;
         }
 
@@ -55,9 +57,68 @@ namespace Topos.Config
             return this;
         }
 
+        public IToposConsumer Create()
+        {
+            ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
+
+            _injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
+            {
+                var loggerFactory = c.Get<ILoggerFactory>();
+                var messageSerializer = c.Get<IMessageSerializer>();
+                var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
+
+Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
+
+    Configure.Consumer(...)
+        .Handle(async (messages, cancellationToken) =>
+        {
+            // handle messages
+        })
+        .Start()
+");
+                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'high water mark' position for each topic/partition.
+
+It can be configured by invoking the .Positions(..) configurer like this:
+
+    Configure.Consumer(...)
+        .Positions(p => p.StoreIn(...))
+        .Start()
+
+");
+
+                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
+            });
+
+            _injectionist.Register<IToposConsumer>(c =>
+            {
+                var toposConsumerImplementation = c.Get<IConsumerImplementation>();
+
+                var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
+
+                defaultToposConsumer.Disposing += () =>
+                {
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
+                    {
+                        instance.Dispose();
+                    }
+                };
+
+                return defaultToposConsumer;
+            });
+
+            var resolutionResult = _injectionist.Get<IToposConsumer>();
+
+            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+            {
+                initializable.Initialize();
+            }
+
+            return resolutionResult.Instance;
+        }
+
         public IDisposable Start()
         {
-            var consumer = this.Create();
+            var consumer = Create();
             consumer.Start();
             return consumer;
         }

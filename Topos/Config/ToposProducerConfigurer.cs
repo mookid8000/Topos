@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using Topos.Internals;
 using Topos.Producer;
 using Topos.Routing;
+using Topos.Serialization;
 
 namespace Topos.Config
 {
@@ -30,6 +32,38 @@ namespace Topos.Config
 
             mapper(new TopicMapper(_topicMappings));
             return this;
+        }
+
+        public IToposProducer Create()
+        {
+            ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
+
+            _injectionist.Register<IToposProducer>(c =>
+            {
+                var messageSerializer = c.Get<IMessageSerializer>();
+                var topicMapper = c.Get<ITopicMapper>();
+                var producerImplementation = c.Get<IProducerImplementation>();
+
+                var defaultToposProducer = new DefaultToposProducer(
+                    messageSerializer,
+                    topicMapper,
+                    producerImplementation
+                );
+
+                defaultToposProducer.Disposing += () =>
+                {
+                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
+                    {
+                        instance.Dispose();
+                    }
+                };
+
+                return defaultToposProducer;
+            });
+
+            var resolutionResult = _injectionist.Get<IToposProducer>();
+
+            return resolutionResult.Instance;
         }
     }
 }
