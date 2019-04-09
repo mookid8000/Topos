@@ -48,7 +48,7 @@ Check this out - here we set up a corresponding consumer that just prints out th
 var consumer = Configure
     .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
-    .Subscribe("someevents")
+    .Topics(t => t.Subscribe("someevents")
     .Handle(async (messages, token) =>
     {
         foreach (var message in messages)
@@ -79,7 +79,7 @@ var consumer = Configure
     .Serialization(s => s.UseNewtonsoftJson())
 
 	// subscribe to 'someevents'
-    .Subscribe("someevents")
+    .Topics(t => t.Subscribe("someevents"))
 
 	// handle messages
     .Handle(async (messages, token) =>
