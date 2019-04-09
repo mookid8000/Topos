@@ -25,19 +25,6 @@ namespace Topos.Config
             configure(configurer);
         }
 
-        public ToposConsumerConfigurer Subscribe(params string[] topics)
-        {
-            if (topics == null) throw new ArgumentNullException(nameof(topics));
-            if (!_injectionist.Has<Topics>())
-            {
-                _injectionist.Register(c => _topics);
-            }
-
-            _topics.AddRange(topics);
-
-            return this;
-        }
-
         public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
         {
             if (configure == null) throw new ArgumentNullException(nameof(configure));

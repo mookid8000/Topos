@@ -82,7 +82,7 @@ namespace Topos.Kafka.Tests
             var consumer = Configure
                 .Consumer("default-group", c => c.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .Subscribe(_topic)
+                .Topics(t => t.Subscribe(_topic))
                 .Handle(async (messages, cancellationToken) =>
                 {
                     var strings = messages.Select(m => m.Body).OfType<string>().ToList();

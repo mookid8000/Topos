@@ -57,7 +57,7 @@ namespace Topos.Kafka.Tests
             var consumer = Configure
                 .Consumer("default-group", c => c.UseKafka("localhost:9092"))
                 .Serialization(s => s.UseNewtonsoftJson())
-                .Subscribe("someevents")
+                .Topics(t => t.Subscribe("someevents"))
                 .Handle(async (messages, token) =>
                 {
                     foreach (var message in messages)
