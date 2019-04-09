@@ -35,7 +35,7 @@ namespace Topos.Tests.Extensions
         public static async Task WaitOrDie<T>(this ConcurrentQueue<T> queue,
             Expression<Func<ConcurrentQueue<T>, bool>> completionExpression,
             Expression<Func<ConcurrentQueue<T>, bool>> failExpression = null,
-            int timeoutSeconds = 5)
+            int timeoutSeconds = 5, Func<string> failureDetailsFunction = null)
         {
             failExpression = failExpression ?? (_ => false);
             var completionPredicate = completionExpression.Compile();
@@ -43,7 +43,7 @@ namespace Topos.Tests.Extensions
             var cancellationTokenSource = new CancellationTokenSource();
 
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
-            
+
             var stopwatch = Stopwatch.StartNew();
             var cancellationToken = cancellationTokenSource.Token;
 
@@ -53,6 +53,8 @@ namespace Topos.Tests.Extensions
                 {
                     if (failPredicate(queue))
                     {
+                        var details = failureDetailsFunction?.Invoke();
+
                         throw new ApplicationException($@"Waiting for
 
     {completionExpression}
@@ -61,7 +63,11 @@ on queue failed, because the failure expression
 
     {failExpression}
 
-was satisfied after {stopwatch.Elapsed.TotalSeconds:0.0} s.");
+was satisfied after {stopwatch.Elapsed.TotalSeconds:0.0} s.
+
+Details:
+
+{details ?? "NONE"}");
                     }
                     if (completionPredicate(queue)) return;
 

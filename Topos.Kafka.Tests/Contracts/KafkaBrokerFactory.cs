@@ -1,4 +1,5 @@
-﻿using Topos.Config;
+﻿using Serilog;
+using Topos.Config;
 using Topos.Tests.Contracts;
 
 namespace Topos.Kafka.Tests.Contracts
@@ -18,5 +19,7 @@ namespace Topos.Kafka.Tests.Contracts
                 .Consumer(groupName, c => c.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog());
         }
+
+        public string GetTopic() => KafkaFixtureBase.GetTopic(Log.Logger);
     }
 }

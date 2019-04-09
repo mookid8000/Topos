@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Serilog;
 using Topos.Serilog;
 using Topos.Tests;
 
@@ -9,7 +10,14 @@ namespace Topos.Kafka.Tests
     {
         protected string GetNewTopic()
         {
-            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+            var logger = Logger;
+
+            return GetTopic(logger);
+        }
+
+        public static string GetTopic(ILogger logger)
+        {
+            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address))
             using (var adminClient = producer.GetAdminClient())
             {
                 var topics = adminClient
@@ -24,19 +32,10 @@ namespace Topos.Kafka.Tests
 
                 var topicName = $"testtopic-{number + 1}";
 
-                Logger.Information("Using topic named {topic}", topicName);
+                logger.Information("Using topic named {topic}", topicName);
 
                 return topicName;
             }
-
-
-            //var topicName = $"topic-{new Random(DateTime.Now.GetHashCode()).Next(100)}";
-
-            //Using(new TopicDeleter(topicName));
-
-            //Logger.Information("Using temp topic {topic}", topicName);
-
-            //return topicName;
         }
     }
 }

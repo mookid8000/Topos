@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Serilog.Events;
+using Testy.Extensions;
 using Topos.Config;
+using Topos.InMem;
 using Topos.Tests.Extensions;
+// ReSharper disable ArgumentsStyleAnonymousFunction
 
 #pragma warning disable 1998
 
@@ -14,6 +18,79 @@ namespace Topos.Tests.Contracts.Broker
     public abstract class BasicProducerConsumerTest<TProducerFactory> : ToposFixtureBase where TProducerFactory : IBrokerFactory, new()
     {
         IBrokerFactory _brokerFactory;
+
+        [Test]
+        public async Task ConsumerCanPickUpWhereItLeftOff()
+        {
+            var receivedStrings = new ConcurrentQueue<string>();
+            var topic = BrokerFactory.GetTopic();
+
+            var producer = BrokerFactory.ConfigureProducer()
+                .Topics(m => m.Map<string>(topic))
+                .Create();
+
+            Using(producer);
+
+            IDisposable CreateConsumer(InMemPositionsStorage storage)
+            {
+                return BrokerFactory.ConfigureConsumer("default-group")
+                    .Handle(async (messages, token) =>
+                    {
+                        var strings = messages.Select(m => m.Body).Cast<string>();
+
+                        receivedStrings.Enqueue(strings);
+                    })
+                    .Topics(t => t.Subscribe(topic))
+                    .Positions(p => p.StoreInMemory(storage))
+                    .Start();
+            }
+
+            var positionsStorage = new InMemPositionsStorage();
+
+            const string partitionKey = "same-every-time";
+
+            using (CreateConsumer(positionsStorage))
+            {
+                await producer.Send("HEJ", partitionKey: partitionKey);
+                await producer.Send("MED", partitionKey: partitionKey);
+                await producer.Send("DIG", partitionKey: partitionKey);
+
+                string GetFailureDetailsFunction() => $@"Got these strings:
+
+{receivedStrings.ToPrettyJson()}";
+
+                await receivedStrings.WaitOrDie(
+                    completionExpression: q => q.Count == 3,
+                    failExpression: q => q.Count > 3,
+                    failureDetailsFunction: GetFailureDetailsFunction
+                );
+            }
+
+            using (CreateConsumer(positionsStorage))
+            {
+                await producer.Send("MIN", partitionKey: partitionKey);
+                await producer.Send("SØDE", partitionKey: partitionKey);
+                await producer.Send("VEN", partitionKey: partitionKey);
+
+                await receivedStrings.WaitOrDie(q => q.Count == 6, failExpression: q => q.Count > 6);
+
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+
+            Assert.That(receivedStrings.Count, Is.EqualTo(6), $@"Queue did not contain 6 strings as expected:
+
+{receivedStrings.ToPrettyJson()}");
+
+            Assert.That(receivedStrings, Is.EqualTo(new[]
+            {
+                "HEJ",
+                "MED",
+                "DIG",
+                "MIN",
+                "SØDE",
+                "VEN",
+            }));
+        }
 
         [Test]
         public async Task CanStartProducer()
@@ -46,8 +123,10 @@ namespace Topos.Tests.Contracts.Broker
         {
             SetLogLevelTo(LogEventLevel.Verbose);
 
+            var topic = BrokerFactory.GetTopic();
+
             var producer = BrokerFactory.ConfigureProducer()
-                .Topics(m => m.Map<string>("string"))
+                .Topics(m => m.Map<string>(topic))
                 .Create();
 
             Using(producer);
@@ -57,21 +136,19 @@ namespace Topos.Tests.Contracts.Broker
             var consumer = BrokerFactory.ConfigureConsumer("default-group")
                 .Handle(async (messages, token) =>
                 {
-                    var bodies = messages.Select(m => m.Body).ToArray();
+                    var receivedString = messages.Select(m => m.Body).FirstOrDefault() as string;
 
-                    Console.WriteLine($@"Received these message bodies:
+                    if (receivedString == "HEJ MED DIG MIN VEN")
+                    {
+                        gotTheString.Set();
+                        return;
+                    }
 
-{string.Join(Environment.NewLine, bodies)}");
+                    throw new ArgumentException($@"Did not receive the expected string 'HEJ MED DIG MIN VEN':
 
-                    if (bodies.Length != 1) throw new ArgumentException($@"Received an unexpecte number of messages: {bodies.Length} - expected 1");
-
-                    var receivedString = bodies.OfType<string>().First();
-
-                    if (receivedString != "HEJ MED DIG MIN VEN") throw new ArgumentException($@"Received unexpected string: {receivedString} - expected 'HEJ MED DIG MIN VEN'");
-
-                    gotTheString.Set();
+{messages.ToPrettyJson()}");
                 })
-                .Topics(t => t.Subscribe("string"))
+                .Topics(t => t.Subscribe(topic))
                 .Positions(p => p.StoreInMemory())
                 .Start();
 
