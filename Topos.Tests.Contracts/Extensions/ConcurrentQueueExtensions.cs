@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Topos.Tests.Extensions
+namespace Topos.Tests.Contracts.Extensions
 {
     public static class ConcurrentQueueExtensions
     {

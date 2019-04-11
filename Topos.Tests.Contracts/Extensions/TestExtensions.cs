@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Topos.Tests.Extensions
+namespace Topos.Tests.Contracts.Extensions
 {
     public static class TestExtensions
     {
@@ -30,6 +30,13 @@ namespace Topos.Tests.Extensions
             {
                 yield return list.ToArray();
             }
+        }
+
+        public static void WaitOrDie(this ManualResetEvent manualResetEvent, int timeoutSeconds = 10, string errorMessage = null)
+        {
+            if (manualResetEvent.WaitOne(TimeSpan.FromSeconds(timeoutSeconds))) return;
+
+            throw new TimeoutException($"The reset event was not set within {timeoutSeconds} s timeout - {errorMessage ?? "no additional details were included"}");
         }
 
         public static async Task WaitOrDie<T>(this ConcurrentQueue<T> queue,

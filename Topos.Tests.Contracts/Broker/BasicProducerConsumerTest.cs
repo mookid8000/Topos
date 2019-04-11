@@ -4,18 +4,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Serilog.Events;
-using Testy.Extensions;
 using Topos.Config;
 using Topos.InMem;
-using Topos.Tests.Extensions;
+using Topos.Tests.Contracts.Extensions;
+
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
 #pragma warning disable 1998
 
 namespace Topos.Tests.Contracts.Broker
 {
-    public abstract class BasicProducerConsumerTest<TProducerFactory> : ToposFixtureBase where TProducerFactory : IBrokerFactory, new()
+    public abstract class BasicProducerConsumerTest<TProducerFactory> : ToposContractFixtureBase where TProducerFactory : IBrokerFactory, new()
     {
         IBrokerFactory _brokerFactory;
 
@@ -121,8 +120,6 @@ namespace Topos.Tests.Contracts.Broker
         [Test]
         public async Task CanProduceAndConsume()
         {
-            SetLogLevelTo(LogEventLevel.Verbose);
-
             var topic = BrokerFactory.GetTopic();
 
             var producer = BrokerFactory.ConfigureProducer()

@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Topos.AzureEventHubs\Topos.AzureEventHubs.csproj" />
     <ProjectReference Include="..\Topos.SqlServer\Topos.SqlServer.csproj" />
+    <ProjectReference Include="..\Topos.Tests.Contracts\Topos.Tests.Contracts.csproj" />
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 

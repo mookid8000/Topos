@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
+using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Extensions;
 
 #pragma warning disable 1998

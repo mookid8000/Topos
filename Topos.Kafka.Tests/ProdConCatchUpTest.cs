@@ -8,6 +8,7 @@ using Topos.Config;
 using Topos.Consumer;
 using Topos.InMem;
 using Topos.Producer;
+using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Extensions;
 #pragma warning disable 1998
 
