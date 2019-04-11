@@ -18,6 +18,6 @@ namespace Topos.Config
         /// that available partitions will be divided among instances within each consumer group name.
         /// </param>
         /// <param name="configure">Configuration callback builder</param>
-        public static ToposConsumerConfigurer Consumer(string groupName, Action<StandardConfigurer<IConsumerImplementation>> configure) => new ToposConsumerConfigurer(configure);
+        public static ToposConsumerConfigurer Consumer(string groupName, Action<StandardConfigurer<IConsumerImplementation>> configure) => new ToposConsumerConfigurer(configure, groupName);
     }
 }

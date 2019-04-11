@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Topos.Config;
+using Topos.Logging.Console;
 using Topos.Tests.Contracts;
 
 namespace Topos.Kafka.Tests.Contracts
@@ -10,16 +11,16 @@ namespace Topos.Kafka.Tests.Contracts
         {
             return Configure
                 .Producer(c => c.UseKafka(KafkaTestConfig.Address))
-                .Logging(l => l.UseSerilog());
+                .Logging(l => l.UseConsole());
         }
 
         public ToposConsumerConfigurer ConfigureConsumer(string groupName)
         {
             return Configure
                 .Consumer(groupName, c => c.UseKafka(KafkaTestConfig.Address))
-                .Logging(l => l.UseSerilog());
+                .Logging(l => l.UseConsole());
         }
 
-        public string GetTopic() => KafkaFixtureBase.GetTopic(Log.Logger);
+        public string GetNewTopic() => KafkaFixtureBase.GetTopic(Log.Logger);
     }
 }

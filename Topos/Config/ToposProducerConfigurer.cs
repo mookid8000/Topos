@@ -45,7 +45,7 @@ namespace Topos.Config
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
                 var topicMapper = c.Get<ITopicMapper>();
-                var producerImplementation = c.Get<IProducerImplementation>();
+                var producerImplementation = c.Get<IProducerImplementation>(errorMessage: "Røvhul");
                 var loggerFactory = c.Get<ILoggerFactory>();
 
                 var defaultToposProducer = new DefaultToposProducer(

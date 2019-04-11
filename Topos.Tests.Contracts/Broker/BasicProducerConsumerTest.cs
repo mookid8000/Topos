@@ -22,7 +22,7 @@ namespace Topos.Tests.Contracts.Broker
         public async Task ConsumerCanPickUpWhereItLeftOff()
         {
             var receivedStrings = new ConcurrentQueue<string>();
-            var topic = BrokerFactory.GetTopic();
+            var topic = BrokerFactory.GetNewTopic();
 
             var producer = BrokerFactory.ConfigureProducer()
                 .Topics(m => m.Map<string>(topic))
@@ -120,7 +120,7 @@ namespace Topos.Tests.Contracts.Broker
         [Test]
         public async Task CanProduceAndConsume()
         {
-            var topic = BrokerFactory.GetTopic();
+            var topic = BrokerFactory.GetNewTopic();
 
             var producer = BrokerFactory.ConfigureProducer()
                 .Topics(m => m.Map<string>(topic))

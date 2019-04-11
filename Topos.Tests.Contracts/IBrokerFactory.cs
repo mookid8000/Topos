@@ -7,6 +7,6 @@ namespace Topos.Tests.Contracts
     {
         ToposProducerConfigurer ConfigureProducer();
         ToposConsumerConfigurer ConfigureConsumer(string groupName);
-        string GetTopic();
+        string GetNewTopic();
     }
 }

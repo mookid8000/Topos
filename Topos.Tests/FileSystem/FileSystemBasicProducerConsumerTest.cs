@@ -1,36 +1,35 @@
 ﻿using NUnit.Framework;
+using Testy.Files;
 using Topos.Config;
+using Topos.FileSystem;
+using Topos.Logging.Console;
 using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Broker;
 
 namespace Topos.Tests.FileSystem
 {
     [TestFixture]
-    public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FileSystemBrokerFactory>
+    public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FileSystemBasicProducerConsumerTest.FileSystemBrokerFactory>
     {
-        
-    }
-
-    public class FileSystemBrokerFactory : IBrokerFactory
-    {
-        public ToposProducerConfigurer ConfigureProducer()
+        public class FileSystemBrokerFactory : DisposableFactory, IBrokerFactory
         {
-            throw new System.NotImplementedException();
-        }
+            readonly TemporaryTestDirectory _temporaryTestDirectory = new TemporaryTestDirectory();
 
-        public ToposConsumerConfigurer ConfigureConsumer(string groupName)
-        {
-            throw new System.NotImplementedException();
-        }
+            int _counter;
 
-        public string GetTopic()
-        {
-            throw new System.NotImplementedException();
-        }
+            public FileSystemBrokerFactory() => Using(_temporaryTestDirectory);
 
-        public void Dispose()
-        {
-            throw new System.NotImplementedException();
+            public ToposProducerConfigurer ConfigureProducer() =>
+                Configure
+                    .Producer(p => p.UseFileSystem(_temporaryTestDirectory.ToString()))
+                    .Logging(l => l.UseConsole());
+
+            public ToposConsumerConfigurer ConfigureConsumer(string groupName) =>
+                Configure
+                    .Consumer(groupName, c => c.UseFileSystem(_temporaryTestDirectory.ToString()))
+                    .Logging(l => l.UseConsole());
+
+            public string GetNewTopic() => $"topic{_counter++}";
         }
     }
 }

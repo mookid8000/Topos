@@ -36,6 +36,7 @@ namespace Topos.Config
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
                     var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
+                    var group = c.Get<GroupId>();
                     var consumerDispatcher = c.Get<IConsumerDispatcher>();
                     var positionManager = c.Get<IPositionManager>(errorMessage: @"The Kafka consumer needs access to a positions manager, so it can figure out which offsets to pick up from when starting up.");
 
@@ -43,8 +44,8 @@ namespace Topos.Config
                         loggerFactory: loggerFactory,
                         address: string.Join("; ", bootstrapServers),
                         topics: topics,
-                        group: "group",
-                        eventHandler: (evt, token) => consumerDispatcher.Dispatch(evt),
+                        group: group.Id,
+                        consumerDispatcher: consumerDispatcher,
                         positionManager: positionManager
                     );
                 });

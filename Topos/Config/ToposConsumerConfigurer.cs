@@ -18,9 +18,11 @@ namespace Topos.Config
         readonly Topics _topics = new Topics();
         readonly Handlers _handlers = new Handlers();
 
-        public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure)
+        public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure, string groupName)
         {
             var configurer = StandardConfigurer<IConsumerImplementation>.New(_injectionist);
+
+            _injectionist.Register(c => new GroupId(groupName));
 
             configure(configurer);
         }

@@ -19,7 +19,7 @@ namespace Topos.Kafka
     public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly Action<ReceivedTransportMessage, CancellationToken> _eventHandler;
+        readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly Thread _worker;
         readonly ILogger _logger;
@@ -30,14 +30,14 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            Action<ReceivedTransportMessage, CancellationToken> eventHandler, IPositionManager positionManager)
+            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
             _address = address ?? throw new ArgumentNullException(nameof(address));
             _group = group ?? throw new ArgumentNullException(nameof(group));
-            _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
+            _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _topics = topics.ToArray();
             _positionManager = positionManager;
             _worker = new Thread(Run) { IsBackground = true };
@@ -145,7 +145,7 @@ namespace Topos.Kafka
 
                 _logger.Debug("Received event {position}", position);
 
-                _eventHandler(message, cancellationToken);
+                _consumerDispatcher.Dispatch(message);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
