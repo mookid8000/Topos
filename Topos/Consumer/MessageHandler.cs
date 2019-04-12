@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly;
+using Polly.Retry;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
@@ -19,6 +21,7 @@ namespace Topos.Consumer
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ManualResetEvent _messageHandlerStopped = new ManualResetEvent(false);
         readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> _callback;
+        readonly AsyncRetryPolicy _callbackPolicy;
 
         ILogger _logger = new NullLogger();
 
@@ -27,6 +30,19 @@ namespace Topos.Consumer
         public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> callback)
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
+            _callbackPolicy = Policy.Handle<Exception>().WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(i * 2), LogException);
+        }
+
+        void LogException(Exception exception, TimeSpan delay)
+        {
+            if (delay < TimeSpan.FromSeconds(10))
+            {
+                _logger.Warn(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
+            }
+            else
+            {
+                _logger.Error(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
+            }
         }
 
         public bool IsReadyForMore => _messages.Count < MaxQueueLength;
@@ -70,7 +86,7 @@ namespace Topos.Consumer
                     {
                         try
                         {
-                            await _callback(messages, cancellationToken);
+                            await _callbackPolicy.ExecuteAsync(token => _callback(messages, token), cancellationToken);
 
                             var maxPositionByPartition = messages.GroupBy(m => new { m.Position.Topic, m.Position.Partition })
                                 .Select(a => new

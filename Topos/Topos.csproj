@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="newtonsoft.json" Version="12.0.1" />
+    <PackageReference Include="polly" Version="7.1.0" />
   </ItemGroup>
 
 </Project>

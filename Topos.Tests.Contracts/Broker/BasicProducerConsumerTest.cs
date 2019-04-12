@@ -19,6 +19,40 @@ namespace Topos.Tests.Contracts.Broker
         IBrokerFactory _brokerFactory;
 
         [Test]
+        public async Task CanOvercomeExceptions()
+        {
+            var receivedStrings = new ConcurrentQueue<string>();
+            var topic = BrokerFactory.GetNewTopic();
+
+            var producer = BrokerFactory.ConfigureProducer()
+                .Topics(m => m.Map<string>(topic))
+                .Create();
+
+            Using(producer);
+
+            var random = new Random(DateTime.Now.GetHashCode());
+
+            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+                .Handle(async (messages, token) =>
+                {
+                    var strings = messages.Select(m => m.Body).Cast<string>();
+
+                    if (random.Next(3) == 0) throw new ApplicationException("oh no!");
+
+                    receivedStrings.Enqueue(strings);
+                })
+                .Topics(t => t.Subscribe(topic))
+                .Positions(p => p.StoreInMemory())
+                .Start();
+
+            Using(consumer);
+
+            await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send($"message-{n}", "p100")));
+
+            await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 10);
+        }
+
+        [Test]
         public async Task ConsumerCanPickUpWhereItLeftOff()
         {
             var receivedStrings = new ConcurrentQueue<string>();
