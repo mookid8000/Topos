@@ -197,7 +197,7 @@ Please delete the file when you don't feel like looking at it anymore.";
                 return new ReadResult(lines, () =>
                 {
                     SavePosition(resumePosition, currentFileName);
-                });
+                }, _currentReadFileNumber, resumePosition);
             }
         }
 

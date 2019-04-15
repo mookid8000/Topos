@@ -5,6 +5,8 @@ using System.Threading;
 using Topos.Config;
 using Topos.Consumer;
 using Topos.Logging;
+// ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable ArgumentsStyleOther
 
 namespace Topos.FileSystem
 {

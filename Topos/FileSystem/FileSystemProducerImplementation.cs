@@ -17,6 +17,7 @@ namespace Topos.FileSystem
         public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
             var text = JsonConvert.SerializeObject(transportMessage);
+          
             _fileEventBuffer.Append(new[] {text});
         }
 
