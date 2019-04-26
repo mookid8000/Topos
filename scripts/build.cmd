@@ -50,6 +50,12 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
+dotnet build "%root%\Topos.Kafkaesque" -c Release
+if %ERRORLEVEL% neq 0 (
+	popd
+ 	goto exit_fail
+)
+
 dotnet build "%root%\Topos.MongoDb" -c Release
 if %ERRORLEVEL% neq 0 (
 	popd

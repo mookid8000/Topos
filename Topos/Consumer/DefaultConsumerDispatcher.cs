@@ -43,10 +43,9 @@ namespace Topos.Consumer
 
         async Task RunPositionsFlusher()
         {
+            var token = _cancellationTokenSource.Token;
             try
             {
-                var token = _cancellationTokenSource.Token;
-
                 while (!token.IsCancellationRequested)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
@@ -54,7 +53,7 @@ namespace Topos.Consumer
                     await SetPositions();
                 }
             }
-            catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
                 // it's fine
             }
@@ -77,7 +76,7 @@ namespace Topos.Consumer
         {
             var positions = _handlers
                 .SelectMany(h => h.GetPositions())
-                .GroupBy(p => new {p.Topic, p.Partition})
+                .GroupBy(p => new { p.Topic, p.Partition })
                 .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
                 .ToList();
 

@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Kafkaesque;
 using Newtonsoft.Json;
-using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 
@@ -8,23 +11,32 @@ namespace Topos.Kafkaesque
 {
     class FileSystemProducerImplementation : IProducerImplementation
     {
-        readonly FileEventBuffer _fileEventBuffer;
+        readonly ConcurrentDictionary<string, LogWriter> _writers = new ConcurrentDictionary<string, LogWriter>();
+        readonly string _directoryPath;
+        readonly ILogger _logger;
 
         public FileSystemProducerImplementation(string directoryPath, ILoggerFactory loggerFactory)
         {
-            _fileEventBuffer = new FileEventBuffer(directoryPath, loggerFactory);
+            _directoryPath = directoryPath;
+            _logger = loggerFactory.GetLogger(typeof(FileSystemProducerImplementation));
         }
 
         public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
-            var text = JsonConvert.SerializeObject(transportMessage);
-          
-            _fileEventBuffer.Append(new[] {text});
+            var eventData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transportMessage));
+            var writer = _writers.GetOrAdd(topic, CreateWriter);
+            
+            await writer.WriteAsync(eventData);
         }
 
-        public void Dispose()
+        LogWriter CreateWriter(string topic)
         {
-            _fileEventBuffer.Dispose();
+            var topicDirectoryPath = Path.Combine(_directoryPath, topic);
+            var logDirectory = new LogDirectory(topicDirectoryPath);
+
+            return logDirectory.GetWriter();
         }
+
+        public void Dispose() => Parallel.ForEach(_writers.Values, writer => writer.Dispose());
     }
 }

@@ -1,4 +1,5 @@
 # Changelog
 
-## 0.0.18-beta
-* Update to RC4
+## 0.0.19
+* Confluent Kafka 1.0.0
+* Kafkaesque-based broker implementation (for the file system)

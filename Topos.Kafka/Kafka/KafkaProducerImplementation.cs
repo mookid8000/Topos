@@ -16,13 +16,14 @@ namespace Topos.Kafka
         static readonly Headers EmptyHeaders = new Headers();
 
         readonly IProducer<string, byte[]> _producer;
-
         readonly ILogger _logger;
+        readonly string _address;
 
         bool _disposed;
 
         public KafkaProducerImplementation(ILoggerFactory loggerFactory, string address, int sendTimeoutSeconds = 30)
         {
+            _address = address;
             _logger = loggerFactory.GetLogger(typeof(KafkaProducerImplementation));
 
             var config = new ProducerConfig
@@ -40,7 +41,7 @@ namespace Topos.Kafka
             _logger.Info("Kafka producer initialized with {address}", address);
         }
 
-        public AdminClient GetAdminClient() => new AdminClient(_producer.Handle);
+        public IAdminClient GetAdminClient() => new AdminClientBuilder(new[] { new KeyValuePair<string, string>("bootstrap.servers", _address) }).Build();
 
         public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {

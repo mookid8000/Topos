@@ -114,7 +114,7 @@ namespace Topos.Tests.Contracts.Broker
 
 {receivedStrings.ToPrettyJson()}");
 
-            Assert.That(receivedStrings, Is.EqualTo(new[]
+            var expectedReceivedStrings = new[]
             {
                 "HEJ",
                 "MED",
@@ -122,7 +122,19 @@ namespace Topos.Tests.Contracts.Broker
                 "MIN",
                 "SØDE",
                 "VEN",
-            }));
+            };
+
+            Assert.That(receivedStrings, Is.EqualTo(expectedReceivedStrings), $@"
+
+Expected
+
+    {string.Join(", ", expectedReceivedStrings)}
+
+but got
+
+    {string.Join(", ", receivedStrings)}
+
+");
         }
 
         [Test]

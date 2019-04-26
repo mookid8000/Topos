@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using Kafkaesque;
 using Newtonsoft.Json;
 using Topos.Consumer;
+using Topos.Extensions;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
@@ -18,14 +21,13 @@ namespace Topos.Kafkaesque
         readonly ILoggerFactory _loggerFactory;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
+        readonly List<Thread> _workers;
         readonly string _directoryPath;
-        readonly string[] _topics;
         readonly ILogger _logger;
 
         bool _disposed;
 
-        public FileSystemConsumerImplementation(string directoryPath, ILoggerFactory loggerFactory, IEnumerable<string> topics, string group,
-            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
+        public FileSystemConsumerImplementation(string directoryPath, ILoggerFactory loggerFactory, IEnumerable<string> topics, string group, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
         {
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             _directoryPath = directoryPath;
@@ -34,65 +36,65 @@ namespace Topos.Kafkaesque
             _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
 
             _logger = loggerFactory.GetLogger(typeof(FileSystemConsumerImplementation));
-            _topics = topics.ToArray();
+
+            _workers = topics
+                .Select(topic => new Thread(() => PumpTopic(topic)))
+                .ToList();
         }
 
-        public void Start() => Task.Run(Work);
+        public void Start() => _workers.ForEach(t => t.Start());
 
-        async Task Work()
+        void PumpTopic(string topic)
         {
             var cancellationToken = _cancellationTokenSource.Token;
 
-            using (var fileBuffer = new FileEventBuffer(_directoryPath, _loggerFactory))
+            _logger.Info("Starting consumer worker for topic {topic}", topic);
+
+            try
             {
-                try
+                var reader = new LogDirectory(Path.Combine(_directoryPath, topic)).GetReader();
+
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (!cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        try
-                        {
-                            var readResult = fileBuffer.Read();
+                        var resumePosition = _positionManager.Get(topic, 0).Result;
 
-                            if (readResult.IsEmpty)
-                            {
-                                await Task.Delay(TimeSpan.FromSeconds(0.2), cancellationToken);
-                                continue;
-                            }
+                        var (fileNumber, bytePosition) = resumePosition.ToKafkaesquePosition();
 
-                            foreach (var line in readResult)
-                            {
-                                var transportMessage = JsonConvert.DeserializeObject<TransportMessage>(line);
-                                var position = new Position("bim", 0, readResult.Position);
-                                var headers = transportMessage.Headers;
-                                var body = transportMessage.Body;
-                                var receivedTransportMessage = new ReceivedTransportMessage(position, headers, body);
+                        _logger.Debug("Resuming consumer from file {fileNumber} byte {bytePosition}", fileNumber, bytePosition);
 
-                                _consumerDispatcher.Dispatch(receivedTransportMessage);
-                            }
-                        }
-                        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                        foreach (var eventData in reader.Read(fileNumber, bytePosition, cancellationToken: cancellationToken))
                         {
-                            // exit
-                        }
-                        catch (Exception exception)
-                        {
-                            _logger.Error(exception,
-                                "An error ocurred when reading file buffer from path {directoryPath}", _directoryPath);
+                            var transportMessage = JsonConvert.DeserializeObject<TransportMessage>(Encoding.UTF8.GetString(eventData.Data));
+                            var kafkaesqueEventPosition = new KafkaesquePosition(eventData.FileNumber, eventData.BytePosition);
+                            var eventPosition = kafkaesqueEventPosition.ToPosition(topic, partition: 0);
+                            var receivedTransportMessage = new ReceivedTransportMessage(eventPosition, transportMessage.Headers, transportMessage.Body);
+
+                            Console.WriteLine($"Received message {kafkaesqueEventPosition} / {receivedTransportMessage.Position}: {receivedTransportMessage.GetMessageId()}");
+
+                            _consumerDispatcher.Dispatch(receivedTransportMessage);
                         }
                     }
+                    catch (Exception exception)
+                    {
+                        _logger.Warn(exception, "Error in consumer worker for topic {topic} - waiting 10 s", topic);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // exit
-                }
-                catch (Exception exception)
-                {
-                    _logger.Error(exception, "Unhandled exception in file system consumer implementation");
-                }
-                finally
-                {
-                    _exitedWorkerLoop.Set();
-                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // we're done
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Unhandled exception in consumer worker for topic {topic}", topic);
+            }
+            finally
+            {
+                _logger.Info("Stopped consumer worker for topic {topic}", topic);
+                _exitedWorkerLoop.Set();
             }
         }
 
