@@ -1,12 +1,11 @@
 ﻿using NUnit.Framework;
 using Testy.Files;
 using Topos.Config;
-using Topos.FileSystem;
 using Topos.Logging.Console;
 using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Tests.FileSystem
+namespace Topos.Kafkaesque.Tests
 {
     [TestFixture]
     public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FileSystemBasicProducerConsumerTest.FileSystemBrokerFactory>

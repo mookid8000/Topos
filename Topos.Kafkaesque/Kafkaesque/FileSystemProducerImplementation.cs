@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 
-namespace Topos.FileSystem
+namespace Topos.Kafkaesque
 {
     class FileSystemProducerImplementation : IProducerImplementation
     {

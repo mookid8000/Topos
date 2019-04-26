@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Topos.FileSystem
+namespace Topos.Internals
 {
     class ReadResult : IEnumerable<string>
     {

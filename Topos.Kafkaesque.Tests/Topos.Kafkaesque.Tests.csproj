@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="testy" Version="0.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Topos.Kafkaesque\Topos.Kafkaesque.csproj" />
+    <ProjectReference Include="..\Topos.Tests.Contracts\Topos.Tests.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

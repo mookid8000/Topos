@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Topos.Kafkaesque</AssemblyName>
+    <RootNamespace>Topos</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Topos\Topos.csproj" />
+  </ItemGroup>
+
+</Project>

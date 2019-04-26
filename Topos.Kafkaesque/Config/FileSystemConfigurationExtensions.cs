@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Topos.Config;
 using Topos.Consumer;
+using Topos.Kafkaesque;
 using Topos.Logging;
+
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
 
-namespace Topos.FileSystem
+namespace Topos.Config
 {
     public static class FileSystemConfigurationExtensions
     {

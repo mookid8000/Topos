@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Topos.Logging;
 
-namespace Topos.FileSystem
+namespace Topos.Internals
 {
     class FileEventBuffer : IDisposable
     {

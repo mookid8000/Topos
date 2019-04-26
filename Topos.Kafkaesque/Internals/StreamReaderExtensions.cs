@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Topos.FileSystem
+namespace Topos.Internals
 {
     static class StreamReaderExtensions
     {

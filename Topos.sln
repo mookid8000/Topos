@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos", "Topos\Topos.csproj", "{57294AA8-D493-4DDE-AB92-BDF6E1E8996A}"
 EndProject
@@ -53,7 +53,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.AzureBlobs", "Topos.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.AzureBlobs.Tests", "Topos.AzureBlobs.Tests\Topos.AzureBlobs.Tests.csproj", "{B83056F9-3052-4169-82E6-AA3DF2B15F56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.Tests.Contracts", "Topos.Tests.Contracts\Topos.Tests.Contracts.csproj", "{2F91F3D1-3391-4F34-ADAF-8A2B92776BD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.Tests.Contracts", "Topos.Tests.Contracts\Topos.Tests.Contracts.csproj", "{2F91F3D1-3391-4F34-ADAF-8A2B92776BD9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "kafkaesque", "kafkaesque", "{274BB196-E94B-4604-AD36-D74AD9AE4885}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.Kafkaesque", "Topos.Kafkaesque\Topos.Kafkaesque.csproj", "{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.Kafkaesque.Tests", "Topos.Kafkaesque.Tests\Topos.Kafkaesque.Tests.csproj", "{0F7B858A-7DE2-4E17-BD71-4259485BA617}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +131,14 @@ Global
 		{2F91F3D1-3391-4F34-ADAF-8A2B92776BD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F91F3D1-3391-4F34-ADAF-8A2B92776BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F91F3D1-3391-4F34-ADAF-8A2B92776BD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F7B858A-7DE2-4E17-BD71-4259485BA617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F7B858A-7DE2-4E17-BD71-4259485BA617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F7B858A-7DE2-4E17-BD71-4259485BA617}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F7B858A-7DE2-4E17-BD71-4259485BA617}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +157,8 @@ Global
 		{EC7513D3-E749-456E-967E-DDF929063C78} = {3B5DA5BB-11FC-467C-805F-CFCE22DD379D}
 		{8B466446-3E77-4078-BA93-1B89CF5E2D68} = {9ACD0776-8E31-4B34-9E14-322C7B59E74F}
 		{B83056F9-3052-4169-82E6-AA3DF2B15F56} = {9ACD0776-8E31-4B34-9E14-322C7B59E74F}
+		{EA42DE3A-DC93-42B0-B8AF-BA39D6F3260B} = {274BB196-E94B-4604-AD36-D74AD9AE4885}
+		{0F7B858A-7DE2-4E17-BD71-4259485BA617} = {274BB196-E94B-4604-AD36-D74AD9AE4885}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F89951B-C638-43F3-BEC1-70A5F8338E10}
