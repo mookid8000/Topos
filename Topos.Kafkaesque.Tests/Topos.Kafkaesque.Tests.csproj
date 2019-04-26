@@ -7,12 +7,15 @@
   <ItemGroup>
     <PackageReference Include="microsoft.net.test.sdk" Version="16.0.1" />
     <PackageReference Include="nunit3testadapter" Version="3.13.0" />
+    <PackageReference Include="serilog" Version="2.8.0" />
+    <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
     <PackageReference Include="tababular" Version="3.0.1" />
     <PackageReference Include="testy" Version="0.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Topos.Kafkaesque\Topos.Kafkaesque.csproj" />
+    <ProjectReference Include="..\Topos.Serilog\Topos.Serilog.csproj" />
     <ProjectReference Include="..\Topos.Tests.Contracts\Topos.Tests.Contracts.csproj" />
   </ItemGroup>
 

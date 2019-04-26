@@ -99,6 +99,12 @@ namespace Topos.Tests.Contracts.Broker
                 );
             }
 
+            Console.WriteLine($@"Got these positions after FIRST run:
+
+{string.Join(Environment.NewLine, positionsStorage.GetAll(topic).Select(position => $"    {position}"))}
+
+");
+
             using (CreateConsumer(positionsStorage))
             {
                 await producer.Send("MIN", partitionKey: partitionKey);
@@ -109,6 +115,12 @@ namespace Topos.Tests.Contracts.Broker
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
             }
+
+            Console.WriteLine($@"Got these positions after SECOND run:
+
+{string.Join(Environment.NewLine, positionsStorage.GetAll(topic).Select(position => $"    {position}"))}
+
+");
 
             Assert.That(receivedStrings.Count, Is.EqualTo(6), $@"Queue did not contain 6 strings as expected:
 

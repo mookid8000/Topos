@@ -71,6 +71,8 @@ namespace Topos.Kafkaesque
                             var eventPosition = kafkaesqueEventPosition.ToPosition(topic, partition: 0);
                             var receivedTransportMessage = new ReceivedTransportMessage(eventPosition, transportMessage.Headers, transportMessage.Body);
 
+                            _logger.Debug("Received event {position}", eventPosition);
+
                             Console.WriteLine($"Received message {kafkaesqueEventPosition} / {receivedTransportMessage.Position}: {receivedTransportMessage.GetMessageId()}");
 
                             _consumerDispatcher.Dispatch(receivedTransportMessage);
