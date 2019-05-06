@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Topos.Extensions;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -17,6 +16,9 @@ namespace Topos.Consumer
         readonly IPositionManager _positionManager;
         readonly MessageHandler[] _handlers;
         readonly ILogger _logger;
+
+        bool _disposed;
+        Task _flusherLoopTask;
 
         public DefaultConsumerDispatcher(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer, Handlers handlers, IPositionManager positionManager)
         {
@@ -38,7 +40,7 @@ namespace Topos.Consumer
                 handler.Start(logger);
             }
 
-            Task.Run(async () => await RunPositionsFlusher());
+            _flusherLoopTask = Task.Run(async () => await RunPositionsFlusher());
         }
 
         async Task RunPositionsFlusher()
@@ -113,14 +115,33 @@ namespace Topos.Consumer
 
         public void Dispose()
         {
-            foreach (var handler in _handlers)
-            {
-                handler.Stop();
-            }
+            if (_disposed) return;
 
-            foreach (var handler in _handlers)
+            try
             {
-                handler.Dispose();
+                foreach (var handler in _handlers)
+                {
+                    handler.Stop();
+                }
+
+                _cancellationTokenSource.Cancel();
+
+                foreach (var handler in _handlers)
+                {
+                    handler.Dispose();
+                }
+
+                if (_flusherLoopTask != null)
+                {
+                    if (!_flusherLoopTask.Wait(TimeSpan.FromSeconds(3)))
+                    {
+                        _logger.Warn("Positions flusher loop did not exit/finish committing the last position within 3 s timeout - positions may not have been properly committed");
+                    }
+                }
+            }
+            finally
+            {
+                _disposed = true;
             }
         }
     }

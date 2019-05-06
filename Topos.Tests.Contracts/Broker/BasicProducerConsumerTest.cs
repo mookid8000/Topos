@@ -113,7 +113,8 @@ namespace Topos.Tests.Contracts.Broker
 
                 await receivedStrings.WaitOrDie(q => q.Count == 6, failExpression: q => q.Count > 6);
 
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                // additional delay to be absolutely sure that no additional messages arrive after this point
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
 
             Console.WriteLine($@"Got these positions after SECOND run:
