@@ -7,7 +7,6 @@ using System.Threading;
 using Kafkaesque;
 using Newtonsoft.Json;
 using Topos.Consumer;
-using Topos.Extensions;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
@@ -18,7 +17,6 @@ namespace Topos.Kafkaesque
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ManualResetEvent _exitedWorkerLoop = new ManualResetEvent(false);
-        readonly ILoggerFactory _loggerFactory;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly List<Thread> _workers;
@@ -30,15 +28,15 @@ namespace Topos.Kafkaesque
         public FileSystemConsumerImplementation(string directoryPath, ILoggerFactory loggerFactory, IEnumerable<string> topics, string group, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
         {
             if (topics == null) throw new ArgumentNullException(nameof(topics));
+            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             _directoryPath = directoryPath;
-            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
 
             _logger = loggerFactory.GetLogger(typeof(FileSystemConsumerImplementation));
 
             _workers = topics
-                .Select(topic => new Thread(() => PumpTopic(topic)))
+                .Select(topic => new Thread(() => PumpTopic(topic)) { Name = $"Kafkaesque worker for topic '{topic}'" })
                 .ToList();
         }
 
@@ -72,8 +70,6 @@ namespace Topos.Kafkaesque
                             var receivedTransportMessage = new ReceivedTransportMessage(eventPosition, transportMessage.Headers, transportMessage.Body);
 
                             _logger.Debug("Received event {position}", eventPosition);
-
-                            Console.WriteLine($"Received message {kafkaesqueEventPosition} / {receivedTransportMessage.Position}: {receivedTransportMessage.GetMessageId()}");
 
                             _consumerDispatcher.Dispatch(receivedTransportMessage);
                         }
