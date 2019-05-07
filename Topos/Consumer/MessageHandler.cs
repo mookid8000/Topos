@@ -25,6 +25,7 @@ namespace Topos.Consumer
 
         ILogger _logger = new NullLogger();
 
+        Task _task;
         bool _disposed;
 
         public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> callback)
@@ -52,8 +53,7 @@ namespace Topos.Consumer
         public void Start(ILogger logger)
         {
             _logger = logger;
-
-            Task.Run(ProcessMessages);
+            _task = Task.Run(ProcessMessages);
         }
 
         public void Stop()
@@ -73,43 +73,47 @@ namespace Topos.Consumer
 
             try
             {
-                var messages = new List<ReceivedLogicalMessage>(MaxQueueLength);
+                var messageBatch = new List<ReceivedLogicalMessage>(MaxQueueLength);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     while (_messages.TryDequeue(out var message))
                     {
-                        messages.Add(message);
+                        messageBatch.Add(message);
                     }
 
-                    if (messages.Any())
+                    if (!messageBatch.Any())
                     {
-                        try
-                        {
-                            await _callbackPolicy.ExecuteAsync(token => _callback(messages, token), cancellationToken);
-
-                            var maxPositionByPartition = messages.GroupBy(m => new { m.Position.Topic, m.Position.Partition })
-                                .Select(a => new
-                                {
-                                    Topic = a.Key.Topic,
-                                    Partition = a.Key.Partition,
-                                    Offset = a.Max(p => p.Position.Offset)
-                                })
-                                .ToList();
-
-                            foreach (var max in maxPositionByPartition)
-                            {
-                                _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[
-                                    max.Partition] = max.Offset;
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            _logger.Warn(exception, "Error when handling messages");
-                        }
+                        await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                        continue;
                     }
 
-                    messages.Clear();
+                    try
+                    {
+                        await _callbackPolicy.ExecuteAsync(token => _callback(messageBatch, token), cancellationToken);
+
+                        var maxPositionByPartition = messageBatch
+                            .GroupBy(m => new {m.Position.Topic, m.Position.Partition})
+                            .Select(a => new
+                            {
+                                Topic = a.Key.Topic,
+                                Partition = a.Key.Partition,
+                                Offset = a.Max(p => p.Position.Offset)
+                            })
+                            .ToList();
+
+                        foreach (var max in maxPositionByPartition)
+                        {
+                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[
+                                max.Partition] = max.Offset;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.Warn(exception, "Error when handling messages");
+                    }
+
+                    messageBatch.Clear();
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -137,9 +141,9 @@ namespace Topos.Consumer
                 {
                     Stop();
 
-                    if (!_messageHandlerStopped.WaitOne(TimeSpan.FromSeconds(5)))
+                    if (!_task.Wait(TimeSpan.FromSeconds(5)))
                     {
-                        _logger.Warn("Message handler did not stop within 5 s timeout");
+                        _logger.Warn("Message handler worker task did not stop within 5 s timeout");
                     }
                 }
             }
