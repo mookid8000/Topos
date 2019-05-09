@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Kafkaesque;
 using Newtonsoft.Json;
+using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
+using ILogger = Topos.Logging.ILogger;
 
 namespace Topos.Kafkaesque
 {
@@ -39,7 +41,7 @@ namespace Topos.Kafkaesque
 
             return new Lazy<LogWriter>(() =>
             {
-                var logDirectory = new LogDirectory(topicDirectoryPath);
+                var logDirectory = new LogDirectory(topicDirectoryPath, new Settings(logger: new KafkaesqueToToposLogger(_logger)));
 
                 _logger.Debug("Initializing new Kafkaesque writer with path {directoryPath}", topicDirectoryPath);
 

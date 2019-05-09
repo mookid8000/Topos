@@ -10,6 +10,7 @@ using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
+using ILogger = Topos.Logging.ILogger;
 
 namespace Topos.Kafkaesque
 {
@@ -50,7 +51,9 @@ namespace Topos.Kafkaesque
 
             try
             {
-                var reader = new LogDirectory(Path.Combine(_directoryPath, topic)).GetReader();
+                var topicDirectoryPath = Path.Combine(_directoryPath, topic);
+                var logDirectory = new LogDirectory(topicDirectoryPath, new Settings(logger: new KafkaesqueToToposLogger(_logger)));
+                var reader = logDirectory.GetReader();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
