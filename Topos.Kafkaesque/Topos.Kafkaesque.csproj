@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="kafkaesque" Version="0.0.6" />
+    <PackageReference Include="kafkaesque" Version="0.0.7" />
   </ItemGroup>
 
   <ItemGroup>
