@@ -58,6 +58,7 @@ namespace Topos.Kafka.Tests
                 .Consumer("default-group", c => c.UseKafka("localhost:9092"))
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Topics(t => t.Subscribe("someevents"))
+                .Positions(p => p.StoreInMemory())
                 .Handle(async (messages, token) =>
                 {
                     foreach (var message in messages)

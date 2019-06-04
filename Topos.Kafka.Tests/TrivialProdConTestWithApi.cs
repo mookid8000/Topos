@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
 using Topos.Tests.Contracts.Extensions;
-using Topos.Tests.Extensions;
 
 #pragma warning disable 1998
 
@@ -38,6 +37,7 @@ namespace Topos.Kafka.Tests
                 .Consumer("default-group", e => e.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
                 .Topics(t => t.Subscribe(_topic))
+                .Positions(p => p.StoreInMemory())
                 .Handle(async (messages, token) =>
                 {
                     foreach (var message in messages.Select(m => m.Body).OfType<string>())
