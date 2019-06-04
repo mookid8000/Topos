@@ -5,7 +5,7 @@ using Topos.Config;
 using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Kafkaesque.Tests
+namespace Topos.Kafkaesque.Tests.Contracts
 {
     [TestFixture]
     public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FileSystemBasicProducerConsumerTest.FileSystemBrokerFactory>
@@ -14,7 +14,6 @@ namespace Topos.Kafkaesque.Tests
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .MinimumLevel.Verbose()
                 .CreateLogger();
         }
 

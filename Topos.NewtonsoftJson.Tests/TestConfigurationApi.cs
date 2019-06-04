@@ -3,7 +3,7 @@ using Testy;
 using Topos.Config;
 using Topos.InMem;
 
-namespace Topos.Tests.Config
+namespace Topos.NewtonsoftJson.Tests
 {
     [TestFixture]
     [Ignore("wait with this")]
