@@ -25,16 +25,16 @@ Let's go through the different configuration parts:
 // Topos configurations start with 'Configure.', no matter what you want to configure
 var producer = Configure
 
-	// we configure a producer that uses Kafka, seeding it with a couple of brokers
+    // we configure a producer that uses Kafka, seeding it with a couple of brokers
     .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
 
-	// tell Topos to JSON-serialize messages
+    // tell Topos to JSON-serialize messages
     .Serialization(s => s.UseNewtonsoftJson())
 
-	// map .NET types of type SomeEvent to the 'someevents' topic
+    // map .NET types of type SomeEvent to the 'someevents' topic
     .Topics(m => m.Map<SomeEvent>("someevents"))
 
-	// creates the producer
+    // creates the producer
     .Create();
 ```
 
@@ -73,19 +73,19 @@ Let's go through the configuration again:
 // start with 'Configure.'...
 var consumer = Configure
 
-	// configure a consumer instance as part of the group 'default-group', and use Kafka
+    // configure a consumer instance as part of the group 'default-group', and use Kafka
     .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
 
-	// use JSON
+    // use JSON
     .Serialization(s => s.UseNewtonsoftJson())
 
-	// subscribe to 'someevents'
+    // subscribe to 'someevents'
     .Topics(t => t.Subscribe("someevents"))
 
     // store positions in MongoDB
     .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
 
-	// handle messages
+    // handle messages
     .Handle(async (messages, token) =>
     {
         foreach (var message in messages)
