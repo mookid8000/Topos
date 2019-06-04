@@ -49,7 +49,7 @@ var consumer = Configure
     .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
     .Topics(t => t.Subscribe("someevents")
-	.Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
+    .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
     .Handle(async (messages, token) =>
     {
         foreach (var message in messages)
@@ -82,8 +82,8 @@ var consumer = Configure
 	// subscribe to 'someevents'
     .Topics(t => t.Subscribe("someevents"))
 
-	// store positions in MongoDB
-	.Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
+    // store positions in MongoDB
+    .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
 
 	// handle messages
     .Handle(async (messages, token) =>
