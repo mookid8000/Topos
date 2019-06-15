@@ -15,7 +15,7 @@ namespace Topos.Kafka.Tests
     [TestFixture]
     public class LittlePerformanceTest : KafkaFixtureBase
     {
-        [TestCase(100, 5)]
+        [TestCase(100, 10)]
         [TestCase(1000, 10)]
         //[TestCase(10000, 15)]
         [TestCase(100000, 20)]
