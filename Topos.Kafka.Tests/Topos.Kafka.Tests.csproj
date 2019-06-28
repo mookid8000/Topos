@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="1.0.1.1" />
+    <PackageReference Include="confluent.kafka" Version="1.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="nunit3testadapter" Version="3.13.0" />
     <PackageReference Include="serilog" Version="2.8.0" />
