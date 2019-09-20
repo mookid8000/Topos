@@ -2,7 +2,6 @@
 using System.Linq;
 using Confluent.Kafka;
 using Serilog;
-using Topos.Config;
 using Topos.Internals;
 using Topos.Serilog;
 using Topos.Tests;
