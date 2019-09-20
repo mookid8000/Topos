@@ -1,6 +1,7 @@
 ﻿using System;
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleStringLiteral
+// ReSharper disable ArgumentsStyleOther
 
 namespace Topos.Internals
 {

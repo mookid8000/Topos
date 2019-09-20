@@ -14,6 +14,10 @@ namespace Topos.Config
                 config.BootstrapServers = info.BootstrapServers;
                 config.SaslUsername = info.SaslUsername;
                 config.SaslPassword = info.SaslPassword;
+
+                config.RequestTimeoutMs = 60000;
+                config.SecurityProtocol = SecurityProtocol.SaslSsl;
+                config.SaslMechanism = SaslMechanism.Plain;
             });
             
             return config;
