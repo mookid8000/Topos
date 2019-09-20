@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
+using Confluent.Kafka;
 using Serilog;
+using Topos.Config;
+using Topos.Internals;
 using Topos.Serilog;
 using Topos.Tests;
 
@@ -17,7 +20,7 @@ namespace Topos.Kafka.Tests
 
         public static string GetTopic(ILogger logger)
         {
-            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address))
+            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address, configurationCustomizer: ConfigurationCustomizer))
             using (var adminClient = producer.GetAdminClient())
             {
                 var topics = adminClient
@@ -36,6 +39,18 @@ namespace Topos.Kafka.Tests
 
                 return topicName;
             }
+        }
+
+        static ProducerConfig ConfigurationCustomizer(ProducerConfig config)
+        {
+            AzureEventHubsHelper.TrySetConnectionInfo(config.BootstrapServers, info =>
+                {
+                    config.BootstrapServers = info.BootstrapServers;
+                    config.SaslUsername = info.SaslUsername;
+                    config.SaslPassword = info.SaslPassword;
+                });
+
+            return config;
         }
     }
 }

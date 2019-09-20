@@ -19,6 +19,7 @@ namespace Topos.Kafka
     public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly Thread _worker;
@@ -30,7 +31,7 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
+            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager, Func<ConsumerConfig, ConsumerConfig> configurationCustomizer = null)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));
@@ -40,6 +41,7 @@ namespace Topos.Kafka
             _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _topics = topics.ToArray();
             _positionManager = positionManager;
+            _configurationCustomizer = configurationCustomizer;
             _worker = new Thread(Run) { IsBackground = true };
         }
 
@@ -63,6 +65,11 @@ namespace Topos.Kafka
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnableAutoCommit = false,
             };
+
+            if (_configurationCustomizer != null)
+            {
+                consumerConfig = _configurationCustomizer(consumerConfig);
+            }
 
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))

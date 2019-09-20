@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.3" />
-    <PackageReference Include="microsoft.azure.storage.blob" Version="9.4.2" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="11.0.1" />
   </ItemGroup>
 
   <ItemGroup>

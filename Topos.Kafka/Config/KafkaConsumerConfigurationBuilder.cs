@@ -3,9 +3,9 @@ using Topos.Internals;
 
 namespace Topos.Config
 {
-    public class KafkaProducerConfigurationBuilder
+    public class KafkaConsumerConfigurationBuilder
     {
-        internal ProducerConfig Apply(ProducerConfig config)
+        internal ConsumerConfig Apply(ConsumerConfig config)
         {
             var bootstrapServers = config.BootstrapServers;
 
@@ -15,7 +15,7 @@ namespace Topos.Config
                 config.SaslUsername = info.SaslUsername;
                 config.SaslPassword = info.SaslPassword;
             });
-            
+
             return config;
         }
     }

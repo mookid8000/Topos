@@ -3,14 +3,14 @@ using Topos.Consumer;
 using Topos.Kafka;
 using Topos.Logging;
 // ReSharper disable ArgumentsStyleAnonymousFunction
+// ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable ArgumentsStyleOther
 
 namespace Topos.Config
 {
     public static class KafkaConfigurationExtensions
     {
         public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IProducerImplementation> configurer, params string[] bootstrapServer) => UseKafka(configurer, (IEnumerable<string>)bootstrapServer);
-
-        public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IConsumerImplementation> configurer, params string[] bootstrapServer) => UseKafka(configurer, (IEnumerable<string>)bootstrapServer);
 
         public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IProducerImplementation> configurer, IEnumerable<string> bootstrapServers)
         {
@@ -21,15 +21,21 @@ namespace Topos.Config
                 {
                     var loggerFactory = c.Get<ILoggerFactory>();
 
-                    return new KafkaProducerImplementation(loggerFactory, string.Join(";", bootstrapServers));
+                    return new KafkaProducerImplementation(
+                        loggerFactory: loggerFactory,
+                        address: string.Join(";", bootstrapServers),
+                        configurationCustomizer: config => builder.Apply(config)
+                    );
                 });
 
             return builder;
         }
 
-        public static KafkaProducerConfigurationBuilder UseKafka(this StandardConfigurer<IConsumerImplementation> configurer, IEnumerable<string> bootstrapServers)
+        public static KafkaConsumerConfigurationBuilder UseKafka(this StandardConfigurer<IConsumerImplementation> configurer, params string[] bootstrapServer) => UseKafka(configurer, (IEnumerable<string>)bootstrapServer);
+
+        public static KafkaConsumerConfigurationBuilder UseKafka(this StandardConfigurer<IConsumerImplementation> configurer, IEnumerable<string> bootstrapServers)
         {
-            var builder = new KafkaProducerConfigurationBuilder();
+            var builder = new KafkaConsumerConfigurationBuilder();
 
             StandardConfigurer.Open(configurer)
                 .Register(c =>
@@ -46,7 +52,8 @@ namespace Topos.Config
                         topics: topics,
                         group: group.Id,
                         consumerDispatcher: consumerDispatcher,
-                        positionManager: positionManager
+                        positionManager: positionManager,
+                        configurationCustomizer: config => builder.Apply(config)
                     );
                 });
 
