@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.29
+## 0.0.30
 * Confluent Kafka 1.2.0
 * Kafkaesque-based broker implementation (for the file system)
 * Ability to destructure objects, Serilog style
