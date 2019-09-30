@@ -41,7 +41,7 @@ namespace Topos.Kafka.Tests
             var consumer = Configure.Consumer("default", c => c.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
                 .Topics(t => t.Subscribe(topic))
-                .Handle(async (messages, token) => Interlocked.Add(ref counter, messages.Count))
+                .Handle(async (messages, context, token) => Interlocked.Add(ref counter, messages.Count))
                 .Positions(p => p.StoreInMemory())
                 .Create();
 

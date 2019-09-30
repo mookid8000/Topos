@@ -59,7 +59,7 @@ namespace Topos.Kafka.Tests
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Topics(t => t.Subscribe("someevents"))
                 .Positions(p => p.StoreInMemory())
-                .Handle(async (messages, token) =>
+                .Handle(async (messages, context, token) =>
                 {
                     foreach (var message in messages)
                     {

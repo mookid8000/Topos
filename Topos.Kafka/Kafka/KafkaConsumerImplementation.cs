@@ -20,8 +20,11 @@ namespace Topos.Kafka
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
+        readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsAssignedHandler;
+        readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsRevokedHandler;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
+        readonly ConsumerContext _context;
         readonly Thread _worker;
         readonly ILogger _logger;
         readonly string _address;
@@ -31,17 +34,24 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager, Func<ConsumerConfig, ConsumerConfig> configurationCustomizer = null)
+            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager, 
+            ConsumerContext context,
+            Func<ConsumerConfig, ConsumerConfig> configurationCustomizer = null,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler = null,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler = null)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             _logger = loggerFactory.GetLogger(typeof(KafkaConsumerImplementation));
             _address = address ?? throw new ArgumentNullException(nameof(address));
             _group = group ?? throw new ArgumentNullException(nameof(group));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _topics = topics.ToArray();
             _positionManager = positionManager;
             _configurationCustomizer = configurationCustomizer;
+            _partitionsAssignedHandler = partitionsAssignedHandler;
+            _partitionsRevokedHandler = partitionsRevokedHandler;
             _worker = new Thread(Run) { IsBackground = true };
         }
 
@@ -74,8 +84,8 @@ namespace Topos.Kafka
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
-                .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, cns, partitions, _positionManager))
-                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, cns, partitions))
+                .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, partitions, _positionManager, _partitionsAssignedHandler, _context))
+                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, partitions, _partitionsRevokedHandler, _context))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(_topics);

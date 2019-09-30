@@ -5,6 +5,7 @@ using Topos.Logging;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
+// ReSharper disable ArgumentsStyleStringLiteral
 
 namespace Topos.Config
 {
@@ -45,6 +46,9 @@ namespace Topos.Config
                     var group = c.Get<GroupId>();
                     var consumerDispatcher = c.Get<IConsumerDispatcher>();
                     var positionManager = c.Get<IPositionManager>(errorMessage: @"The Kafka consumer needs access to a positions manager, so it can figure out which offsets to pick up from when starting up.");
+                    var consumerContext = c.Get<ConsumerContext>();
+                    var partitionsAssignedHandler = builder.GetPartitionsAssignedHandler();
+                    var partitionsRevokedHandler = builder.GetPartitionsRevokedHandler();
 
                     return new KafkaConsumerImplementation(
                         loggerFactory: loggerFactory,
@@ -53,7 +57,10 @@ namespace Topos.Config
                         group: group.Id,
                         consumerDispatcher: consumerDispatcher,
                         positionManager: positionManager,
-                        configurationCustomizer: config => builder.Apply(config)
+                        context: consumerContext,
+                        configurationCustomizer: config => builder.Apply(config),
+                        partitionsAssignedHandler: partitionsAssignedHandler,
+                        partitionsRevokedHandler: partitionsRevokedHandler
                     );
                 });
 

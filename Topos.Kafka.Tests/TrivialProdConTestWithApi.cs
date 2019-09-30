@@ -38,7 +38,7 @@ namespace Topos.Kafka.Tests
                 .Logging(l => l.UseSerilog())
                 .Topics(t => t.Subscribe(_topic))
                 .Positions(p => p.StoreInMemory())
-                .Handle(async (messages, token) =>
+                .Handle(async (messages, context, token) =>
                 {
                     foreach (var message in messages.Select(m => m.Body).OfType<string>())
                     {

@@ -1,31 +1,36 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
+// ReSharper disable RedundantAnonymousTypePropertyName
 
 namespace Topos.Consumer
 {
     public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, IDisposable
     {
+        readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _previouslySetPositions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ILoggerFactory _loggerFactory;
         readonly IMessageSerializer _messageSerializer;
         readonly IPositionManager _positionManager;
+        readonly ConsumerContext _consumerContext;
         readonly MessageHandler[] _handlers;
         readonly ILogger _logger;
 
         bool _disposed;
         Task _flusherLoopTask;
 
-        public DefaultConsumerDispatcher(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer, Handlers handlers, IPositionManager positionManager)
+        public DefaultConsumerDispatcher(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer, Handlers handlers, IPositionManager positionManager, ConsumerContext consumerContext)
         {
             if (handlers == null) throw new ArgumentNullException(nameof(handlers));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _messageSerializer = messageSerializer ?? throw new ArgumentNullException(nameof(messageSerializer));
             _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
+            _consumerContext = consumerContext ?? throw new ArgumentNullException(nameof(consumerContext));
             _handlers = handlers.ToArray();
             _logger = loggerFactory.GetLogger(typeof(DefaultConsumerDispatcher));
         }
@@ -37,7 +42,7 @@ namespace Topos.Consumer
                 var handlerType = handler.GetType();
                 var logger = _loggerFactory.GetLogger(handlerType);
 
-                handler.Start(logger);
+                handler.Start(logger, _consumerContext);
             }
 
             _flusherLoopTask = Task.Run(async () => await RunPositionsFlusher());
@@ -76,17 +81,32 @@ namespace Topos.Consumer
 
         async Task SetPositions()
         {
+            ConcurrentDictionary<int, long> GetForTopic(string topic) => _previouslySetPositions.GetOrAdd(topic, _ => new ConcurrentDictionary<int, long>());
+
             var positions = _handlers
                 .SelectMany(h => h.GetPositions())
                 .GroupBy(p => new { p.Topic, p.Partition })
                 .Select(p => new Position(p.Key.Topic, p.Key.Partition, p.Min(a => a.Offset)))
+                .Where(p =>
+                {
+                    var currentOffset = GetForTopic(p.Topic).TryGetValue(p.Partition, out var result)
+                        ? result
+                        : -1;
+
+                    return currentOffset < p.Offset;
+                })
                 .ToList();
 
             if (!positions.Any()) return;
 
-            _logger.Debug("Setting positions {@positions}", positions);
+            _logger.Debug("Setting positions {@positions}", positions.Select(p => new { Topic = p.Topic, Partition = p.Partition, Offset = p.Offset }));
 
-            await Task.WhenAll(positions.Select(position => _positionManager.Set(position)));
+            await Task.WhenAll(positions.Select(async position =>
+            {
+                await _positionManager.Set(position);
+
+                GetForTopic(position.Topic)[position.Partition] = position.Offset;
+            }));
         }
 
         public void Dispatch(ReceivedTransportMessage transportMessage)

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
+using Topos.Kafka;
 using Topos.Logging;
 
 namespace Topos.Internals
@@ -32,7 +34,13 @@ namespace Topos.Internals
             logger.Error("Error in Kafka consumer: {@error}", error);
         }
 
-        public static IEnumerable<TopicPartitionOffset> PartitionsAssigned<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, IEnumerable<TopicPartition> partitions, IPositionManager positionManager)
+        public static IEnumerable<TopicPartitionOffset> PartitionsAssigned(
+            ILogger logger,
+            IEnumerable<TopicPartition> partitions,
+            IPositionManager positionManager,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler,
+            ConsumerContext context
+        )
         {
             var partitionsList = partitions.ToList();
 
@@ -40,10 +48,15 @@ namespace Topos.Internals
 
             var partitionsByTopic = partitionsList
                 .GroupBy(p => p.Topic)
-                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
+                .Select(g => new {Topic = g.Key, Partitions = g.Select(p => p.Partition.Value)})
                 .ToList();
 
             logger.Info("Assignment: {@partitions}", partitionsByTopic);
+
+            if (partitionsAssignedHandler != null)
+            {
+                AsyncHelpers.RunSync(() => partitionsAssignedHandler(context, partitionsList));
+            }
 
             return partitionsList
                 .Select(tp => new
@@ -52,10 +65,15 @@ namespace Topos.Internals
                     Position = AsyncHelpers.GetAsync(() => positionManager.Get(tp.Topic, tp.Partition.Value))
                 })
                 .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committedf
-                             ?? a.TopicPartition.WithOffset(Offset.Beginning)); // or just resume from the beginning
+                    ?? a.TopicPartition.WithOffset(Offset.Beginning));       // or just resume from the beginning
         }
 
-        public static void PartitionsRevoked<T1, T2>(ILogger logger, IConsumer<T1, T2> consumer, List<TopicPartitionOffset> partitions)
+        public static void PartitionsRevoked(
+            ILogger logger,
+            List<TopicPartitionOffset> partitions,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
+            ConsumerContext context
+        )
         {
             var partitionsList = partitions.ToList();
 
@@ -67,6 +85,11 @@ namespace Topos.Internals
                 .ToList();
 
             logger.Info("Revocation: {@partitions}", partitionsByTopic);
+
+            if (partitionsRevokedHandler != null)
+            {
+                AsyncHelpers.RunSync(() => partitionsRevokedHandler(context, partitionsList.Select(p => p.TopicPartition)));
+            }
         }
 
         static void WriteToLogger(ILogger logger, SyslogLevel level, string message)

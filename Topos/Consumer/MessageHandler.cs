@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Polly;
 using Polly.Retry;
+using Topos.Internals;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
@@ -20,15 +21,17 @@ namespace Topos.Consumer
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ManualResetEvent _messageHandlerStopped = new ManualResetEvent(false);
-        readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> _callback;
+
+        readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> _callback;
         readonly AsyncRetryPolicy _callbackPolicy;
 
         ILogger _logger = new NullLogger();
 
         Task _task;
         bool _disposed;
+        ConsumerContext _context;
 
-        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> callback)
+        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> callback)
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
             _callbackPolicy = Policy.Handle<Exception>().WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(i * 2), LogException);
@@ -50,8 +53,9 @@ namespace Topos.Consumer
 
         public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
 
-        public void Start(ILogger logger)
+        public void Start(ILogger logger, ConsumerContext context)
         {
+            _context = context;
             _logger = logger;
             _task = Task.Run(ProcessMessages);
         }
@@ -90,10 +94,10 @@ namespace Topos.Consumer
 
                     try
                     {
-                        await _callbackPolicy.ExecuteAsync(token => _callback(messageBatch, token), cancellationToken);
+                        await _callbackPolicy.ExecuteAsync(token => _callback(messageBatch, _context, token), cancellationToken);
 
                         var maxPositionByPartition = messageBatch
-                            .GroupBy(m => new {m.Position.Topic, m.Position.Partition})
+                            .GroupBy(m => new { m.Position.Topic, m.Position.Partition })
                             .Select(a => new
                             {
                                 Topic = a.Key.Topic,

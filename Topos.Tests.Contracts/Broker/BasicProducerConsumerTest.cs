@@ -33,7 +33,7 @@ namespace Topos.Tests.Contracts.Broker
             var random = new Random(DateTime.Now.GetHashCode());
 
             var consumer = BrokerFactory.ConfigureConsumer("default-group")
-                .Handle(async (messages, token) =>
+                .Handle(async (messages, context, token) =>
                 {
                     var strings = messages.Select(m => m.Body).Cast<string>();
 
@@ -67,7 +67,7 @@ namespace Topos.Tests.Contracts.Broker
             IDisposable CreateConsumer(InMemPositionsStorage storage)
             {
                 return BrokerFactory.ConfigureConsumer("default-group")
-                    .Handle(async (messages, token) =>
+                    .Handle(async (messages, context, token) =>
                     {
                         var strings = messages.Select(m => m.Body).Cast<string>();
 
@@ -164,7 +164,7 @@ but got
         public async Task CanStartConsumer()
         {
             var consumer = BrokerFactory.ConfigureConsumer("default-group")
-                .Handle(async (messages, token) =>
+                .Handle(async (messages, context, token) =>
                 {
                     Console.WriteLine($"Received {messages.Count} msgs");
                 })
@@ -190,7 +190,7 @@ but got
             var gotTheString = new ManualResetEvent(false);
 
             var consumer = BrokerFactory.ConfigureConsumer("default-group")
-                .Handle(async (messages, token) =>
+                .Handle(async (messages, context, token) =>
                 {
                     var receivedString = messages.Select(m => m.Body).FirstOrDefault() as string;
 

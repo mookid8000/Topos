@@ -49,8 +49,6 @@ namespace Topos.Kafka
 
         public IAdminClient GetAdminClient()
         {
-            // sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="(username)" password="(password)";
-
             var configuration = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("bootstrap.servers", _config.BootstrapServers),

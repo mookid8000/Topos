@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace Topos.Kafka.Tests
 {
@@ -18,7 +19,9 @@ namespace Topos.Kafka.Tests
 Please create this file and add a Kafka connection string to it");
             }
 
-            Address = File.ReadAllText(connectionStringFilePath);
+            var firstLine = File.ReadAllLines(connectionStringFilePath).First();
+
+            Address = firstLine;
         }
 
         public static string Address { get; }

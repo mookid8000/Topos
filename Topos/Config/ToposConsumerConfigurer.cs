@@ -8,6 +8,7 @@ using Topos.Internals;
 using Topos.Logging;
 using Topos.Routing;
 using Topos.Serialization;
+// ReSharper disable ArgumentsStyleStringLiteral
 
 namespace Topos.Config
 {
@@ -51,7 +52,7 @@ namespace Topos.Config
             return this;
         }
 
-        public ToposConsumerConfigurer Handle(Func<IReadOnlyCollection<ReceivedLogicalMessage>, CancellationToken, Task> messageHandler)
+        public ToposConsumerConfigurer Handle(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> messageHandler)
         {
             if (!_injectionist.Has<Handlers>())
             {
@@ -66,6 +67,8 @@ namespace Topos.Config
         public IToposConsumer Create()
         {
             ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
+
+            _injectionist.PossiblyRegisterDefault(c => new ConsumerContext());
 
             _injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
             {
@@ -92,7 +95,9 @@ It can be configured by invoking the .Positions(..) configurer like this:
 
 ");
 
-                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager);
+                var consumerContext = c.Get<ConsumerContext>();
+
+                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager, consumerContext);
             });
 
             _injectionist.Register<IToposConsumer>(c =>

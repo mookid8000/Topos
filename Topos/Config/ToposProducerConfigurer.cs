@@ -5,6 +5,7 @@ using Topos.Logging;
 using Topos.Producer;
 using Topos.Routing;
 using Topos.Serialization;
+// ReSharper disable ArgumentsStyleStringLiteral
 
 namespace Topos.Config
 {
@@ -45,7 +46,7 @@ namespace Topos.Config
             {
                 var messageSerializer = c.Get<IMessageSerializer>();
                 var topicMapper = c.Get<ITopicMapper>();
-                var producerImplementation = c.Get<IProducerImplementation>(errorMessage: "Røvhul");
+                var producerImplementation = c.Get<IProducerImplementation>(errorMessage: "Failing to get the producer implementation can be caused by a missing registration of IProducerImplementation");
                 var loggerFactory = c.Get<ILoggerFactory>();
 
                 var defaultToposProducer = new DefaultToposProducer(

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using Serilog;
 using Topos.Internals;
 using Topos.Serilog;
@@ -10,17 +11,18 @@ namespace Topos.Kafka.Tests
 {
     public abstract class KafkaFixtureBase : ToposFixtureBase
     {
-        protected string GetNewTopic()
+        protected string GetNewTopic(int numberOfPartitions = 1)
         {
             var logger = Logger;
 
-            return GetTopic(logger);
+            return GetTopic(logger, numberOfPartitions);
         }
 
-        public static string GetTopic(ILogger logger)
+        public static string GetTopic(ILogger logger, int numberOfPartitions = 1)
         {
-            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address, configurationCustomizer: ConfigurationCustomizer))
-            using (var adminClient = producer.GetAdminClient())
+            string result = null;
+
+            WithAdminClient(logger, adminClient =>
             {
                 var topics = adminClient
                     .GetMetadata(TimeSpan.FromSeconds(10))
@@ -36,7 +38,24 @@ namespace Topos.Kafka.Tests
 
                 logger.Information("Using topic named {topic}", topicName);
 
-                return topicName;
+                result = topicName;
+
+                var topicSpecification = new TopicSpecification{Name = topicName, NumPartitions=numberOfPartitions,ReplicationFactor=1};
+
+                adminClient
+                    .CreateTopicsAsync(new[] {topicSpecification})
+                    .Wait();
+            });
+
+            return result;
+        }
+
+        static void WithAdminClient(ILogger logger, Action<IAdminClient> callback)
+        {
+            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address, configurationCustomizer: ConfigurationCustomizer))
+            using (var adminClient = producer.GetAdminClient())
+            {
+                callback(adminClient);
             }
         }
 

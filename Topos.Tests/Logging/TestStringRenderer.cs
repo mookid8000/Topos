@@ -38,8 +38,8 @@ namespace Topos.Tests.Logging
 
         static IEnumerable<RenderCase> GetCases()
         {
-            yield return new RenderCase(@"object { Number = 23, Text = hej med dig }", "object {@obj}", new RandomObject("hej med dig", 23));
-            yield return new RenderCase(@"stats { Elapsed = 00:00:02, Whatever = 0.2, Text = hej }", "stats {@stats}", new { Elapsed = TimeSpan.FromSeconds(2), Whatever = 0.2, Text = "hej"});
+            yield return new RenderCase(@"object { Number = 23, Text = ""hej med dig"" }", "object {@obj}", new RandomObject("hej med dig", 23));
+            yield return new RenderCase(@"stats { Elapsed = 00:00:02, Text = ""hej"", Whatever = 0.2 }", "stats {@stats}", new { Elapsed = TimeSpan.FromSeconds(2), Text = "hej", Whatever = 0.2});
             yield return new RenderCase(@"hej ""ven""", "hej {navn}", "ven");
             yield return new RenderCase(@"hej ""ven"" og ""igen""", "hej {navn} og {navn}", "ven", "igen");
         }

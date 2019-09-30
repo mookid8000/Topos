@@ -21,7 +21,7 @@ namespace Topos.Logging.Console
             try
             {
                 var index = 0;
-                
+
                 return PlaceholderRegex.Replace(message, match =>
                 {
                     try
@@ -62,12 +62,17 @@ namespace Topos.Logging.Console
         string FormatObject(object obj)
         {
             var type = obj.GetType();
-            
+
             var formatter = _formatters.GetOrAdd(type, _ =>
             {
-                if (type.IsAnonymousType())
+                if (typeof(IEnumerable).IsAssignableFrom(type))
                 {
-                    return o => o.ToString();
+                    return o =>
+                    {
+                        var valueStrings = ((IEnumerable)o).Cast<object>().Select(FormatObject);
+
+                        return $"[{string.Join(", ", valueStrings)}]";
+                    };
                 }
 
                 var accessor = TypeAccessor.Create(type);
@@ -79,9 +84,9 @@ namespace Topos.Logging.Console
             return formatter(obj);
         }
 
-        static string FormatObject(object obj, MemberSet members, TypeAccessor accessor)
+        string FormatObject(object obj, MemberSet members, TypeAccessor accessor)
         {
-            return $"{{ {string.Join(", ", members.Select(m => $"{m.Name} = {accessor[obj, m.Name]}"))} }}";
+            return $"{{ {string.Join(", ", members.Select(m => $"{m.Name} = {FormatValue(accessor[obj, m.Name], null)}"))} }}";
         }
 
         protected virtual string FormatValue(object obj, string format)

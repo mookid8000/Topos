@@ -10,6 +10,7 @@ namespace Topos.Tests.Config
     public class TestTrivialProducerConsumer : FixtureBase
     {
         [Test]
+        [Ignore("not implemented yet")]
         public async Task ItWorks()
         {
             var eventBroker = new InMemEventBroker();
