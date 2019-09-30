@@ -7,6 +7,8 @@ namespace Topos.Consumer
     {
         readonly ConcurrentDictionary<string, object> _items = new ConcurrentDictionary<string, object>();
 
+        public T GetOrAdd<T>(string key, Func<T> factory) => (T)_items.GetOrAdd(key, _ => factory());
+
         public void SetItem<T>(string key, T item) where T : class => _items[key] = item;
 
         public T GetItem<T>(string key) where T : class
@@ -15,7 +17,7 @@ namespace Topos.Consumer
 
             try
             {
-                return (T) result;
+                return (T)result;
             }
             catch (Exception exception)
             {
