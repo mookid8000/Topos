@@ -17,7 +17,6 @@ namespace Topos.Kafkaesque
     class FileSystemConsumerImplementation : IConsumerImplementation, IDisposable
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly ManualResetEvent _exitedWorkerLoop = new ManualResetEvent(false);
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly List<Thread> _workers;
@@ -95,7 +94,6 @@ namespace Topos.Kafkaesque
             finally
             {
                 _logger.Info("Stopped consumer worker for topic {topic}", topic);
-                _exitedWorkerLoop.Set();
             }
         }
 
@@ -107,9 +105,15 @@ namespace Topos.Kafkaesque
             {
                 _cancellationTokenSource.Cancel();
 
-                if (!_exitedWorkerLoop.WaitOne(TimeSpan.FromSeconds(3)))
+                foreach (var worker in _workers)
                 {
-                    _logger.Warn("Worker loop did not exit within 3 s timeout!");
+                    if (worker.ThreadState == ThreadState.Running)
+                    {
+                        if (!worker.Join(TimeSpan.FromSeconds(3)))
+                        {
+                            _logger.Warn("Worker loop named {workerName} did not exit within 3 s timeout!", worker.Name);
+                        }
+                    }
                 }
             }
             finally
