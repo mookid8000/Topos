@@ -12,3 +12,6 @@
 
 ## 0.0.35
 * Configuration extension for Azure Blobs-based positions manager
+
+## 0.0.36
+* Update Confluent.Kafka to 1.2.1
