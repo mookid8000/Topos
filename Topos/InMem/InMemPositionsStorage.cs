@@ -11,12 +11,12 @@ namespace Topos.InMem
 
         public void Set(Position position) => GetPositions(position.Topic)[position.Partition] = position;
 
-        public IReadOnlyCollection<Position> Get(string topic, IEnumerable<int> partitions)
+        public IReadOnlyCollection<Position?> Get(string topic, IEnumerable<int> partitions)
         {
             var positions = GetPositions(topic);
 
             return partitions
-                .Select(partition => positions.GetOrAdd(partition, _ => Position.Default(topic, partition)))
+                .Select(partition => positions.TryGetValue(partition, out var value) ? value : default(Position?))
                 .ToList();
         }
 

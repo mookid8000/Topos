@@ -6,7 +6,7 @@ namespace Topos.Consumer
     {
         readonly bool _hasValue;
 
-        const int DefaultOffset = -1;
+        public const int DefaultOffset = -1;
 
         public static Position Default(string topic, int partition) => new Position(topic, partition, DefaultOffset);
 

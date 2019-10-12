@@ -13,8 +13,4 @@
     <PackageReference Include="polly" Version="7.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="FileSystem\" />
-  </ItemGroup>
-
 </Project>
