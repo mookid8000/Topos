@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Topos.Config;
 using Topos.InMem;
 using Topos.Tests.Contracts.Extensions;
+using Topos.Tests.Contracts.Factories;
 
 // ReSharper disable ArgumentsStyleAnonymousFunction
 

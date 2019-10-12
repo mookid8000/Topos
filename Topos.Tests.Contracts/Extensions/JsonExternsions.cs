@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Topos.Tests.Contracts.Extensions
 {
-    static class JsonExternsions
+    public static class JsonExternsions
     {
         public static string ToPrettyJson(this object obj)
         {

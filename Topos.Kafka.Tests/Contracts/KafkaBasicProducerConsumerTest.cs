@@ -3,6 +3,7 @@ using Serilog;
 using Topos.Config;
 using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Broker;
+using Topos.Tests.Contracts.Factories;
 
 namespace Topos.Kafka.Tests.Contracts
 {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Consumer;
+using Topos.Tests.Contracts.Factories;
 
 namespace Topos.Tests.Contracts.Positions
 {

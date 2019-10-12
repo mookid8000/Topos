@@ -6,3 +6,6 @@
 * Ability to destructure objects, Serilog style
 * Can use Azure Event Hubs connection string w. Kafka transport (automatically parses it & sets the correct parameters)
 * Add hooks for partition assignment/revocation with Kafka
+
+## 0.0.34
+* Add file system-based positions storage (and a little suite of contract tests to verify consistent behavior across implementations)

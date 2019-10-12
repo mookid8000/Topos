@@ -1,7 +1,7 @@
 ﻿using System;
 using Topos.Config;
 
-namespace Topos.Tests.Contracts
+namespace Topos.Tests.Contracts.Factories
 {
     public interface IBrokerFactory : IDisposable
     {
