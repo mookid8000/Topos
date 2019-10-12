@@ -15,3 +15,6 @@
 
 ## 0.0.36
 * Update Confluent.Kafka to 1.2.1
+
+## 0.0.37
+* Correct Azure Blobs positions manager configuration extension's name

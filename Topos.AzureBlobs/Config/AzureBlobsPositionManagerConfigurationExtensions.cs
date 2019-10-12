@@ -7,7 +7,7 @@ namespace Topos.Config
 {
     public static class AzureBlobsPositionManagerConfigurationExtensions
     {
-        public static void StoreInMongoDb(this StandardConfigurer<IPositionManager> configurer, CloudStorageAccount storageAccount, string containerName)
+        public static void StoreInAzureBlobs(this StandardConfigurer<IPositionManager> configurer, CloudStorageAccount storageAccount, string containerName)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
