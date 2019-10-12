@@ -9,3 +9,6 @@
 
 ## 0.0.34
 * Add file system-based positions storage (and a little suite of contract tests to verify consistent behavior across implementations)
+
+## 0.0.35
+* Configuration extension for Azure Blobs-based positions manager
