@@ -18,3 +18,6 @@
 
 ## 0.0.37
 * Correct Azure Blobs positions manager configuration extension's name
+
+## 0.0.38
+* Make dispatch batch size configurable

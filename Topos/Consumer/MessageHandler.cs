@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Polly;
 using Polly.Retry;
-using Topos.Internals;
+using Topos.Config;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
@@ -15,7 +15,8 @@ namespace Topos.Consumer
 {
     public class MessageHandler : IDisposable
     {
-        const int MaxQueueLength = 10000;
+        public const string MaximumBatchSizeOptionsKey = "message-handler-maximum-batch-size";
+        const int DefaultMaxBatchSize = 10000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
@@ -24,16 +25,19 @@ namespace Topos.Consumer
 
         readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> _callback;
         readonly AsyncRetryPolicy _callbackPolicy;
+        readonly Options _options;
 
         ILogger _logger = new NullLogger();
 
+        int _maximumBatchSize;
         Task _task;
         bool _disposed;
         ConsumerContext _context;
 
-        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> callback)
+        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> callback, Options options)
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _callbackPolicy = Policy.Handle<Exception>().WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(i * 2), LogException);
         }
 
@@ -49,12 +53,13 @@ namespace Topos.Consumer
             }
         }
 
-        public bool IsReadyForMore => _messages.Count < MaxQueueLength;
+        public bool IsReadyForMore => _messages.Count < _maximumBatchSize;
 
         public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
 
         public void Start(ILogger logger, ConsumerContext context)
         {
+            _maximumBatchSize = _options.Get(MaximumBatchSizeOptionsKey, defaultValue: DefaultMaxBatchSize);
             _context = context;
             _logger = logger;
             _task = Task.Run(ProcessMessages);
@@ -77,7 +82,7 @@ namespace Topos.Consumer
 
             try
             {
-                var messageBatch = new List<ReceivedLogicalMessage>(MaxQueueLength);
+                var messageBatch = new List<ReceivedLogicalMessage>(_maximumBatchSize);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {

@@ -39,8 +39,6 @@ namespace Topos.Tests.Contracts.Extensions
                 {
                     if (failPredicate(queue))
                     {
-                        var details = failureDetailsFunction?.Invoke();
-
                         throw new ApplicationException($@"Waiting for
 
     {completionExpression}
@@ -53,7 +51,7 @@ was satisfied after {stopwatch.Elapsed.TotalSeconds:0.0} s.
 
 Details:
 
-{details ?? "NONE"}");
+{failureDetailsFunction?.Invoke() ?? "NONE"}");
                     }
                     if (completionPredicate(queue)) return;
 
@@ -68,7 +66,11 @@ Details:
 
     {completionExpression}
 
-on queue did not complete in {timeoutSeconds} s");
+on queue did not complete in {timeoutSeconds} s
+
+Details:
+
+{failureDetailsFunction?.Invoke() ?? "NONE"}");
         }
     }
 }

@@ -18,6 +18,7 @@ namespace Topos.Config
 
         readonly Topics _topics = new Topics();
         readonly Handlers _handlers = new Handlers();
+        readonly Options _options = new Options();
 
         public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure, string groupName)
         {
@@ -52,6 +53,12 @@ namespace Topos.Config
             return this;
         }
 
+        public ToposConsumerConfigurer Options(Action<OptionsConfigurer> optionsConfigurerCallback)
+        {
+            optionsConfigurerCallback(new OptionsConfigurer(_options));
+            return this;
+        }
+
         public ToposConsumerConfigurer Handle(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> messageHandler)
         {
             if (!_injectionist.Has<Handlers>())
@@ -59,7 +66,7 @@ namespace Topos.Config
                 _injectionist.Register(c => _handlers);
             }
 
-            _handlers.Add(new MessageHandler(messageHandler));
+            _handlers.Add(new MessageHandler(messageHandler, _options));
 
             return this;
         }
@@ -79,17 +86,19 @@ namespace Topos.Config
 Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
 
     Configure.Consumer(...)
-        .Handle(async (messages, cancellationToken) =>
+        .(...)
+        .Handle(async (messages, context, cancellationToken) =>
         {
             // handle messages
         })
         .Start()
 ");
-                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'high water mark' position for each topic/partition.
+                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'low water mark' position for each topic/partition.
 
 It can be configured by invoking the .Positions(..) configurer like this:
 
     Configure.Consumer(...)
+        .(...)
         .Positions(p => p.StoreIn(...))
         .Start()
 
