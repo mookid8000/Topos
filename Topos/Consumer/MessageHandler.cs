@@ -15,13 +15,14 @@ namespace Topos.Consumer
 {
     public class MessageHandler : IDisposable
     {
+        public const string MinimumBatchSizeOptionsKey = "message-handler-minimum-batch-size";
         public const string MaximumBatchSizeOptionsKey = "message-handler-maximum-batch-size";
-        const int DefaultMaxBatchSize = 10000;
+        const int DefaultMinimumBatchSize = 1;
+        const int DefaultMaximumBatchSize = 10000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly ManualResetEvent _messageHandlerStopped = new ManualResetEvent(false);
 
         readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> _callback;
         readonly AsyncRetryPolicy _callbackPolicy;
@@ -29,6 +30,7 @@ namespace Topos.Consumer
 
         ILogger _logger = new NullLogger();
 
+        int _minimumBatchSize;
         int _maximumBatchSize;
         Task _task;
         bool _disposed;
@@ -59,7 +61,19 @@ namespace Topos.Consumer
 
         public void Start(ILogger logger, ConsumerContext context)
         {
-            _maximumBatchSize = _options.Get(MaximumBatchSizeOptionsKey, defaultValue: DefaultMaxBatchSize);
+            _minimumBatchSize = _options.Get(MinimumBatchSizeOptionsKey, defaultValue: DefaultMinimumBatchSize);
+            _maximumBatchSize = _options.Get(MaximumBatchSizeOptionsKey, defaultValue: DefaultMaximumBatchSize);
+
+            if (_minimumBatchSize < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(_minimumBatchSize), _minimumBatchSize, "Please set a MIN batch size >= 1");
+            }
+
+            if (_maximumBatchSize < _minimumBatchSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(_maximumBatchSize), _maximumBatchSize, $"MAX batch size must be >= {_minimumBatchSize} (which is the current MIN batch size)");
+            }
+
             _context = context;
             _logger = logger;
             _task = Task.Run(ProcessMessages);
@@ -86,15 +100,15 @@ namespace Topos.Consumer
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (_messages.TryDequeue(out var message))
-                    {
-                        messageBatch.Add(message);
-                    }
-
-                    if (!messageBatch.Any())
+                    if (_messages.Count < _minimumBatchSize)
                     {
                         await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
                         continue;
+                    }
+
+                    while (_messages.TryDequeue(out var message) && messageBatch.Count < _maximumBatchSize)
+                    {
+                        messageBatch.Add(message);
                     }
 
                     try
@@ -133,10 +147,6 @@ namespace Topos.Consumer
             catch (Exception exception)
             {
                 _logger.Error(exception, "Unhandled message handler exception");
-            }
-            finally
-            {
-                _messageHandlerStopped.Set();
             }
         }
 

@@ -33,12 +33,12 @@ namespace Topos.Kafkaesque.Tests
             Using(_producer);
         }
 
-        [TestCase(100)]
-        [TestCase(1000)]
-        [TestCase(5000)]
-        [TestCase(10000)]
-        [TestCase(20000)]
-        public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int maximumBatchSize)
+        [TestCase(100, 100)]
+        [TestCase(1000, 1000)]
+        [TestCase(5000, 5000)]
+        [TestCase(10000, 10000)]
+        [TestCase(20000, 20000)]
+        public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int minimumBatchSize, int maximumBatchSize)
         {
             var encounteredBatchSizes = new ConcurrentQueue<int>();
 
@@ -46,13 +46,17 @@ namespace Topos.Kafkaesque.Tests
                 .Logging(l => l.UseConsole(minimumLogLevel: LogLevel.Info))
                 .Topics(t => t.Subscribe("all"))
                 .Positions(p => p.StoreInMemory())
-                .Options(o => o.SetMaximumBatchSize(maximumBatchSize))
+                .Options(o =>
+                {
+                    o.SetMinimumBatchSize(minimumBatchSize);
+                    o.SetMaximumBatchSize(maximumBatchSize);
+                })
                 .Handle(async (batch, context, cancellationToken) => encounteredBatchSizes.Enqueue(batch.Count))
                 .Create();
 
             Using(consumer);
 
-            const int totalCount = 20000;
+            const int totalCount = 20000; // remember this one must be a multiple of the minimum batch size!!!
 
             var messages = Enumerable.Range(0, totalCount).Select(n => $"THIS IS MESSAGE NUMBNER {n}");
 
@@ -74,9 +78,10 @@ namespace Topos.Kafkaesque.Tests
                     );
             }
 
-            Assert.That(encounteredBatchSizes.All(c => c <= maximumBatchSize), Is.True, $@"Expected all encountered batch sizes to be below {maximumBatchSize}, but we got these:
+            Assert.That(encounteredBatchSizes.All(c => c <= maximumBatchSize && c >= minimumBatchSize), Is.True,
+                $@"Expected all encountered batch sizes N to satisfy {minimumBatchSize} <= N <= {maximumBatchSize}, but we got these:
 
-{string.Join(Environment.NewLine, encounteredBatchSizes.Select(e => $"    {e}" + (e > maximumBatchSize ? " !!!!!!!!!" : "")))}
+{string.Join(Environment.NewLine, encounteredBatchSizes.Select(e => $"    {e}" + ((e > maximumBatchSize || e < minimumBatchSize) ? " !!!!!!!!!" : "")))}
 ");
         }
     }
