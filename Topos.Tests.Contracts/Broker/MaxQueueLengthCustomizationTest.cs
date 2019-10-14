@@ -3,34 +3,22 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Testy;
-using Testy.Files;
+using Testy.Benchmarking;
 using Topos.Config;
-using Topos.Logging.Console;
-using Topos.Producer;
 using Topos.Tests.Contracts.Extensions;
+using Topos.Tests.Contracts.Factories;
 // ReSharper disable ArgumentsStyleAnonymousFunction
-
 #pragma warning disable 1998
 
-namespace Topos.Kafkaesque.Tests
+namespace Topos.Tests.Contracts.Broker
 {
-    [TestFixture]
-    public class TestMaxQueueLengthCustomization : FixtureBase
+    public abstract class MaxQueueLengthCustomizationTest<TBrokerFactory> : ToposContractFixtureBase where TBrokerFactory : IBrokerFactory, new()
     {
-        TemporaryTestDirectory _testDirectory;
-        IToposProducer _producer;
+        TBrokerFactory _factory;
 
-        protected override void SetUp()
+        protected override void AdditionalSetUp()
         {
-            _testDirectory = Using(new TemporaryTestDirectory());
-
-            _producer = Configure.Producer(x => x.UseFileSystem(_testDirectory))
-                .Logging(l => l.UseConsole(minimumLogLevel: LogLevel.Info))
-                .Topics(t => t.Map<string>("all"))
-                .Create();
-
-            Using(_producer);
+            _factory = Using(new TBrokerFactory());
         }
 
         [TestCase(100, 100)]
@@ -40,11 +28,18 @@ namespace Topos.Kafkaesque.Tests
         [TestCase(20000, 20000)]
         public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int minimumBatchSize, int maximumBatchSize)
         {
+            var topic = _factory.GetNewTopic();
+
+            var producer = _factory.ConfigureProducer()
+                .Topics(t => t.Map<string>(topic))
+                .Create();
+
+            Using(producer);
+
             var encounteredBatchSizes = new ConcurrentQueue<int>();
 
-            var consumer = Configure.Consumer("default", c => c.UseFileSystem(_testDirectory))
-                .Logging(l => l.UseConsole(minimumLogLevel: LogLevel.Info))
-                .Topics(t => t.Subscribe("all"))
+            var consumer = _factory.ConfigureConsumer("default")
+                .Topics(t => t.Subscribe(topic))
                 .Positions(p => p.StoreInMemory())
                 .Options(o =>
                 {
@@ -60,28 +55,36 @@ namespace Topos.Kafkaesque.Tests
 
             var messages = Enumerable.Range(0, totalCount).Select(n => $"THIS IS MESSAGE NUMBNER {n}");
 
-            using (TimerScope("send", totalCount))
+            using (new TimerScope("send", totalCount))
             {
-                await Task.WhenAll(messages.Select(m => _producer.Send(m)));
+                await Task.WhenAll(messages.Select(m => producer.Send(m)));
             }
 
             consumer.Start();
 
-            using (TimerScope("receive", totalCount))
+            string FormatBatchSizes() => string.Join(Environment.NewLine, encounteredBatchSizes
+                    .Select(e => $"    {e}" + ((e > maximumBatchSize || e < minimumBatchSize) ? " !!!!!!!!!" : "")));
+
+            using (new TimerScope("receive", totalCount))
             {
                 await encounteredBatchSizes
                     .WaitOrDie(
                         completionExpression: q => q.Sum() == totalCount,
                         failExpression: q => q.Sum() > totalCount,
-                        failureDetailsFunction: () => $@"The sum is {encounteredBatchSizes.Sum()}",
-                        timeoutSeconds: 60
+                        failureDetailsFunction: () => $@"The sum is {encounteredBatchSizes.Sum()}
+
+All the batch sizes are here:
+
+{FormatBatchSizes()}
+",
+                        timeoutSeconds: 120
                     );
             }
 
             Assert.That(encounteredBatchSizes.All(c => c <= maximumBatchSize && c >= minimumBatchSize), Is.True,
                 $@"Expected all encountered batch sizes N to satisfy {minimumBatchSize} <= N <= {maximumBatchSize}, but we got these:
 
-{string.Join(Environment.NewLine, encounteredBatchSizes.Select(e => $"    {e}" + ((e > maximumBatchSize || e < minimumBatchSize) ? " !!!!!!!!!" : "")))}
+{FormatBatchSizes()}
 ");
         }
     }

@@ -10,6 +10,7 @@ using Topos.Config;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Topos.Consumer
 {
@@ -17,8 +18,11 @@ namespace Topos.Consumer
     {
         public const string MinimumBatchSizeOptionsKey = "message-handler-minimum-batch-size";
         public const string MaximumBatchSizeOptionsKey = "message-handler-maximum-batch-size";
+        
         const int DefaultMinimumBatchSize = 1;
         const int DefaultMaximumBatchSize = 10000;
+
+        const int MaxPrefetchQueueLength = 20000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
@@ -55,7 +59,7 @@ namespace Topos.Consumer
             }
         }
 
-        public bool IsReadyForMore => _messages.Count < _maximumBatchSize;
+        public bool IsReadyForMore => _messages.Count < MaxPrefetchQueueLength;
 
         public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
 
@@ -102,7 +106,7 @@ namespace Topos.Consumer
                 {
                     if (_messages.Count < _minimumBatchSize)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                        await Task.Delay(TimeSpan.FromMilliseconds(210), cancellationToken);
                         continue;
                     }
 
@@ -119,16 +123,15 @@ namespace Topos.Consumer
                             .GroupBy(m => new { m.Position.Topic, m.Position.Partition })
                             .Select(a => new
                             {
-                                Topic = a.Key.Topic,
-                                Partition = a.Key.Partition,
+                                a.Key.Topic,
+                                a.Key.Partition,
                                 Offset = a.Max(p => p.Position.Offset)
                             })
                             .ToList();
 
                         foreach (var max in maxPositionByPartition)
                         {
-                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[
-                                max.Partition] = max.Offset;
+                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] = max.Offset;
                         }
                     }
                     catch (Exception exception)

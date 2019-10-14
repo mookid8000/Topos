@@ -5,9 +5,9 @@ using Topos.Tests.Contracts.Broker;
 namespace Topos.Kafka.Tests.Contracts
 {
     [TestFixture]
-    public class KafkaBasicProducerConsumerTest : BasicProducerConsumerTest<KafkaBrokerFactory>
+    public class KafkaMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<KafkaBrokerFactory>
     {
-        public KafkaBasicProducerConsumerTest()
+        public KafkaMaxQueueLengthCustomizationTest()
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
