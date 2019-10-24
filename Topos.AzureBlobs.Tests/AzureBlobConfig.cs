@@ -10,6 +10,8 @@ namespace Topos.AzureBlobs.Tests
         {
             get
             {
+                return CloudStorageAccount.DevelopmentStorageAccount;
+
                 var filePath = Path.Combine(AppContext.BaseDirectory, "azure_storage_account_connection_string.secret.txt");
 
                 if (File.Exists(filePath)) return CloudStorageAccount.Parse(File.ReadAllText(filePath));

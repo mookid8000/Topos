@@ -29,5 +29,20 @@ namespace Topos.AzureBlobs.Tests
             Assert.That(position.Value.Partition, Is.EqualTo(3));
             Assert.That(position.Value.Offset, Is.EqualTo(500));
         }
+
+        [Test]
+        public async Task WorksWithTheseParticularNames()
+        {
+            var manager = new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, "backuppositions");
+
+            await manager.Set(new Position("topic70", 3, 500));
+
+            var position = await manager.Get("topic70", 3);
+
+            Assert.That(position, Is.Not.Null);
+            Assert.That(position.Value.Topic, Is.EqualTo("topic70"));
+            Assert.That(position.Value.Partition, Is.EqualTo(3));
+            Assert.That(position.Value.Offset, Is.EqualTo(500));
+        }
     }
 }

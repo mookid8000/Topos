@@ -24,3 +24,6 @@
 
 ## 0.0.39
 * Make MIN dispatch batch size configurable too
+
+## 0.0.40
+* Better names for Azure Blobs positions manager

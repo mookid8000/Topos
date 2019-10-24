@@ -22,7 +22,7 @@ namespace Topos.AzureBlobs
         public AzureBlobsPositionManager(CloudStorageAccount storageAccount, string containerName)
         {
             if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
-            _containerName = containerName ?? throw new ArgumentNullException(nameof(containerName));
+            _containerName = containerName?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(containerName));
             _client = storageAccount.CreateCloudBlobClient();
 
             _getContainerReference = new Lazy<Func<Task<CloudBlobContainer>>>(() => async () =>
@@ -99,7 +99,7 @@ could not be parsed into a long!");
             }
         }
 
-        string GetBlobName(string topic, int partition) => $"{GetLegalBlobName(topic)}{partition}.position.txt";
+        string GetBlobName(string topic, int partition) => $"{GetLegalBlobName(topic)}_{partition}_position.txt";
 
         string GetLegalBlobName(string topic) => _legalBlobNames.GetOrAdd(topic, GenerateLegalBlobName);
 
