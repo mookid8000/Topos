@@ -22,6 +22,7 @@ namespace Topos.Tests.Contracts.Broker
             _factory = Using(new TBrokerFactory());
         }
 
+        [TestCase(1000, 1, 10000)]
         [TestCase(5, 1, 4)]
         [TestCase(50, 10, 10)]
         [TestCase(500, 100, 100)]

@@ -27,3 +27,6 @@
 
 ## 0.0.40
 * Better names for Azure Blobs positions manager
+
+## 0.0.41
+* Fix idiotic bug introduced when it was made possible to configure min/max events per dispatch batch

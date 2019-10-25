@@ -112,15 +112,15 @@ namespace Topos.Consumer
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (_messages.TryDequeue(out var message) && messageBatch.Count < _maximumBatchSize)
+                    // IMPORTANT: The check for count must be first! Otherwise, we might pop a message and not add it to the batch... :|
+                    while (messageBatch.Count < _maximumBatchSize && _messages.TryDequeue(out var message))
                     {
                         messageBatch.Add(message);
                     }
 
                     if (messageBatch.Count < _minimumBatchSize)
                     {
-                        Console.WriteLine($"NOT THERE YET {messageBatch.Count} < {_minimumBatchSize} (prefetch queue length: {_messages.Count})");
-                        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                        await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
                         continue;
                     }
 

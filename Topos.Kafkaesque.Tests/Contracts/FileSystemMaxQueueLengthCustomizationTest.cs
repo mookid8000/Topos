@@ -11,6 +11,7 @@ namespace Topos.Kafkaesque.Tests.Contracts
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
+                .MinimumLevel.Verbose()
                 .CreateLogger();
         }
     }

@@ -121,9 +121,7 @@ namespace Topos.Consumer
 
                     while (!handler.IsReadyForMore)
                     {
-                        Thread.Sleep(TimeSpan.FromSeconds(3));
-                        Console.WriteLine("Handler is still not ready for more...");
-                        //Thread.Sleep(243);
+                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
                     }
 
                     handler.Enqueue(receivedLogicalMessage);
