@@ -66,7 +66,6 @@ namespace Topos.Kafka
         public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
             if (topic == null) throw new ArgumentNullException(nameof(topic));
-            if (partitionKey == null) throw new ArgumentNullException(nameof(partitionKey));
             if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
 
             var headers = GetHeaders(transportMessage.Headers);

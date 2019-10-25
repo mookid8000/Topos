@@ -79,7 +79,7 @@ namespace Topos.Kafka.Tests
         {
             var stopwatch = Stopwatch.StartNew();
 
-            await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(evt, index.ToString())));
+            await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(new ToposMessage(evt), index.ToString())));
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 

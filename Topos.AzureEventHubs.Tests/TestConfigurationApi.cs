@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Testy;
 using Topos.Config;
 using Topos.Logging.Console;
+using Topos.Producer;
 
 namespace Topos.AzureEventHubs.Tests
 {
@@ -27,7 +28,7 @@ namespace Topos.AzureEventHubs.Tests
                 .Logging(l => l.UseConsole())
                 .Create();
 
-            await producer.Send("hej med dig");
+            await producer.Send(new ToposMessage("hej med dig"));
         }
     }
 }

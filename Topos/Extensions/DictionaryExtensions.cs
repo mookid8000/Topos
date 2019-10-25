@@ -6,13 +6,13 @@ namespace Topos.Extensions
 {
     public static class DictionaryExtensions
     {
-        public static Dictionary<string, string> Clone(this Dictionary<string, string> dictionary)
+        public static Dictionary<string, string> Clone(this IDictionary<string, string> dictionary)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
             return new Dictionary<string, string>(dictionary);
         }
 
-        public static TValue GetValue<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
         {
             if (dictionary == null) throw new ArgumentNullException(nameof(dictionary));
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -22,7 +22,7 @@ namespace Topos.Extensions
                 : defaultValue;
         }
 
-        public static string GetValue(this Dictionary<string, string> headers, string key)
+        public static string GetValue(this IDictionary<string, string> headers, string key)
         {
             if (headers == null) throw new ArgumentNullException(nameof(headers));
             if (key == null) throw new ArgumentNullException(nameof(key));

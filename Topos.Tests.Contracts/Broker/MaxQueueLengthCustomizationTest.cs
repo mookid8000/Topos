@@ -7,6 +7,7 @@ using Testy.Benchmarking;
 using Testy.Extensions;
 using Testy.Timers;
 using Topos.Config;
+using Topos.Producer;
 using Topos.Tests.Contracts.Factories;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 #pragma warning disable 1998
@@ -62,7 +63,7 @@ namespace Topos.Tests.Contracts.Broker
 
             using (new TimerScope($"send {totalCount} messages", totalCount))
             {
-                await Task.WhenAll(messages.Select(m => producer.Send(m)));
+                await Task.WhenAll(messages.Select(m => producer.Send(new ToposMessage(m))));
             }
 
             consumer.Start();

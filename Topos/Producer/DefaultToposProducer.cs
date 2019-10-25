@@ -29,24 +29,32 @@ namespace Topos.Producer
             _producerImplementation = producerImplementation ?? throw new ArgumentNullException(nameof(producerImplementation));
         }
 
-        public async Task Send(object message, string partitionKey = null, Dictionary<string, string> optionalHeaders = null)
+        public async Task Send(ToposMessage message, string partitionKey = null)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            var topic = _topicMapper.GetTopic(message);
-            var headers = optionalHeaders ?? new Dictionary<string, string>();
+            var body = message.Body;
+            var topic = _topicMapper.GetTopic(body);
+
+            var headersOrNull = message.Headers;
+            var headers = headersOrNull?.Clone() ?? new Dictionary<string, string>();
 
             if (!headers.ContainsKey(ToposHeaders.MessageId))
             {
                 headers[ToposHeaders.MessageId] = Guid.NewGuid().ToString();
             }
 
-            var logicalMessage = new LogicalMessage(headers, message);
+            var logicalMessage = new LogicalMessage(headers, body);
             var transportMessage = _messageSerializer.Serialize(logicalMessage);
 
             _logger.Debug("Sending message with ID {messageId} to topic {topic}", logicalMessage.GetMessageId(), topic);
 
-            await _producerImplementation.Send(topic, partitionKey ?? "", transportMessage);
+            await _producerImplementation.Send(topic, partitionKey, transportMessage);
+        }
+
+        public async Task SendMany(IEnumerable<ToposMessage> messages, string partitionKey = null)
+        {
+            if (messages == null) throw new ArgumentNullException(nameof(messages));
         }
 
         /// <summary>

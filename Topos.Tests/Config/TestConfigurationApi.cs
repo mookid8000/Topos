@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using Testy;
 using Topos.Config;
+using Topos.Producer;
 using Topos.SqlServer.Config;
 
 namespace Topos.Tests.Config
@@ -35,7 +36,7 @@ namespace Topos.Tests.Config
             var producer = Configure.Producer(t => t.UseSqlServer("server=.; database=topos_test; trusted_connection=true"))
                 .Create();
 
-            await producer.Send("hej med dig");
+            await producer.Send(new ToposMessage("hej med dig"));
         }
     }
 }

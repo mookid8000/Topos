@@ -5,9 +5,9 @@ using Topos.Tests.Contracts.Broker;
 namespace Topos.Kafkaesque.Tests.Contracts
 {
     [TestFixture]
-    public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FileSystemBrokerFactory>
+    public class FileSystemBatchProducerTest : BatchProducerTest<FileSystemBrokerFactory>
     {
-        public FileSystemMaxQueueLengthCustomizationTest()
+        public FileSystemBatchProducerTest()
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()

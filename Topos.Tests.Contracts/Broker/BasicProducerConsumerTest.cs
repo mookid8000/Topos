@@ -9,13 +9,15 @@ using Topos.InMem;
 using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Contracts.Factories;
 using Testy.Extensions;
+using Topos.Producer;
+
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
 #pragma warning disable 1998
 
 namespace Topos.Tests.Contracts.Broker
 {
-    public abstract class BasicProducerConsumerTest<TProducerFactory> : ToposContractFixtureBase where TProducerFactory : IBrokerFactory, new()
+    public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractFixtureBase where TBrokerFactory : IBrokerFactory, new()
     {
         IBrokerFactory _brokerFactory;
 
@@ -48,7 +50,7 @@ namespace Topos.Tests.Contracts.Broker
 
             Using(consumer);
 
-            await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send($"message-{n}", "p100")));
+            await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send(new ToposMessage($"message-{n}"), "p100")));
 
             await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 10);
         }
@@ -85,9 +87,9 @@ namespace Topos.Tests.Contracts.Broker
 
             using (CreateConsumer(positionsStorage))
             {
-                await producer.Send("HEJ", partitionKey: partitionKey);
-                await producer.Send("MED", partitionKey: partitionKey);
-                await producer.Send("DIG", partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("MED"), partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("DIG"), partitionKey: partitionKey);
 
                 string GetFailureDetailsFunction() => $@"Got these strings:
 
@@ -108,9 +110,9 @@ namespace Topos.Tests.Contracts.Broker
 
             using (CreateConsumer(positionsStorage))
             {
-                await producer.Send("MIN", partitionKey: partitionKey);
-                await producer.Send("SØDE", partitionKey: partitionKey);
-                await producer.Send("VEN", partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("MIN"), partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("SØDE"), partitionKey: partitionKey);
+                await producer.Send(new ToposMessage("VEN"), partitionKey: partitionKey);
 
                 await receivedStrings.WaitOrDie(q => q.Count == 6, failExpression: q => q.Count > 6);
 
@@ -211,7 +213,7 @@ but got
 
             Using(consumer);
 
-            await producer.Send("HEJ MED DIG MIN VEN");
+            await producer.Send(new ToposMessage("HEJ MED DIG MIN VEN"));
 
             gotTheString.WaitOrDie(errorMessage: "Waited for the text 'HEJ MED DIG MIN VEN' to arrive in the consumer");
         }
@@ -221,7 +223,7 @@ but got
             get
             {
                 if (_brokerFactory != null) return _brokerFactory;
-                _brokerFactory = new TProducerFactory();
+                _brokerFactory = new TBrokerFactory();
                 Using(_brokerFactory);
                 return _brokerFactory;
             }

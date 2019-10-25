@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Config;
+using Topos.Producer;
+
 #pragma warning disable 1998
 
 namespace Topos.Kafka.Tests
@@ -30,7 +32,7 @@ namespace Topos.Kafka.Tests
                     var messages = Enumerable.Range(0, count)
                         .Select(n => new SomeEvent($"This is event number {n}"));
 
-                    await Task.WhenAll(messages.Select(m => producer.Send(m)));
+                    await Task.WhenAll(messages.Select(m => producer.Send(new ToposMessage(m))));
                 });
         }
 
@@ -48,7 +50,7 @@ namespace Topos.Kafka.Tests
             Using(producer);
 
             // send events like this:;
-            await producer.Send(new SomeEvent("This is just a message"), partitionKey: "customer-004");
+            await producer.Send(new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
         }
 
         [Test]

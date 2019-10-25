@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Testy.Extensions;
 using Topos.Config;
+using Topos.Producer;
 using Topos.Tests.Contracts.Extensions;
 
 #pragma warning disable 1998
@@ -50,7 +51,7 @@ namespace Topos.Kafka.Tests
 
             Using(consumer);
 
-            await producer.Send("hej med dig min ven!");
+            await producer.Send(new ToposMessage("hej med dig min ven!"));
 
             await receivedEvents.WaitOrDie(c => c.Count >= 1, timeoutSeconds: 10);
 

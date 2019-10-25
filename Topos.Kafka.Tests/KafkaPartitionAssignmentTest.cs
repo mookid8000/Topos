@@ -7,6 +7,8 @@ using Confluent.Kafka;
 using NUnit.Framework;
 using Topos.Config;
 using Topos.InMem;
+using Topos.Producer;
+
 #pragma warning disable 1998
 #pragma warning disable 4014
 
@@ -83,7 +85,7 @@ namespace Topos.Kafka.Tests
                          var myEvent = new MyEvent($"THIS IS EVENT NUMBER {counter}", counter);
                          var partitionKey = Guid.NewGuid().ToString();
 
-                         await producer.Send(myEvent, partitionKey);
+                         await producer.Send(new ToposMessage(myEvent), partitionKey);
 
                          await Task.Delay(delayBetweenEachMessage, cancellationToken);
                      }

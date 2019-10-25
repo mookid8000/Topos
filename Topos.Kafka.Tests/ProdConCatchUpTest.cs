@@ -51,9 +51,9 @@ namespace Topos.Kafka.Tests
             var partitionKey = "test";
 
             // send three mewsages
-            await _producer.Send("HEJ", partitionKey: partitionKey);
-            await _producer.Send("MED", partitionKey: partitionKey);
-            await _producer.Send("DIG", partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("MED"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("DIG"), partitionKey: partitionKey);
 
             // wait until they're received
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, c => c.Count > 3, FormatReceivedEvents);
@@ -63,11 +63,11 @@ namespace Topos.Kafka.Tests
             // now clear the events and send 5 additional events
             receivedEvents.Clear();
 
-            await _producer.Send("HEJ", partitionKey: partitionKey);
-            await _producer.Send("IGEN", partitionKey: partitionKey);
-            await _producer.Send("IGEN", partitionKey: partitionKey);
-            await _producer.Send("OG", partitionKey: partitionKey);
-            await _producer.Send("SÅ IGEN", partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("IGEN"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("IGEN"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("OG"), partitionKey: partitionKey);
+            await _producer.Send(new ToposMessage("SÅ IGEN"), partitionKey: partitionKey);
 
             // ... and then wait for them to arrive
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, c => c.Count > 5, FormatReceivedEvents);

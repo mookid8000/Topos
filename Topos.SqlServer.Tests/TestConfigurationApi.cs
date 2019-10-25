@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Testy;
 using Topos.Config;
 using Topos.Logging.Console;
+using Topos.Producer;
 using Topos.SqlServer.Config;
 
 namespace Topos.SqlServer.Tests
@@ -28,7 +29,7 @@ namespace Topos.SqlServer.Tests
                 .Logging(l => l.UseConsole())
                 .Create();
 
-            await producer.Send("hej med dig");
+            await producer.Send(new ToposMessage("hej med dig"));
         }
     }
 }

@@ -2,12 +2,12 @@
 using Serilog;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Kafkaesque.Tests.Contracts
+namespace Topos.Kafka.Tests.Contracts
 {
     [TestFixture]
-    public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FileSystemBrokerFactory>
+    public class KafkaBatchProducerTest : BatchProducerTest<KafkaBrokerFactory>
     {
-        public FileSystemMaxQueueLengthCustomizationTest()
+        public KafkaBatchProducerTest()
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()

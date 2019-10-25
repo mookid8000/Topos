@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Testy;
 using Topos.Config;
 using Topos.InMem;
+using Topos.Producer;
 
 namespace Topos.Tests.Config
 {
@@ -23,7 +24,7 @@ namespace Topos.Tests.Config
 
             Using(consumer);
 
-            await producer.Send("HEJ MED DIG MIN VEN");
+            await producer.Send(new ToposMessage("HEJ MED DIG MIN VEN"));
         }
     }
 }
