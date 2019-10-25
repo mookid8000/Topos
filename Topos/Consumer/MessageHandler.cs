@@ -18,11 +18,12 @@ namespace Topos.Consumer
     {
         public const string MinimumBatchSizeOptionsKey = "message-handler-minimum-batch-size";
         public const string MaximumBatchSizeOptionsKey = "message-handler-maximum-batch-size";
-        
-        const int DefaultMinimumBatchSize = 1;
-        const int DefaultMaximumBatchSize = 10000;
+        public const string MaximumPrefetchQueueLengthOptionsKey = "message-handler-maximum-prefecth-queue-length";
 
-        const int MaxPrefetchQueueLength = 20000;
+        const int DefaultMinimumBatchSize = 1;
+        const int DefaultMaximumBatchSize = 1000;
+
+        const int DefaultMaxPrefetchQueueLength = 20000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
@@ -36,6 +37,7 @@ namespace Topos.Consumer
 
         int _minimumBatchSize;
         int _maximumBatchSize;
+        int _maxPrefetchQueueLength;
         Task _task;
         bool _disposed;
         ConsumerContext _context;
@@ -59,7 +61,7 @@ namespace Topos.Consumer
             }
         }
 
-        public bool IsReadyForMore => _messages.Count < MaxPrefetchQueueLength;
+        public bool IsReadyForMore => _messages.Count < _maxPrefetchQueueLength;
 
         public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
 
@@ -67,6 +69,7 @@ namespace Topos.Consumer
         {
             _minimumBatchSize = _options.Get(MinimumBatchSizeOptionsKey, defaultValue: DefaultMinimumBatchSize);
             _maximumBatchSize = _options.Get(MaximumBatchSizeOptionsKey, defaultValue: DefaultMaximumBatchSize);
+            _maxPrefetchQueueLength = _options.Get(MaximumPrefetchQueueLengthOptionsKey, defaultValue: DefaultMaxPrefetchQueueLength);
 
             if (_minimumBatchSize < 1)
             {
@@ -76,6 +79,11 @@ namespace Topos.Consumer
             if (_maximumBatchSize < _minimumBatchSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(_maximumBatchSize), _maximumBatchSize, $"MAX batch size must be >= {_minimumBatchSize} (which is the current MIN batch size)");
+            }
+
+            if (_minimumBatchSize > _maxPrefetchQueueLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(_minimumBatchSize), _minimumBatchSize, $"MIN batch size must be <= {_maxPrefetchQueueLength} (which is the current MAX prefetch queue length)");
             }
 
             _context = context;
@@ -104,15 +112,16 @@ namespace Topos.Consumer
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (_messages.Count < _minimumBatchSize)
-                    {
-                        await Task.Delay(TimeSpan.FromMilliseconds(210), cancellationToken);
-                        continue;
-                    }
-
                     while (_messages.TryDequeue(out var message) && messageBatch.Count < _maximumBatchSize)
                     {
                         messageBatch.Add(message);
+                    }
+
+                    if (messageBatch.Count < _minimumBatchSize)
+                    {
+                        Console.WriteLine($"NOT THERE YET {messageBatch.Count} < {_minimumBatchSize} (prefetch queue length: {_messages.Count})");
+                        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                        continue;
                     }
 
                     try

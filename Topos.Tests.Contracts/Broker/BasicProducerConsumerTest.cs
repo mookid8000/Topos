@@ -8,7 +8,7 @@ using Topos.Config;
 using Topos.InMem;
 using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Contracts.Factories;
-
+using Testy.Extensions;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
 #pragma warning disable 1998
@@ -40,7 +40,7 @@ namespace Topos.Tests.Contracts.Broker
 
                     if (random.Next(3) == 0) throw new ApplicationException("oh no!");
 
-                    receivedStrings.Enqueue(strings);
+                    receivedStrings.EnqueueRange(strings);
                 })
                 .Topics(t => t.Subscribe(topic))
                 .Positions(p => p.StoreInMemory())
@@ -72,7 +72,7 @@ namespace Topos.Tests.Contracts.Broker
                     {
                         var strings = messages.Select(m => m.Body).Cast<string>();
 
-                        receivedStrings.Enqueue(strings);
+                        receivedStrings.EnqueueRange(strings);
                     })
                     .Topics(t => t.Subscribe(topic))
                     .Positions(p => p.StoreInMemory(storage))

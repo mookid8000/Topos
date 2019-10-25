@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Testy.Benchmarking;
+using Testy.Extensions;
+using Testy.Timers;
 using Topos.Config;
-using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Contracts.Factories;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 #pragma warning disable 1998
@@ -21,13 +22,18 @@ namespace Topos.Tests.Contracts.Broker
             _factory = Using(new TBrokerFactory());
         }
 
-        [TestCase(100, 100)]
-        [TestCase(1000, 1000)]
-        [TestCase(5000, 5000)]
-        [TestCase(10000, 10000)]
-        [TestCase(20000, 20000)]
-        public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int minimumBatchSize, int maximumBatchSize)
+        [TestCase(5, 1, 4)]
+        [TestCase(50, 10, 10)]
+        [TestCase(500, 100, 100)]
+        [TestCase(5000, 1000, 1000)]
+        [TestCase(20000, 5000, 5000)]
+        [TestCase(20000, 10000, 10000)]
+        [TestCase(20000, 20000, 20000)]
+        public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int totalCount, int minimumBatchSize, int maximumBatchSize)
         {
+            Assert.That(totalCount % minimumBatchSize, Is.EqualTo(0), 
+                "Please ensure that the total count is a multiple of the minimum batch size");
+
             var topic = _factory.GetNewTopic();
 
             var producer = _factory.ConfigureProducer()
@@ -51,11 +57,9 @@ namespace Topos.Tests.Contracts.Broker
 
             Using(consumer);
 
-            const int totalCount = 20000; // remember this one must be a multiple of the minimum batch size!!!
-
             var messages = Enumerable.Range(0, totalCount).Select(n => $"THIS IS MESSAGE NUMBNER {n}");
 
-            using (new TimerScope("send", totalCount))
+            using (new TimerScope($"send {totalCount} messages", totalCount))
             {
                 await Task.WhenAll(messages.Select(m => producer.Send(m)));
             }
@@ -65,7 +69,8 @@ namespace Topos.Tests.Contracts.Broker
             string FormatBatchSizes() => string.Join(Environment.NewLine, encounteredBatchSizes
                     .Select(e => $"    {e}" + ((e > maximumBatchSize || e < minimumBatchSize) ? " !!!!!!!!!" : "")));
 
-            using (new TimerScope("receive", totalCount))
+            using (new TimerScope($"receive {totalCount} messages", totalCount))
+            using (new PeriodicCallback(TimeSpan.FromSeconds(5), () => Console.WriteLine($"{DateTime.Now:HH:mm:ss} SUM(encountered batch sizes) = {encounteredBatchSizes.Sum()}")))
             {
                 await encounteredBatchSizes
                     .WaitOrDie(
@@ -76,8 +81,10 @@ namespace Topos.Tests.Contracts.Broker
 All the batch sizes are here:
 
 {FormatBatchSizes()}
+
+SUM: {encounteredBatchSizes.Sum()}
 ",
-                        timeoutSeconds: 120
+                        timeoutSeconds: 20
                     );
             }
 
@@ -85,6 +92,8 @@ All the batch sizes are here:
                 $@"Expected all encountered batch sizes N to satisfy {minimumBatchSize} <= N <= {maximumBatchSize}, but we got these:
 
 {FormatBatchSizes()}
+
+SUM: {encounteredBatchSizes.Sum()}
 ");
         }
     }

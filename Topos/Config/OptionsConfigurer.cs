@@ -22,5 +22,12 @@ namespace Topos.Config
         /// The default MAX batch size is <see cref="MessageHandler.DefaultMaximumBatchSize"/>.
         /// </summary>
         public void SetMaximumBatchSize(int maximumBatchSize) => _options.Set(MessageHandler.MaximumBatchSizeOptionsKey, maximumBatchSize);
+
+        /// <summary>
+        /// Sets the MAX prefetch queue length.
+        /// This is how many messages we tolerate accepting from the underlying driver, before we stop receiving any more messages.
+        /// The default MAX prefetch queue length is <see cref="MessageHandler.DefaultMaxPrefetchQueueLength"/>.
+        /// </summary>
+        public void SetMaximumPrefetchQueueLength(int maximumPrefetchQueueLength) => _options.Set(MessageHandler.MaximumPrefetchQueueLengthOptionsKey, maximumPrefetchQueueLength);
     }
 }

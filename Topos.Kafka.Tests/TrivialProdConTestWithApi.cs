@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Testy.Extensions;
 using Topos.Config;
 using Topos.Tests.Contracts.Extensions;
 

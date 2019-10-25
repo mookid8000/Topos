@@ -4,12 +4,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Testy.Extensions;
 using Topos.Config;
 using Topos.Consumer;
 using Topos.InMem;
 using Topos.Producer;
 using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Extensions;
+// ReSharper disable ArgumentsStyleLiteral
 #pragma warning disable 1998
 
 namespace Topos.Kafka.Tests
