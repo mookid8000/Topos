@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,10 +30,30 @@ namespace Topos.Kafkaesque
 
         public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
+            // partitionKey has no function with Kafkaesque-based broker
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+            if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
+
             var eventData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transportMessage));
             var writer = _writers.GetOrAdd(topic, CreateWriter).Value;
 
             await writer.WriteAsync(eventData);
+        }
+
+        public async Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+        {
+            // partitionKey has no function with Kafkaesque-based broker
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+            if (transportMessages == null) throw new ArgumentNullException(nameof(transportMessages));
+            
+            var writer = _writers.GetOrAdd(topic, CreateWriter).Value;
+
+            foreach (var transportMessage in transportMessages)
+            {
+                var eventData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transportMessage));
+
+                await writer.WriteAsync(eventData);
+            }
         }
 
         Lazy<LogWriter> CreateWriter(string topic)

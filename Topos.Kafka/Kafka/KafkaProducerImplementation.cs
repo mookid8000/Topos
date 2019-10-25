@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Internals;
@@ -68,17 +69,39 @@ namespace Topos.Kafka
             if (topic == null) throw new ArgumentNullException(nameof(topic));
             if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
 
-            var headers = GetHeaders(transportMessage.Headers);
-            var body = transportMessage.Body;
-
-            var kafkaMessage = new Message<string, byte[]>
-            {
-                Key = partitionKey,
-                Headers = headers,
-                Value = body
-            };
+            var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
 
             await _producer.ProduceAsync(topic, kafkaMessage);
+        }
+
+        public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+        {
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+            if (transportMessages == null) throw new ArgumentNullException(nameof(transportMessages));
+
+            var taskCompletionSource = new TaskCompletionSource<object>();
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    foreach (var transportMessage in transportMessages)
+                    {
+                        var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
+                        _producer.Produce(topic, kafkaMessage);
+                    }
+
+                    _producer.Flush();
+                    
+                    taskCompletionSource.SetResult(null);
+                }
+                catch (Exception exception)
+                {
+                    taskCompletionSource.SetException(exception);
+                }
+            });
+
+            return taskCompletionSource.Task;
         }
 
         static Headers GetHeaders(Dictionary<string, string> dictionary)
@@ -93,6 +116,20 @@ namespace Topos.Kafka
             }
 
             return headers;
+        }
+
+        static Message<string, byte[]> GetKafkaMessage(string partitionKey, TransportMessage transportMessage)
+        {
+            var headers = GetHeaders(transportMessage.Headers);
+            var body = transportMessage.Body;
+
+            var kafkaMessage = new Message<string, byte[]>
+            {
+                Key = partitionKey,
+                Headers = headers,
+                Value = body
+            };
+            return kafkaMessage;
         }
 
         public void Dispose()

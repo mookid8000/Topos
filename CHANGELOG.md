@@ -30,3 +30,7 @@
 
 ## 0.0.41
 * Fix idiotic bug introduced when it was made possible to configure min/max events per dispatch batch
+
+## 0.0.42
+* Remove topic mapper - topics are now specified when events are sent
+* Introduce batch API

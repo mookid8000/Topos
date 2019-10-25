@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Topos.Extensions;
 using Topos.Logging;
@@ -31,8 +32,26 @@ namespace Topos.Producer
             if (topic == null) throw new ArgumentNullException(nameof(topic));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            var body = message.Body;
+            var transportMessage = GetTransportMessage(message);
 
+            _logger.Debug("Sending message with ID {messageId} to topic {topic}", transportMessage.GetMessageId(), topic);
+
+            await _producerImplementation.Send(topic, partitionKey, transportMessage);
+        }
+
+        public async Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null)
+        {
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
+            if (messages == null) throw new ArgumentNullException(nameof(messages));
+
+            var transportMessages = messages.Select(GetTransportMessage);
+
+            await _producerImplementation.SendMany(topic, partitionKey, transportMessages);
+        }
+
+        TransportMessage GetTransportMessage(ToposMessage message)
+        {
+            var body = message.Body;
             var headersOrNull = message.Headers;
             var headers = headersOrNull?.Clone() ?? new Dictionary<string, string>();
 
@@ -43,15 +62,7 @@ namespace Topos.Producer
 
             var logicalMessage = new LogicalMessage(headers, body);
             var transportMessage = _messageSerializer.Serialize(logicalMessage);
-
-            _logger.Debug("Sending message with ID {messageId} to topic {topic}", logicalMessage.GetMessageId(), topic);
-
-            await _producerImplementation.Send(topic, partitionKey, transportMessage);
-        }
-
-        public async Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null)
-        {
-            if (messages == null) throw new ArgumentNullException(nameof(messages));
+            return transportMessage;
         }
 
         /// <summary>

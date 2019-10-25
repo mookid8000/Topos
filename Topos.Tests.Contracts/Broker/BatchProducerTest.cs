@@ -20,6 +20,12 @@ namespace Topos.Tests.Contracts.Broker
 
         [TestCase(10, true)]
         [TestCase(10, false)]
+        [TestCase(100, true)]
+        [TestCase(100, false)]
+        [TestCase(1000, true)]
+        [TestCase(1000, false)]
+        [TestCase(10000, true)]
+        [TestCase(10000, false)]
         public async Task ProduceEvents(int eventCount, bool useBatchApi)
         {
             var events = Enumerable.Range(0, eventCount)
