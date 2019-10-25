@@ -29,7 +29,7 @@ namespace Topos.SqlServer.Tests
                 .Logging(l => l.UseConsole())
                 .Create();
 
-            await producer.Send(new ToposMessage("hej med dig"));
+            await producer.Send("some-topic", new ToposMessage("hej med dig"));
         }
     }
 }

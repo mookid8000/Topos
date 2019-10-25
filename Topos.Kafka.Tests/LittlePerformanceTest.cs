@@ -29,12 +29,11 @@ namespace Topos.Kafka.Tests
 
             var toposProducer = Configure.Producer(c => c.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .Topics(m => m.Map<string>(topic))
                 .Create();
 
             Using(toposProducer);
 
-            await Produce(toposProducer, events, eventCount);
+            await Produce(toposProducer, events, eventCount, topic);
 
             var counter = 0L;
 
@@ -75,11 +74,11 @@ namespace Topos.Kafka.Tests
             Console.WriteLine($"Consuming {eventCount} events took {elapsedSeconds:0.0} s - that's {eventCount/elapsedSeconds:0.0} evt/s");
         }
 
-        static async Task Produce(IToposProducer producer, IEnumerable<string> events, int eventCount)
+        static async Task Produce(IToposProducer producer, IEnumerable<string> events, int eventCount, string topic)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(new ToposMessage(evt), index.ToString())));
+            await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(topic, new ToposMessage(evt), index.ToString())));
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 

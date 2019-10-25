@@ -28,7 +28,6 @@ namespace Topos.Tests.Contracts.Broker
             var topic = BrokerFactory.GetNewTopic();
 
             var producer = BrokerFactory.ConfigureProducer()
-                .Topics(m => m.Map<string>(topic))
                 .Create();
 
             Using(producer);
@@ -50,7 +49,7 @@ namespace Topos.Tests.Contracts.Broker
 
             Using(consumer);
 
-            await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send(new ToposMessage($"message-{n}"), "p100")));
+            await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send(topic, new ToposMessage($"message-{n}"), "p100")));
 
             await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 10);
         }
@@ -62,7 +61,6 @@ namespace Topos.Tests.Contracts.Broker
             var topic = BrokerFactory.GetNewTopic();
 
             var producer = BrokerFactory.ConfigureProducer()
-                .Topics(m => m.Map<string>(topic))
                 .Create();
 
             Using(producer);
@@ -87,9 +85,9 @@ namespace Topos.Tests.Contracts.Broker
 
             using (CreateConsumer(positionsStorage))
             {
-                await producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
-                await producer.Send(new ToposMessage("MED"), partitionKey: partitionKey);
-                await producer.Send(new ToposMessage("DIG"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("MED"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
                 string GetFailureDetailsFunction() => $@"Got these strings:
 
@@ -110,9 +108,9 @@ namespace Topos.Tests.Contracts.Broker
 
             using (CreateConsumer(positionsStorage))
             {
-                await producer.Send(new ToposMessage("MIN"), partitionKey: partitionKey);
-                await producer.Send(new ToposMessage("SØDE"), partitionKey: partitionKey);
-                await producer.Send(new ToposMessage("VEN"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("MIN"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("SØDE"), partitionKey: partitionKey);
+                await producer.Send(topic, new ToposMessage("VEN"), partitionKey: partitionKey);
 
                 await receivedStrings.WaitOrDie(q => q.Count == 6, failExpression: q => q.Count > 6);
 
@@ -184,9 +182,7 @@ but got
         {
             var topic = BrokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer()
-                .Topics(m => m.Map<string>(topic))
-                .Create();
+            var producer = BrokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
@@ -213,7 +209,7 @@ but got
 
             Using(consumer);
 
-            await producer.Send(new ToposMessage("HEJ MED DIG MIN VEN"));
+            await producer.Send(topic, new ToposMessage("HEJ MED DIG MIN VEN"));
 
             gotTheString.WaitOrDie(errorMessage: "Waited for the text 'HEJ MED DIG MIN VEN' to arrive in the consumer");
         }

@@ -32,7 +32,6 @@ namespace Topos.Kafka.Tests
             _producer = Configure
                 .Producer(c => c.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .Topics(m => m.Map<string>(_topic))
                 .Create();
 
             Using(_producer);
@@ -51,9 +50,9 @@ namespace Topos.Kafka.Tests
             var partitionKey = "test";
 
             // send three mewsages
-            await _producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("MED"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("DIG"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("MED"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
             // wait until they're received
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, c => c.Count > 3, FormatReceivedEvents);
@@ -63,11 +62,11 @@ namespace Topos.Kafka.Tests
             // now clear the events and send 5 additional events
             receivedEvents.Clear();
 
-            await _producer.Send(new ToposMessage("HEJ"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("IGEN"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("IGEN"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("OG"), partitionKey: partitionKey);
-            await _producer.Send(new ToposMessage("SÅ IGEN"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("OG"), partitionKey: partitionKey);
+            await _producer.Send(_topic, new ToposMessage("SÅ IGEN"), partitionKey: partitionKey);
 
             // ... and then wait for them to arrive
             await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, c => c.Count > 5, FormatReceivedEvents);

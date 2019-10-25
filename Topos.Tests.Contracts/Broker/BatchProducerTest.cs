@@ -27,11 +27,7 @@ namespace Topos.Tests.Contracts.Broker
 
             var topic = _factory.GetNewTopic();
 
-            var producer = Using(
-                _factory.ConfigureProducer()
-                    .Topics(t => t.Map<string>(topic))
-                    .Create()
-            );
+            var producer = Using(_factory.ConfigureProducer().Create());
 
             using (new TimerScope($"Send {eventCount} messages", countForRateCalculation: eventCount))
             {
@@ -39,12 +35,12 @@ namespace Topos.Tests.Contracts.Broker
                 {
                     foreach (var evt in events)
                     {
-                        await producer.Send(evt, partitionKey: "whatever");
+                        await producer.Send(topic, evt, partitionKey: "whatever");
                     }
                 }
                 else
                 {
-                    await producer.SendMany(events, partitionKey: "whatever");
+                    await producer.SendMany(topic, events, partitionKey: "whatever");
                 }
             }
 

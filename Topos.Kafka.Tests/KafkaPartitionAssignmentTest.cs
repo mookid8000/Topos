@@ -72,7 +72,6 @@ namespace Topos.Kafka.Tests
             return StartTask(cancellationToken, "PRODUCER", async () =>
              {
                  var producer = Configure.Producer(c => c.UseKafka(KafkaTestConfig.Address))
-                     .Topics(m => m.Map<MyEvent>(topic))
                      .Serialization(s => s.UseNewtonsoftJson())
                      .Create();
 
@@ -85,7 +84,7 @@ namespace Topos.Kafka.Tests
                          var myEvent = new MyEvent($"THIS IS EVENT NUMBER {counter}", counter);
                          var partitionKey = Guid.NewGuid().ToString();
 
-                         await producer.Send(new ToposMessage(myEvent), partitionKey);
+                         await producer.Send(topic, new ToposMessage(myEvent), partitionKey);
 
                          await Task.Delay(delayBetweenEachMessage, cancellationToken);
                      }

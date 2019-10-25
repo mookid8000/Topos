@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Topos.Extensions;
 using Topos.Logging;
-using Topos.Routing;
 using Topos.Serialization;
 
 namespace Topos.Producer
@@ -11,7 +10,6 @@ namespace Topos.Producer
     public class DefaultToposProducer : IToposProducer
     {
         readonly IMessageSerializer _messageSerializer;
-        readonly ITopicMapper _topicMapper;
         readonly IProducerImplementation _producerImplementation;
         readonly ILogger _logger;
 
@@ -20,21 +18,20 @@ namespace Topos.Producer
 
         public event Action Disposing;
 
-        public DefaultToposProducer(IMessageSerializer messageSerializer, ITopicMapper topicMapper, IProducerImplementation producerImplementation, ILoggerFactory loggerFactory)
+        public DefaultToposProducer(IMessageSerializer messageSerializer, IProducerImplementation producerImplementation, ILoggerFactory loggerFactory)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             _logger = loggerFactory.GetLogger(typeof(DefaultToposProducer));
             _messageSerializer = messageSerializer ?? throw new ArgumentNullException(nameof(messageSerializer));
-            _topicMapper = topicMapper ?? throw new ArgumentNullException(nameof(topicMapper));
             _producerImplementation = producerImplementation ?? throw new ArgumentNullException(nameof(producerImplementation));
         }
 
-        public async Task Send(ToposMessage message, string partitionKey = null)
+        public async Task Send(string topic, ToposMessage message, string partitionKey = null)
         {
+            if (topic == null) throw new ArgumentNullException(nameof(topic));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var body = message.Body;
-            var topic = _topicMapper.GetTopic(body);
 
             var headersOrNull = message.Headers;
             var headers = headersOrNull?.Clone() ?? new Dictionary<string, string>();
@@ -52,7 +49,7 @@ namespace Topos.Producer
             await _producerImplementation.Send(topic, partitionKey, transportMessage);
         }
 
-        public async Task SendMany(IEnumerable<ToposMessage> messages, string partitionKey = null)
+        public async Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null)
         {
             if (messages == null) throw new ArgumentNullException(nameof(messages));
         }

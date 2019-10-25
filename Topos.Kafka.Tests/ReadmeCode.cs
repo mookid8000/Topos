@@ -26,13 +26,12 @@ namespace Topos.Kafka.Tests
                     var producer = Configure
                         .Producer(c => c.UseKafka("localhost:9092"))
                         .Serialization(s => s.UseNewtonsoftJson())
-                        .Topics(m => m.Map<SomeEvent>("someevents"))
                         .Create();
 
                     var messages = Enumerable.Range(0, count)
                         .Select(n => new SomeEvent($"This is event number {n}"));
 
-                    await Task.WhenAll(messages.Select(m => producer.Send(new ToposMessage(m))));
+                    await Task.WhenAll(messages.Select(m => producer.Send("someevents", new ToposMessage(m))));
                 });
         }
 
@@ -42,7 +41,6 @@ namespace Topos.Kafka.Tests
             var producer = Configure
                 .Producer(c => c.UseKafka("localhost:9092"))
                 .Serialization(s => s.UseNewtonsoftJson())
-                .Topics(m => m.Map<SomeEvent>("someevents"))
                 .Create();
 
             // keep producer instance for the entire life of your app,
@@ -50,7 +48,7 @@ namespace Topos.Kafka.Tests
             Using(producer);
 
             // send events like this:;
-            await producer.Send(new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
+            await producer.Send("someeents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
         }
 
         [Test]

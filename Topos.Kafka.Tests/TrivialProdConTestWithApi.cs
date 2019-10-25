@@ -30,7 +30,6 @@ namespace Topos.Kafka.Tests
             var producer = Configure
                 .Producer(e => e.UseKafka(KafkaTestConfig.Address))
                 .Logging(l => l.UseSerilog())
-                .Topics(c => c.Map<string>(_topic))
                 .Create();
 
             Using(producer);
@@ -51,7 +50,7 @@ namespace Topos.Kafka.Tests
 
             Using(consumer);
 
-            await producer.Send(new ToposMessage("hej med dig min ven!"));
+            await producer.Send(_topic, new ToposMessage("hej med dig min ven!"));
 
             await receivedEvents.WaitOrDie(c => c.Count >= 1, timeoutSeconds: 10);
 

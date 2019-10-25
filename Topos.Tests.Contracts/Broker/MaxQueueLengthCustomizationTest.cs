@@ -33,13 +33,12 @@ namespace Topos.Tests.Contracts.Broker
         [TestCase(20000, 20000, 20000)]
         public async Task CanCustomizeHowManyEventsGetDispatchedEachTime(int totalCount, int minimumBatchSize, int maximumBatchSize)
         {
-            Assert.That(totalCount % minimumBatchSize, Is.EqualTo(0), 
+            Assert.That(totalCount % minimumBatchSize, Is.EqualTo(0),
                 "Please ensure that the total count is a multiple of the minimum batch size");
 
             var topic = _factory.GetNewTopic();
 
             var producer = _factory.ConfigureProducer()
-                .Topics(t => t.Map<string>(topic))
                 .Create();
 
             Using(producer);
@@ -63,7 +62,7 @@ namespace Topos.Tests.Contracts.Broker
 
             using (new TimerScope($"send {totalCount} messages", totalCount))
             {
-                await Task.WhenAll(messages.Select(m => producer.Send(new ToposMessage(m))));
+                await Task.WhenAll(messages.Select(m => producer.Send(topic, new ToposMessage(m))));
             }
 
             consumer.Start();
