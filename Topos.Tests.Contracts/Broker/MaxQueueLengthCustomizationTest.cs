@@ -38,8 +38,7 @@ namespace Topos.Tests.Contracts.Broker
 
             var topic = _factory.GetNewTopic();
 
-            var producer = _factory.ConfigureProducer()
-                .Create();
+            var producer = _factory.ConfigureProducer().Create();
 
             Using(producer);
 
@@ -52,6 +51,7 @@ namespace Topos.Tests.Contracts.Broker
                 {
                     o.SetMinimumBatchSize(minimumBatchSize);
                     o.SetMaximumBatchSize(maximumBatchSize);
+                    o.SetMaximumPrefetchQueueLength(maximumBatchSize * 2);
                 })
                 .Handle(async (batch, context, cancellationToken) => encounteredBatchSizes.Enqueue(batch.Count))
                 .Create();

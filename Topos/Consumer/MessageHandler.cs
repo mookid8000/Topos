@@ -120,7 +120,7 @@ namespace Topos.Consumer
 
                     if (messageBatch.Count < _minimumBatchSize)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
+                        await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
                         continue;
                     }
 
@@ -142,13 +142,13 @@ namespace Topos.Consumer
                         {
                             _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] = max.Offset;
                         }
+
+                        messageBatch.Clear();
                     }
                     catch (Exception exception)
                     {
-                        _logger.Warn(exception, "Error when handling messages");
+                        _logger.Error(exception, "Critical error when handling messages");
                     }
-
-                    messageBatch.Clear();
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

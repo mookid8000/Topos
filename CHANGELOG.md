@@ -34,3 +34,6 @@
 ## 0.0.42
 * Remove topic mapper - topics are now specified when events are sent
 * Introduce batch API
+
+## 0.0.43
+* Log critical errors with higher level n stuff
