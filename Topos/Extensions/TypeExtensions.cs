@@ -6,21 +6,21 @@ namespace Topos.Extensions
 {
     public static class TypeExtensions
     {
-        static readonly ConcurrentDictionary<Type, string> _typeNameCache = new ConcurrentDictionary<Type, string>();
-        static readonly ConcurrentDictionary<string, Type> _typeCache = new ConcurrentDictionary<string, Type>();
+        static readonly ConcurrentDictionary<Type, string> TypeNameCache = new ConcurrentDictionary<Type, string>();
+        static readonly ConcurrentDictionary<string, Type> TypeCache = new ConcurrentDictionary<string, Type>();
 
         public static string GetSimpleAssemblyQualifiedTypeName(this Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
-            return _typeNameCache.GetOrAdd(type,_ => BuildSimpleAssemblyQualifiedName(type, new StringBuilder()).ToString());
+            return TypeNameCache.GetOrAdd(type,_ => BuildSimpleAssemblyQualifiedName(type, new StringBuilder()).ToString());
         }
 
         public static Type ParseType(this string simpleAssemblyQualifiedTypeName)
         {
             if (simpleAssemblyQualifiedTypeName == null) throw new ArgumentNullException(nameof(simpleAssemblyQualifiedTypeName));
 
-            return _typeCache.GetOrAdd(simpleAssemblyQualifiedTypeName, _ => InnerParseType(simpleAssemblyQualifiedTypeName));
+            return TypeCache.GetOrAdd(simpleAssemblyQualifiedTypeName, _ => InnerParseType(simpleAssemblyQualifiedTypeName));
         }
 
         static StringBuilder BuildSimpleAssemblyQualifiedName(Type type, StringBuilder sb)
