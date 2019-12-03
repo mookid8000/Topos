@@ -38,5 +38,5 @@
 ## 0.0.43
 * Log critical errors with higher level n stuff
 
-## 0.0.44
+## 0.0.45
 * Remember Newtonsoft
