@@ -12,6 +12,10 @@ namespace Topos.Config
     {
         static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = new Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[0];
 
+        readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new List<Func<ConsumerConfig, ConsumerConfig>>();
+
+        internal void AddCustomizer(Func<ConsumerConfig, ConsumerConfig> customizer) => _customizers.Add(customizer);
+
         /// <summary>
         /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
         /// </summary>
@@ -33,6 +37,8 @@ namespace Topos.Config
         internal ConsumerConfig Apply(ConsumerConfig config)
         {
             var bootstrapServers = config.BootstrapServers;
+
+            config = _customizers.Aggregate(config, (cfg, customize) => customize(cfg));
 
             AzureEventHubsHelper.TrySetConnectionInfo(bootstrapServers, info =>
             {

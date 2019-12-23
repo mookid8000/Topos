@@ -1,4 +1,5 @@
-﻿using Topos.Config;
+﻿using System;
+using Topos.Config;
 
 namespace Topos.Routing
 {
@@ -6,10 +7,7 @@ namespace Topos.Routing
     {
         readonly Topics _topics;
 
-        public SubscriptionsRegistrar(Topics topics)
-        {
-            _topics = topics;
-        }
+        public SubscriptionsRegistrar(Topics topics) => _topics = topics ?? throw new ArgumentNullException(nameof(topics));
 
         public SubscriptionsRegistrar Subscribe(string topic)
         {

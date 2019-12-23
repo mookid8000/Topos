@@ -43,3 +43,4 @@
 
 ## 0.0.46
 * Update Kafka driver to 1.3.0
+* Add configuration helper for connecting to Confluent Cloud
