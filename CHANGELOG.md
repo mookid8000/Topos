@@ -40,3 +40,6 @@
 
 ## 0.0.45
 * Remember Newtonsoft
+
+## 0.0.46
+* Update Kafka driver to 1.3.0
