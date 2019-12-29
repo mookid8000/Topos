@@ -45,7 +45,7 @@
 * Update Kafka driver to 1.3.0
 * Add configuration helper for connecting to Confluent Cloud
 
-## 0.0.49
+## 0.0.50
 * React quicker on closed connections in consumer
 * Update Mongo driver dep
 

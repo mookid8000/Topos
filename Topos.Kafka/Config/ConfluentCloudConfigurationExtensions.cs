@@ -20,7 +20,7 @@ namespace Topos.Config
                 config.RequestTimeoutMs = 60000;
                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
                 config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = true;
+                config.EnableSslCertificateVerification = false;
 
                 return config;
             });
@@ -41,7 +41,7 @@ namespace Topos.Config
                 config.SessionTimeoutMs = 10000;
                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
                 config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = true;
+                config.EnableSslCertificateVerification = false;
 
                 return config;
             });
