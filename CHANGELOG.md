@@ -47,3 +47,6 @@
 
 ## 0.0.47
 * React quicker on closed connections in consumer
+
+## 0.0.48
+* Update Mongo driver dep
