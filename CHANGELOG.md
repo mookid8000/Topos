@@ -49,5 +49,5 @@
 * React quicker on closed connections in consumer
 * Update Mongo driver dep
 
-## 0.0.53
+## 0.0.54
 * Set max idle connection for the connections
