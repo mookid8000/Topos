@@ -43,6 +43,8 @@ namespace Topos.Config
                 config.SaslMechanism = SaslMechanism.Plain;
                 config.EnableSslCertificateVerification = false;
 
+                config.Set("connections.max.idle.ms", "60000");
+
                 return config;
             });
 
