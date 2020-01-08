@@ -51,3 +51,6 @@
 
 ## 0.0.52
 * React even quicker on closed connections in consumer
+
+## 0.0.54
+* Set max idle time for the connections
