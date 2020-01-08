@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 ## 0.0.33
 * Confluent Kafka 1.2.0
@@ -54,3 +54,6 @@
 
 ## 0.0.54
 * Set max idle time for the connections
+
+## 0.0.55
+* Disable the max idle time configuration again, because the C driver crashes the process!! 😫

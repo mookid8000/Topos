@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +10,7 @@
     <PackageReference Include="serilog" Version="2.8.0" />
     <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
     <PackageReference Include="tababular" Version="3.0.1" />
-    <PackageReference Include="testy" Version="0.1.0" />
+    <PackageReference Include="testy" Version="0.2.0" />
   </ItemGroup>
 
   <ItemGroup>
