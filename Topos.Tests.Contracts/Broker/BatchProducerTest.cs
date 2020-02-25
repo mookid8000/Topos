@@ -68,7 +68,11 @@ namespace Topos.Tests.Contracts.Broker
 
             using (new TimerScope($"Receive {eventCount} messages", countForRateCalculation: eventCount))
             {
-                await queue.WaitOrDie(q => q.Count == eventCount, failExpression: q => q.Count > eventCount);
+                await queue.WaitOrDie(
+                    completionExpression: q => q.Count == eventCount,
+                    failExpression: q => q.Count > eventCount,
+                    timeoutSeconds: 10
+                );
             }
         }
     }

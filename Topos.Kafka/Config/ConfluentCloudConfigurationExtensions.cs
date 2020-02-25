@@ -37,7 +37,7 @@ namespace Topos.Config
             {
                 config.SaslUsername = key;
                 config.SaslPassword = secret;
-
+                
                 config.SessionTimeoutMs = 6000;
                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
                 config.SaslMechanism = SaslMechanism.Plain;

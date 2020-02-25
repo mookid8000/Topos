@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Testy;
 using Testy.Extensions;
 using Topos.Config;
+using Topos.Logging.Console;
 using Topos.Producer;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleAnonymousFunction
@@ -39,15 +40,20 @@ namespace Topos.Kafka.Tests
 
             using var producer = Configure
                 .Producer(p => p.UseKafka(host).WithConfluentCloud(key, secret))
+                .Logging(l => l.UseConsole(minimumLogLevel: LogLevel.Info))
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Create();
 
-            await producer.Send(topic, new ToposMessage("her er en tekststreng"));
+            await producer.Send(topic, new ToposMessage("her er noget nyt!!"));
+            
+            //await Task.WhenAll(Enumerable.Range(0, 10000).Select(n => 
+            //producer.Send(topic, new ToposMessage($"her er besked nr {n}"), partitionKey: (n%20).ToString())));
 
             var receivedMessages = new ConcurrentQueue<ReceivedLogicalMessage>();
 
             using var consumer = Configure
                 .Consumer("default", c => c.UseKafka(host).WithConfluentCloud(key, secret))
+                .Logging(l => l.UseConsole(minimumLogLevel: LogLevel.Info))
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Topics(t => t.Subscribe(topic))
                 .Positions(p => p.StoreInFileSystem(NewTempDirectory()))

@@ -60,8 +60,7 @@ namespace Topos.Tests.Contracts.Broker
             var receivedStrings = new ConcurrentQueue<string>();
             var topic = BrokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer()
-                .Create();
+            var producer = BrokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
@@ -83,20 +82,21 @@ namespace Topos.Tests.Contracts.Broker
 
             const string partitionKey = "same-every-time";
 
+            string GetFailureDetailsFunction() => $@"Got these strings:
+
+{receivedStrings.ToPrettyJson()}";
+
             using (CreateConsumer(positionsStorage))
             {
                 await producer.Send(topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
                 await producer.Send(topic, new ToposMessage("MED"), partitionKey: partitionKey);
                 await producer.Send(topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
-                string GetFailureDetailsFunction() => $@"Got these strings:
-
-{receivedStrings.ToPrettyJson()}";
-
                 await receivedStrings.WaitOrDie(
                     completionExpression: q => q.Count == 3,
                     failExpression: q => q.Count > 3,
-                    failureDetailsFunction: GetFailureDetailsFunction
+                    failureDetailsFunction: GetFailureDetailsFunction,
+                    timeoutSeconds: 10
                 );
             }
 
@@ -112,7 +112,11 @@ namespace Topos.Tests.Contracts.Broker
                 await producer.Send(topic, new ToposMessage("SØDE"), partitionKey: partitionKey);
                 await producer.Send(topic, new ToposMessage("VEN"), partitionKey: partitionKey);
 
-                await receivedStrings.WaitOrDie(q => q.Count == 6, failExpression: q => q.Count > 6);
+                await receivedStrings.WaitOrDie(
+                    completionExpression: q => q.Count == 6,
+                    failExpression: q => q.Count > 6,
+                    timeoutSeconds: 20
+                );
 
                 // additional delay to be absolutely sure that no additional messages arrive after this point
                 await Task.Delay(TimeSpan.FromSeconds(1));
