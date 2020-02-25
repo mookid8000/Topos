@@ -61,3 +61,4 @@
 ## 0.0.56
 * Update MongoDb driver dependency to 2.10.2
 * Update Azure blobs driver dependency to 11.1.3
+* Update Serilog dependency to 2.9.0
