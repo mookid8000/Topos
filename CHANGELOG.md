@@ -59,4 +59,5 @@
 * Disable the max idle time configuration again, because the C driver crashes the process!! 😫
 
 ## 0.0.56
-* Update MongoDb.Driver dependency to 2.10.2
+* Update MongoDb driver dependency to 2.10.2
+* Update Azure blobs driver dependency to 11.1.3

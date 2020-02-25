@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.3" />
-    <PackageReference Include="microsoft.azure.storage.blob" Version="11.0.1" />
+    <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.5" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="11.1.3" />
   </ItemGroup>
 
   <ItemGroup>
