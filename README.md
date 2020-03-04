@@ -7,9 +7,8 @@ It's something with topics.
 Could e.g. be Apache Kafka, where we send a JSON-serialized message:
 ```csharp
 var producer = Configure
-    .Producer(c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
+    .Producer(c => c.UseKafka("localhost:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
-    .Topics(m => m.Map<SomeEvent>("someevents"))
     .Create();
 
 // keep producer instance for the entire life of your app,
@@ -17,7 +16,7 @@ var producer = Configure
 Using(producer);
 
 // send events like this:;
-await producer.Send(new SomeEvent("This is just a message"), partitionKey: "customer-004");
+await producer.Send("someeents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
 ```
 
 Let's go through the different configuration parts:
@@ -30,9 +29,6 @@ var producer = Configure
 
     // tell Topos to JSON-serialize messages
     .Serialization(s => s.UseNewtonsoftJson())
-
-    // map .NET types of type SomeEvent to the 'someevents' topic
-    .Topics(m => m.Map<SomeEvent>("someevents"))
 
     // creates the producer
     .Create();
@@ -50,7 +46,7 @@ var consumer = Configure
     .Serialization(s => s.UseNewtonsoftJson())
     .Topics(t => t.Subscribe("someevents")
     .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
-    .Handle(async (messages, token) =>
+    .Handle(async (messages, context, token) =>
     {
         foreach (var message in messages)
         {
@@ -86,7 +82,7 @@ var consumer = Configure
     .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
 
     // handle messages
-    .Handle(async (messages, token) =>
+    .Handle(async (messages, context, token) =>
     {
         foreach (var message in messages)
         {
