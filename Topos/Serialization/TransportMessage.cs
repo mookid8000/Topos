@@ -12,7 +12,7 @@ namespace Topos.Serialization
         public TransportMessage(Dictionary<string, string> headers, byte[] body)
         {
             Headers = headers ?? throw new ArgumentNullException(nameof(headers));
-            Body = body ?? throw new ArgumentNullException(nameof(body));
+            Body = body;
         }
     }
 
