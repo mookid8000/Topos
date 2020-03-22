@@ -63,3 +63,10 @@
 * Update Azure blobs driver dependency to 11.1.3
 * Update Serilog dependency to 2.9.0
 * Update Kafka dependency to 1.4.0-rc1
+
+## 0.0.57
+* Remove null check to allow for Kafka's tombstone messages to pass through - thanks [runeanielsen]
+
+---
+
+[runeanielsen]: https://github.com/runeanielsen
