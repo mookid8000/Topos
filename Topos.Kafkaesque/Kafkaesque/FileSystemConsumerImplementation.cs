@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Kafkaesque;
 using Newtonsoft.Json;
 using Topos.Consumer;
@@ -11,6 +12,8 @@ using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 using ILogger = Topos.Logging.ILogger;
+// ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable ArgumentsStyleLiteral
 
 namespace Topos.Kafkaesque
 {
@@ -79,7 +82,9 @@ namespace Topos.Kafkaesque
                     catch (Exception exception)
                     {
                         _logger.Warn(exception, "Error in consumer worker for topic {topic} - waiting 10 s", topic);
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                        
+                        Task.Delay(TimeSpan.FromSeconds(10), cancellationToken)
+                            .Wait(cancellationToken);
                     }
                 }
             }

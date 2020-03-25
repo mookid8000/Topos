@@ -67,6 +67,9 @@
 ## 0.0.57
 * Remove null check to allow for Kafka's tombstone messages to pass through - thanks [runeanielsen]
 
+## 0.0.58
+* Small adjustments + don't accept deserialization failures
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

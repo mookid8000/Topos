@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -14,11 +15,12 @@ namespace Topos.Consumer
     {
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _previouslySetPositions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly ILoggerFactory _loggerFactory;
         readonly IMessageSerializer _messageSerializer;
         readonly IPositionManager _positionManager;
         readonly ConsumerContext _consumerContext;
+        readonly ILoggerFactory _loggerFactory;
         readonly MessageHandler[] _handlers;
+        readonly Policy _dispatchPolicy;
         readonly ILogger _logger;
 
         bool _disposed;
@@ -33,6 +35,7 @@ namespace Topos.Consumer
             _consumerContext = consumerContext ?? throw new ArgumentNullException(nameof(consumerContext));
             _handlers = handlers.ToArray();
             _logger = loggerFactory.GetLogger(typeof(DefaultConsumerDispatcher));
+            _dispatchPolicy = Policy.Handle<Exception>().WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
         }
 
         public void Initialize()
@@ -111,7 +114,7 @@ namespace Topos.Consumer
 
         public void Dispatch(ReceivedTransportMessage transportMessage)
         {
-            try
+            _dispatchPolicy.Execute(token =>
             {
                 var receivedLogicalMessage = _messageSerializer.Deserialize(transportMessage);
 
@@ -121,16 +124,12 @@ namespace Topos.Consumer
 
                     while (!handler.IsReadyForMore)
                     {
-                        Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                        Task.Delay(TimeSpan.FromSeconds(1), token).Wait(token);
                     }
 
                     handler.Enqueue(receivedLogicalMessage);
                 }
-            }
-            catch (Exception exception)
-            {
-                _logger.Error(exception, "Error in dispatcher");
-            }
+            }, _cancellationTokenSource.Token);
         }
 
         public void Dispose()

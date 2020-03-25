@@ -92,10 +92,7 @@ namespace Topos.Kafka
 
             _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
 
-            foreach (var topic in topicsToSubscribeTo)
-            {
-                consumer.Subscribe(topic);
-            }
+            consumer.Subscribe(topicsToSubscribeTo);
 
             var cancellationToken = _cancellationTokenSource.Token;
 
