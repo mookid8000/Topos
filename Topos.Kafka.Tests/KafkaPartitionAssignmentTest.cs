@@ -58,7 +58,13 @@ namespace Topos.Kafka.Tests
             await Task.WhenAll(producer, consumer1, consumer2);
 
             // check stuff
-            Assert.That(receivedEvents.Count, Is.EqualTo(numberOfMessages), $@"Got the following messages:
+            Assert.That(receivedEvents.Count, Is.GreaterThanOrEqualTo(numberOfMessages), $@"Got the following messages:
+
+{string.Join(Environment.NewLine, receivedEvents.OrderBy(e => e.Number).Select(e => $"    {e.Number}: {e.Text}"))}
+
+");
+
+            Assert.That(receivedEvents.Select(e => e.Text).Distinct().Count(), Is.EqualTo(numberOfMessages), $@"Got the following messages:
 
 {string.Join(Environment.NewLine, receivedEvents.OrderBy(e => e.Number).Select(e => $"    {e.Number}: {e.Text}"))}
 
