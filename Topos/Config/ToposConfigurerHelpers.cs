@@ -2,6 +2,7 @@
 using Topos.Logging;
 using Topos.Logging.Console;
 using Topos.Serialization;
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Topos.Config
 {

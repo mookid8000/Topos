@@ -70,6 +70,9 @@
 ## 0.0.58
 * Small adjustments + don't accept deserialization failures
 
+## 0.0.59
+* Add ability to skip serialization of messages, treating all payloads as `byte[]`
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
