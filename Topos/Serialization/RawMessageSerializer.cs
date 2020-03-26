@@ -1,4 +1,5 @@
 ﻿using System;
+// ReSharper disable ArgumentsStyleNamedExpression
 
 namespace Topos.Serialization
 {
@@ -11,12 +12,16 @@ namespace Topos.Serialization
                 throw new ArgumentException($"Cannot send message, because the message body {message.Body} is not a byte[]");
             }
 
-            return new TransportMessage(message.Headers, bytes);
+            return new TransportMessage(headers: message.Headers, body: bytes);
         }
 
         public ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message)
         {
-            return new ReceivedLogicalMessage(message.Headers, message.Position, message.Position);
+            return new ReceivedLogicalMessage(
+                headers: message.Headers,
+                body: message.Body,
+                position: message.Position
+            );
         }
     }
 }
