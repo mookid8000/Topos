@@ -35,7 +35,11 @@ namespace Topos.Consumer
             _consumerContext = consumerContext ?? throw new ArgumentNullException(nameof(consumerContext));
             _handlers = handlers.ToArray();
             _logger = loggerFactory.GetLogger(typeof(DefaultConsumerDispatcher));
-            _dispatchPolicy = Policy.Handle<Exception>().WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
+
+            bool ShouldHandleException(Exception exception) => !_cancellationTokenSource.IsCancellationRequested;
+
+            _dispatchPolicy = Policy.Handle<Exception>(ShouldHandleException)
+                    .WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
         }
 
         public void Initialize()
@@ -49,6 +53,26 @@ namespace Topos.Consumer
             }
 
             _flusherLoopTask = Task.Run(async () => await RunPositionsFlusher());
+        }
+
+        public void Dispatch(ReceivedTransportMessage transportMessage)
+        {
+            _dispatchPolicy.Execute(token =>
+            {
+                var receivedLogicalMessage = _messageSerializer.Deserialize(transportMessage);
+
+                for (var index = 0; index < _handlers.Length; index++)
+                {
+                    var handler = _handlers[index];
+
+                    while (!handler.IsReadyForMore)
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(1), token).Wait(token);
+                    }
+
+                    handler.Enqueue(receivedLogicalMessage);
+                }
+            }, _cancellationTokenSource.Token);
         }
 
         async Task RunPositionsFlusher()
@@ -110,26 +134,6 @@ namespace Topos.Consumer
 
                 GetForTopic(position.Topic)[position.Partition] = position.Offset;
             }));
-        }
-
-        public void Dispatch(ReceivedTransportMessage transportMessage)
-        {
-            _dispatchPolicy.Execute(token =>
-            {
-                var receivedLogicalMessage = _messageSerializer.Deserialize(transportMessage);
-
-                for (var index = 0; index < _handlers.Length; index++)
-                {
-                    var handler = _handlers[index];
-
-                    while (!handler.IsReadyForMore)
-                    {
-                        Task.Delay(TimeSpan.FromSeconds(1), token).Wait(token);
-                    }
-
-                    handler.Enqueue(receivedLogicalMessage);
-                }
-            }, _cancellationTokenSource.Token);
         }
 
         public void Dispose()
