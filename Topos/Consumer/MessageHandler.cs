@@ -23,7 +23,7 @@ namespace Topos.Consumer
         const int DefaultMinimumBatchSize = 1;
         const int DefaultMaximumBatchSize = 1000;
 
-        const int DefaultMaxPrefetchQueueLength = 20000;
+        const int DefaultMaxPrefetchQueueLength = 100000;
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();

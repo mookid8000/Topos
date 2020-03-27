@@ -17,6 +17,7 @@ namespace Topos.Kafka
         static readonly Headers EmptyHeaders = new Headers();
 
         readonly IProducer<string, byte[]> _producer;
+        readonly int _kafkaOutgoingQueueMaxMessages;
         readonly ProducerConfig _config;
         readonly ILogger _logger;
 
@@ -37,6 +38,8 @@ namespace Topos.Kafka
             {
                 config = configurationCustomizer(config);
             }
+
+            _kafkaOutgoingQueueMaxMessages = config.QueueBufferingMaxMessages ?? 100000; 
 
             _producer = new ProducerBuilder<string, byte[]>(config)
                 .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
@@ -85,14 +88,17 @@ namespace Topos.Kafka
             {
                 try
                 {
-                    foreach (var transportMessage in transportMessages)
+                    foreach (var batch in transportMessages.Batch(_kafkaOutgoingQueueMaxMessages))
                     {
-                        var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
-                        _producer.Produce(topic, kafkaMessage);
+                        foreach (var transportMessage in batch)
+                        {
+                            var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
+                            _producer.Produce(topic, kafkaMessage);
+                        }
+
+                        _producer.Flush();
                     }
 
-                    _producer.Flush();
-                    
                     taskCompletionSource.SetResult(null);
                 }
                 catch (Exception exception)
