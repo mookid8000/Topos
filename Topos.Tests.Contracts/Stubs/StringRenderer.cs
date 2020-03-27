@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FastMember;
 
-namespace Topos.Logging.Console
+namespace Topos.Tests.Contracts.Stubs
 {
     class StringRenderer
     {
@@ -64,7 +65,7 @@ namespace Topos.Logging.Console
 
             var formatter = _formatters.GetOrAdd(type, _ =>
             {
-                if (typeof(IEnumerable).IsAssignableFrom(type))
+                if (typeof(IEnumerable<>).IsAssignableFrom(type))
                 {
                     return o =>
                     {

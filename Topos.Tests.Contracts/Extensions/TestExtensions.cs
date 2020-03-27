@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Topos.Config;
+using Topos.Logging;
 
 namespace Topos.Tests.Contracts.Extensions
 {
     public static class TestExtensions
     {
+        public static void Use(this StandardConfigurer<ILoggerFactory> configurer, ILoggerFactory loggerFactory)
+        {
+            StandardConfigurer.Open(configurer).Decorate(c => loggerFactory);
+        }
+
         public static IEnumerable<IReadOnlyCollection<T>> Batch<T>(this IEnumerable<T> items, int batchSize)
         {
             var list = new List<T>(batchSize);

@@ -36,10 +36,9 @@ namespace Topos.Consumer
             _handlers = handlers.ToArray();
             _logger = loggerFactory.GetLogger(typeof(DefaultConsumerDispatcher));
 
-            bool ShouldHandleException(Exception exception) => !_cancellationTokenSource.IsCancellationRequested;
-
-            _dispatchPolicy = Policy.Handle<Exception>(ShouldHandleException)
-                    .WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
+            _dispatchPolicy = Policy
+                .Handle<Exception>(exception => !(exception is OperationCanceledException && _cancellationTokenSource.IsCancellationRequested)) //< let these exceptions bubble out when we're shutting down
+                .WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
         }
 
         public void Initialize()

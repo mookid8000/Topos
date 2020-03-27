@@ -73,7 +73,8 @@
 ## 0.0.61
 * Add ability to skip serialization of messages, treating all payloads as `byte[]`
 
-
+## 0.0.62
+* Avoid logging `TaskCancelledException` when shutting down in the middle of a long-running message handler that supports cancellation just fine
 
 ---
 

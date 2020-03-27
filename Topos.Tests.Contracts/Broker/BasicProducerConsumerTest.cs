@@ -10,6 +10,8 @@ using Topos.Tests.Contracts.Extensions;
 using Topos.Tests.Contracts.Factories;
 using Testy.Extensions;
 using Topos.Producer;
+using Topos.Tests.Contracts.Stubs;
+// ReSharper disable ArgumentsStyleLiteral
 
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
@@ -22,13 +24,52 @@ namespace Topos.Tests.Contracts.Broker
         IBrokerFactory _brokerFactory;
 
         [Test]
+        public async Task DoesNotLogTaskCancelledException()
+        {
+            var topic = BrokerFactory.GetNewTopic();
+            var producer = BrokerFactory.ConfigureProducer().Create();
+
+            Using(producer);
+
+            var logs = new ListLoggerFactory();
+            var weAreInTheHandler = new ManualResetEvent(initialState: false);
+
+            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+                .Logging(l => l.Use(logs))
+                .Handle(async (messages, context, token) =>
+                {
+                    weAreInTheHandler.Set();
+                    await Task.Delay(TimeSpan.FromSeconds(100), token);
+                })
+                .Topics(t => t.Subscribe(topic))
+                .Positions(p => p.StoreInMemory())
+                .Start();
+
+            Using(consumer);
+
+            await producer.Send(topic, new ToposMessage("wazzup my mayn?!"));
+
+            weAreInTheHandler.WaitOrDie(timeoutSeconds: 15);
+
+            // force everything to shut down now
+            CleanUpDisposables();
+
+            logs.DumpLogs();
+
+            // check that we didn't get that silly TaskCancelledException in the logs
+            var logLineWithException = logs.FirstOrDefault(l => l.Exception != null);
+
+            Assert.That(logLineWithException, Is.Null,
+                $"Didn't expect any exceptions, but we got this: {logLineWithException?.Exception}");
+        }
+
+        [Test]
         public async Task CanOvercomeExceptions()
         {
             var receivedStrings = new ConcurrentQueue<string>();
             var topic = BrokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer()
-                .Create();
+            var producer = BrokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 

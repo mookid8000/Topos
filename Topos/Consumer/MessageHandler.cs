@@ -46,7 +46,10 @@ namespace Topos.Consumer
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
             _options = options ?? throw new ArgumentNullException(nameof(options));
-            _callbackPolicy = Policy.Handle<Exception>().WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(i * 2), LogException);
+
+            _callbackPolicy = Policy
+                .Handle<Exception>(exception => !(exception is OperationCanceledException && _cancellationTokenSource.IsCancellationRequested)) //< let these exceptions bubble out when we're shutting down
+                .WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(Math.Min(60, i * 2)), LogException);
         }
 
         void LogException(Exception exception, TimeSpan delay)
@@ -140,10 +143,15 @@ namespace Topos.Consumer
 
                         foreach (var max in maxPositionByPartition)
                         {
-                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] = max.Offset;
+                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] =
+                                max.Offset;
                         }
 
                         messageBatch.Clear();
+                    }
+                    catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
+                    {
+                        // it's ok, we're shutting down
                     }
                     catch (Exception exception)
                     {
