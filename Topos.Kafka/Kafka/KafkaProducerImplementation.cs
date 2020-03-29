@@ -108,10 +108,15 @@ namespace Topos.Kafka
             return taskCompletionSource.Task;
         }
 
-        IProducer<string, byte[]> BuildProducer(ProducerConfig config)
+        IProducer<string, byte[]> BuildProducer(Confluent.Kafka.Config config)
         {
             try
             {
+                if (!config.Any(kvp => string.Equals("client.software.name", kvp.Key)))
+                {
+                    config.Set("client.software.name", "Topos");
+                }
+
                 return new ProducerBuilder<string, byte[]>(config)
                     .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
                     .SetErrorHandler((producer, message) => ErrorHandler(_logger, producer, message))
