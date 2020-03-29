@@ -76,7 +76,7 @@
 ## 0.0.62
 * Avoid logging `TaskCancelledException` when shutting down in the middle of a long-running message handler that supports cancellation just fine
 
-## 0.0.67-pre
+## 0.0.68-pre
 * Minor tweaks
 * Confluent.Kafka 1.4.0-RC5
 
