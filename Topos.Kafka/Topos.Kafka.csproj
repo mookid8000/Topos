@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="1.4.0-RC5" />
-    <PackageReference Include="librdkafka.redist" Version="1.4.0-RC5" />
+    <PackageReference Include="confluent.kafka" Version="1.3.0" />
   </ItemGroup>
 
   <ItemGroup>
