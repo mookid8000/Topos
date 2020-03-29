@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,10 +42,7 @@ namespace Topos.Kafka
 
             _kafkaOutgoingQueueMaxMessages = config.QueueBufferingMaxMessages ?? 100000; 
 
-            _producer = new ProducerBuilder<string, byte[]>(config)
-                .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
-                .SetErrorHandler((producer, message) => ErrorHandler(_logger, producer, message))
-                .Build();
+            _producer = BuildProducer(config);
 
             _logger.Info("Kafka producer initialized with {address}", config.BootstrapServers);
 
@@ -108,6 +106,23 @@ namespace Topos.Kafka
             });
 
             return taskCompletionSource.Task;
+        }
+
+        IProducer<string, byte[]> BuildProducer(ProducerConfig config)
+        {
+            try
+            {
+                return new ProducerBuilder<string, byte[]>(config)
+                    .SetLogHandler((producer, message) => LogHandler(_logger, producer, message))
+                    .SetErrorHandler((producer, message) => ErrorHandler(_logger, producer, message))
+                    .Build();
+            }
+            catch (Exception exception)
+            {
+                throw new ArgumentException($@"Could not build Kafka producer with the following properties:
+
+{string.Join(Environment.NewLine, config.Select(kvp => $"    {kvp.Key}={kvp.Value}"))}", exception);
+            }
         }
 
         static Headers GetHeaders(Dictionary<string, string> dictionary)

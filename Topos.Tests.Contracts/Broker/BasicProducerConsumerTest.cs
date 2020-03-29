@@ -92,7 +92,7 @@ namespace Topos.Tests.Contracts.Broker
 
             await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send(topic, new ToposMessage($"message-{n}"), "p100")));
 
-            await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 10);
+            await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 20);
         }
 
         [Test]
