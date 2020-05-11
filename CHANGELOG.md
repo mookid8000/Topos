@@ -80,6 +80,9 @@
 * Minor tweaks
 * Confluent.Kafka 1.3.0 again because RC5 did not work
 
+## 0.0.69
+* Update Confluent.Kafka to 1.4.2
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
