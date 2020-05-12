@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 using Topos.Logging;
+using Topos.Producer;
 using Topos.Serialization;
 using static Topos.Internals.Callbacks;
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -19,9 +20,9 @@ namespace Topos.Kafka
     public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
         readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsAssignedHandler;
         readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsRevokedHandler;
+        readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly ConsumerContext _context;

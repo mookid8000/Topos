@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Topos.Consumer;
 
 namespace Topos.Config
@@ -29,5 +30,17 @@ namespace Topos.Config
         /// The default MAX prefetch queue length is <see cref="MessageHandler.DefaultMaxPrefetchQueueLength"/>.
         /// </summary>
         public void SetMaximumPrefetchQueueLength(int maximumPrefetchQueueLength) => _options.Set(MessageHandler.MaximumPrefetchQueueLengthOptionsKey, maximumPrefetchQueueLength);
+
+        /// <summary>
+        /// Adds a function to be called when the <see cref="ConsumerContext"/> is initialized, making it possible to inject dependencies into the consumer message handler
+        /// </summary>
+        public void AddContextInitializer(Action<ConsumerContext> customizer)
+        {
+            if (customizer == null) throw new ArgumentNullException(nameof(customizer));
+
+            var customizers = _options.GetOrAdd(ConsumerContext.ConsumerContextInitializersKey, () => new List<Action<ConsumerContext>>());
+
+            customizers.Add(customizer);
+        }
     }
 }

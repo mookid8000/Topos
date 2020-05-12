@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 using Topos.Internals;
+using Topos.Producer;
+// ReSharper disable RedundantDefaultMemberInitializer
 
 namespace Topos.Config
 {
@@ -34,6 +36,16 @@ namespace Topos.Config
             return this;
         }
 
+        ///// <summary>
+        ///// Configures that the consumer should automatically make an <see cref="IToposProducer"/> available in the <see cref="ConsumerContext"/>,
+        ///// thus making it super-easy for the consumer to send events.
+        ///// </summary>
+        //public KafkaConsumerConfigurationBuilder AutomaticallyAddProducerToContext()
+        //{
+        //    AutomaticallyAddProducerToContextFlag = true;
+        //    return this;
+        //}
+
         internal ConsumerConfig Apply(ConsumerConfig config)
         {
             var bootstrapServers = config.BootstrapServers;
@@ -55,10 +67,11 @@ namespace Topos.Config
             return config;
         }
 
+        //internal bool AutomaticallyAddProducerToContextFlag { get; set; } = false;
+
         internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsAssignedEvent;
 
         internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsRevokedEvent;
-
 
         internal Func<ConsumerContext, IEnumerable<TopicPartition>, Task> GetPartitionsAssignedHandler()
         {

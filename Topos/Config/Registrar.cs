@@ -25,6 +25,8 @@ namespace Topos.Config
             return this;
         }
 
+        public Registrar<TOther> Other<TOther>() => new Registrar<TOther>(_injectionist);
+
         public bool HasService(bool primary = true)
         {
             return _injectionist.Has<TService>(primary: primary);

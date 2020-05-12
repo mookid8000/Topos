@@ -77,6 +77,20 @@ namespace Topos.Config
 
             _injectionist.PossiblyRegisterDefault(c => new ConsumerContext());
 
+            _injectionist.Decorate(c =>
+            {
+                var context = c.Get<ConsumerContext>();
+
+                var customizers = _options.Get(ConsumerContext.ConsumerContextInitializersKey, new List<Action<ConsumerContext>>());
+
+                foreach (var customizer in customizers)
+                {
+                    customizer(context);
+                }
+
+                return context;
+            });
+
             _injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
             {
                 var loggerFactory = c.Get<ILoggerFactory>();
