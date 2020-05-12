@@ -59,7 +59,7 @@ namespace Topos.Config
             return this;
         }
 
-        public ToposConsumerConfigurer Handle(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> messageHandler)
+        public ToposConsumerConfigurer Handle(MessageHandlerDelegate messageHandler)
         {
             if (!_injectionist.Has<Handlers>())
             {

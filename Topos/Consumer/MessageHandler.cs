@@ -29,7 +29,7 @@ namespace Topos.Consumer
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        readonly Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> _callback;
+        readonly MessageHandlerDelegate _callback;
         readonly AsyncRetryPolicy _callbackPolicy;
         readonly Options _options;
 
@@ -42,7 +42,7 @@ namespace Topos.Consumer
         bool _disposed;
         ConsumerContext _context;
 
-        public MessageHandler(Func<IReadOnlyCollection<ReceivedLogicalMessage>, ConsumerContext, CancellationToken, Task> callback, Options options)
+        public MessageHandler(MessageHandlerDelegate callback, Options options)
         {
             _callback = callback ?? throw new ArgumentNullException(nameof(callback));
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -50,18 +50,6 @@ namespace Topos.Consumer
             _callbackPolicy = Policy
                 .Handle<Exception>(exception => !(exception is OperationCanceledException && _cancellationTokenSource.IsCancellationRequested)) //< let these exceptions bubble out when we're shutting down
                 .WaitAndRetryForeverAsync(i => TimeSpan.FromSeconds(Math.Min(60, i * 2)), LogException);
-        }
-
-        void LogException(Exception exception, TimeSpan delay)
-        {
-            if (delay < TimeSpan.FromSeconds(10))
-            {
-                _logger.Warn(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
-            }
-            else
-            {
-                _logger.Error(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
-            }
         }
 
         public bool IsReadyForMore => _messages.Count < _maxPrefetchQueueLength;
@@ -101,6 +89,18 @@ namespace Topos.Consumer
             _logger.Info("Stopping message handler");
 
             _cancellationTokenSource.Cancel();
+        }
+
+        void LogException(Exception exception, TimeSpan delay)
+        {
+            if (delay < TimeSpan.FromSeconds(10))
+            {
+                _logger.Warn(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
+            }
+            else
+            {
+                _logger.Error(exception, "Exception when executing message handler - waiting {delay} before trying again", delay);
+            }
         }
 
         async Task ProcessMessages()
