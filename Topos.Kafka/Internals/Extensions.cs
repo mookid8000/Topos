@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 // ReSharper disable ArgumentsStyleNamedExpression
@@ -9,6 +10,13 @@ namespace Topos.Internals
 {
     static class Extensions
     {
+        public static async Task<IReadOnlyList<T>> ToListAsync<T>(this IEnumerable<Task<T>> tasks)
+        {
+            var list = tasks.ToList();
+            await Task.WhenAll(list);
+            return list.Select(t => t.Result).ToList();
+        }
+
         public static IEnumerable<IReadOnlyCollection<T>> Batch<T>(this IEnumerable<T> items, int batchSize)
         {
             var list = new List<T>(batchSize);

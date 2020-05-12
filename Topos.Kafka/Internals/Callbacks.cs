@@ -58,14 +58,20 @@ namespace Topos.Internals
                 AsyncHelpers.RunSync(() => partitionsAssignedHandler(context, partitionsList));
             }
 
-            return partitionsList
-                .Select(tp => new
-                {
-                    TopicPartition = tp,
-                    Position = AsyncHelpers.GetAsync(() => positionManager.Get(tp.Topic, tp.Partition.Value))
-                })
-                .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committedf
-                    ?? a.TopicPartition.WithOffset(Offset.Beginning));       // or just resume from the beginning
+            return AsyncHelpers.GetAsync(async () =>
+            {
+                var results = await partitionsList
+                    .Select(async tp => new
+                    {
+                        TopicPartition = tp,
+                        Position = await positionManager.Get(tp.Topic, tp.Partition.Value)
+                    })
+                    .ToListAsync();
+
+                return results
+                    .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committedf
+                                ?? a.TopicPartition.WithOffset(Offset.Beginning));
+            });
         }
 
         public static void PartitionsRevoked(
