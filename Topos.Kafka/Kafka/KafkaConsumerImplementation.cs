@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 using Topos.Logging;
-using Topos.Producer;
 using Topos.Serialization;
 using static Topos.Internals.Callbacks;
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -35,7 +34,7 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
-            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager, 
+            IConsumerDispatcher consumerDispatcher, IPositionManager positionManager,
             ConsumerContext context,
             Func<ConsumerConfig, ConsumerConfig> configurationCustomizer = null,
             Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler = null,
@@ -152,10 +151,14 @@ namespace Topos.Kafka
                     offset: consumeResult.Offset.Value
                 );
 
+                var kafkaMessage = consumeResult.Message;
+                var headers = kafkaMessage?.Headers;
+                var body = kafkaMessage?.Value;
+
                 var message = new ReceivedTransportMessage(
                     position: position,
-                    headers: GetHeaders(consumeResult.Headers),
-                    body: consumeResult.Value
+                    headers: headers != null ? GetHeaders(headers) : new Dictionary<string, string>(),
+                    body: body
                 );
 
                 _logger.Debug("Received event {position}", position);

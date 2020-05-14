@@ -83,6 +83,9 @@
 ## 0.0.69
 * Update Confluent.Kafka to 1.4.2
 
+## 0.0.70
+* Make it possible to initialize the consumer context before starting the consumer
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
