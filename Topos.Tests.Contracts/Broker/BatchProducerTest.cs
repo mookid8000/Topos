@@ -71,7 +71,7 @@ namespace Topos.Tests.Contracts.Broker
                 await queue.WaitOrDie(
                     completionExpression: q => q.Count == eventCount,
                     failExpression: q => q.Count > eventCount,
-                    timeoutSeconds: 10
+                    timeoutSeconds: 20
                 );
             }
         }

@@ -89,6 +89,9 @@
 ## 0.0.71
 * Fiddle with positions management during revocation in Kafka consumer
 
+## 0.0.72
+* Update Kafka driver to 1.4.4
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
