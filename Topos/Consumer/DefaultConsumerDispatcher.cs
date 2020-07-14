@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +73,10 @@ namespace Topos.Consumer
                     handler.Enqueue(receivedLogicalMessage);
                 }
             }, _cancellationTokenSource.Token);
+        }
+
+        public async Task Flush(string topic, IEnumerable<int> partitions)
+        {
         }
 
         async Task RunPositionsFlusher()

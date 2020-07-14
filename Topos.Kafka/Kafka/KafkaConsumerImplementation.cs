@@ -85,7 +85,7 @@ namespace Topos.Kafka
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
                 .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, partitions, _positionManager, _partitionsAssignedHandler, _context))
-                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, partitions, _partitionsRevokedHandler, _context))
+                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, partitions, _consumerDispatcher, _partitionsRevokedHandler, _context))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(_topics);
@@ -150,6 +150,14 @@ namespace Topos.Kafka
                     partition: consumeResult.Partition.Value,
                     offset: consumeResult.Offset.Value
                 );
+
+                var isSpecial = consumeResult.Partition.IsSpecial || consumeResult.Offset.IsSpecial;
+
+                if (isSpecial)
+                {
+                    _logger.Warn("Received Kafka event with IsSpecial == true - position: {@topicPartitionOffset}",
+                        consumeResult.TopicPartitionOffset);
+                }
 
                 var kafkaMessage = consumeResult.Message;
                 var headers = kafkaMessage?.Headers;

@@ -49,6 +49,19 @@ namespace Topos.Internals
             );
         }
 
+        public static bool IsSpecial(this TopicPartitionOffset tpo) => tpo.Offset.IsSpecial;
+
+        public static Position ToPosition(this TopicPartitionOffset tpo)
+        {
+            return tpo.IsSpecial()
+                ? Position.Default(tpo.Topic, tpo.Partition.Value)
+                : new Position(
+                    topic: tpo.Topic,
+                    partition: tpo.Partition.Value,
+                    offset: tpo.Offset.Value
+                );
+        }
+
         public static TopicPartitionOffset WithOffset(this TopicPartition topicPartition, Offset offset) => new TopicPartitionOffset(topicPartition, offset);
     }
 }

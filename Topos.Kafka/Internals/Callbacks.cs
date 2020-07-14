@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
-using Topos.Kafka;
 using Topos.Logging;
 
 namespace Topos.Internals
@@ -48,7 +47,7 @@ namespace Topos.Internals
 
             var partitionsByTopic = partitionsList
                 .GroupBy(p => p.Topic)
-                .Select(g => new {Topic = g.Key, Partitions = g.Select(p => p.Partition.Value)})
+                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                 .ToList();
 
             logger.Info("Assignment: {@partitions}", partitionsByTopic);
@@ -69,17 +68,16 @@ namespace Topos.Internals
                     .ToListAsync();
 
                 return results
-                    .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committedf
+                    .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committed
                                 ?? a.TopicPartition.WithOffset(Offset.Beginning));
             });
         }
 
-        public static void PartitionsRevoked(
-            ILogger logger,
+        public static void PartitionsRevoked(ILogger logger,
             List<TopicPartitionOffset> partitions,
+            IConsumerDispatcher consumerDispatcher,
             Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
-            ConsumerContext context
-        )
+            ConsumerContext context)
         {
             var partitionsList = partitions.ToList();
 
@@ -96,6 +94,14 @@ namespace Topos.Internals
             {
                 AsyncHelpers.RunSync(() => partitionsRevokedHandler(context, partitionsList.Select(p => p.TopicPartition)));
             }
+
+            AsyncHelpers.RunSync(async () =>
+            {
+                foreach (var revocation in partitionsByTopic)
+                {
+                    await consumerDispatcher.Flush(revocation.Topic, revocation.Partitions);
+                }
+            });
         }
 
         static void WriteToLogger(ILogger logger, SyslogLevel level, string message)

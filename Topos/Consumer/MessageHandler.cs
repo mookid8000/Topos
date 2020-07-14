@@ -143,8 +143,7 @@ namespace Topos.Consumer
 
                         foreach (var max in maxPositionByPartition)
                         {
-                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] =
-                                max.Offset;
+                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] = max.Offset;
                         }
 
                         messageBatch.Clear();
@@ -168,6 +167,11 @@ namespace Topos.Consumer
             {
                 _logger.Error(exception, "Unhandled message handler exception");
             }
+        }
+
+        public async Task Flush(string topic, IEnumerable<int> partitions)
+        {
+            
         }
 
         public void Dispose()
