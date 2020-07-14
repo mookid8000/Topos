@@ -9,12 +9,14 @@ using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
 // ReSharper disable RedundantAnonymousTypePropertyName
+// ReSharper disable InconsistentlySynchronizedField
 
 namespace Topos.Consumer
 {
     public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, IDisposable
     {
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _previouslySetPositions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
+        readonly SemaphoreSlim _setPositionsSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly IMessageSerializer _messageSerializer;
         readonly IPositionManager _positionManager;
@@ -75,8 +77,47 @@ namespace Topos.Consumer
             }, _cancellationTokenSource.Token);
         }
 
-        public async Task Flush(string topic, IEnumerable<int> partitions)
+        public async Task Revoke(string topic, IEnumerable<int> partitions)
         {
+            var partitionsList = partitions.ToList();
+
+            var token = _cancellationTokenSource.Token;
+
+            await _setPositionsSemaphore.WaitAsync(token);
+
+            try
+            {
+                // ensure all handlers have finished processing their queues
+                foreach (var handler in _handlers)
+                {
+                    await handler.Drain(token);
+                }
+
+                // save all positions
+                await SetPositions();
+
+                // remove cached positions from handlers
+                foreach (var handler in _handlers)
+                {
+                    handler.Clear(topic, partitionsList);
+                }
+
+                if (_previouslySetPositions.TryGetValue(topic, out var positions))
+                {
+                    foreach (var partition in partitionsList)
+                    {
+                        positions.TryRemove(partition, out _);
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                // it's ok, we're shutting down
+            }
+            finally
+            {
+                _setPositionsSemaphore.Release();
+            }
         }
 
         async Task RunPositionsFlusher()
@@ -88,7 +129,16 @@ namespace Topos.Consumer
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
 
-                    await SetPositions();
+                    await _setPositionsSemaphore.WaitAsync(token);
+
+                    try
+                    {
+                        await SetPositions();
+                    }
+                    finally
+                    {
+                        _setPositionsSemaphore.Release();
+                    }
                 }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -165,6 +215,8 @@ namespace Topos.Consumer
                         _logger.Warn("Positions flusher loop did not exit/finish committing the last position within 3 s timeout - positions may not have been properly committed");
                     }
                 }
+
+                _setPositionsSemaphore.Dispose();
             }
             finally
             {

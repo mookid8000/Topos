@@ -7,6 +7,6 @@ namespace Topos.Consumer
     public interface IConsumerDispatcher
     {
         void Dispatch(ReceivedTransportMessage transportMessage);
-        Task Flush(string topic, IEnumerable<int> partitions);
+        Task Revoke(string topic, IEnumerable<int> partitions);
     }
 }

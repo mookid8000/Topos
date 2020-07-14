@@ -86,6 +86,9 @@
 ## 0.0.70
 * Make it possible to initialize the consumer context before starting the consumer
 
+## 0.0.71
+* Fiddle with positions management during revocation in Kafka consumer
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

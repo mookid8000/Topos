@@ -99,7 +99,7 @@ namespace Topos.Internals
             {
                 foreach (var revocation in partitionsByTopic)
                 {
-                    await consumerDispatcher.Flush(revocation.Topic, revocation.Partitions);
+                    await consumerDispatcher.Revoke(revocation.Topic, revocation.Partitions);
                 }
             });
         }

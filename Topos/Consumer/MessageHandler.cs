@@ -169,9 +169,34 @@ namespace Topos.Consumer
             }
         }
 
-        public async Task Flush(string topic, IEnumerable<int> partitions)
+        public async Task Drain(CancellationToken token)
         {
-            
+            // wait until queue is empty
+            while (!token.IsCancellationRequested && _messages.Count > 0)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), token);
+            }
+
+            // wait a little while extra
+            await Task.Delay(TimeSpan.FromMilliseconds(250), token);
+        }
+
+        public void Clear(string topic, IEnumerable<int> partitionsList)
+        {
+            if (_positions.TryGetValue(topic, out var positions))
+            {
+                foreach (var partition in partitionsList)
+                {
+                    positions.TryRemove(partition, out _);
+                }
+            }
+        }
+
+        public IEnumerable<Position> GetPositions()
+        {
+            return _positions
+                .SelectMany(topic => topic.Value
+                    .Select(partition => new Position(topic.Key, partition.Key, partition.Value)));
         }
 
         public void Dispose()
@@ -194,13 +219,6 @@ namespace Topos.Consumer
             {
                 _disposed = true;
             }
-        }
-
-        public IEnumerable<Position> GetPositions()
-        {
-            return _positions
-                .SelectMany(topic => topic.Value
-                    .Select(partition => new Position(topic.Key, partition.Key, partition.Value)));
         }
     }
 }
