@@ -92,6 +92,11 @@
 ## 0.0.72
 * Update Kafka driver to 1.4.4
 
+## 0.0.73
+* Update Kafka driver to 1.5.0
+
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
