@@ -95,6 +95,9 @@
 ## 0.0.73
 * Update Kafka driver to 1.5.0
 
+## 0.0.74
+* Update Kafka driver to 1.5.1
+* Update Azure Blobs driver to 11.2.2
 
 
 ---
