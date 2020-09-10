@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Kafkaesque;
@@ -48,12 +49,8 @@ namespace Topos.Kafkaesque
             
             var writer = _writers.GetOrAdd(topic, CreateWriter).Value;
 
-            foreach (var transportMessage in transportMessages)
-            {
-                var eventData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transportMessage));
-
-                await writer.WriteAsync(eventData);
-            }
+            await writer.WriteManyAsync(transportMessages
+                .Select(transportMessage => Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transportMessage))));
         }
 
         Lazy<LogWriter> CreateWriter(string topic)

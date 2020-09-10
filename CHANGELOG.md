@@ -99,6 +99,8 @@
 * Update Kafka driver to 1.5.1
 * Update Azure Blobs driver to 11.2.2
 
+## 0.0.76
+* Use Kafkaesque's batch API when Topos' batch API is used
 
 ---
 
