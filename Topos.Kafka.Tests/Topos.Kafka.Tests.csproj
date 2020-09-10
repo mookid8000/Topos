@@ -8,11 +8,11 @@
   <ItemGroup>
     <PackageReference Include="confluent.kafka" Version="1.5.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-    <PackageReference Include="nunit3testadapter" Version="3.16.1">
+    <PackageReference Include="nunit3testadapter" Version="3.17.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="serilog" Version="2.9.0" />
+    <PackageReference Include="serilog" Version="2.10.0" />
     <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
   </ItemGroup>
 
