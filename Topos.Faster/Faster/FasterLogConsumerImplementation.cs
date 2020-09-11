@@ -55,20 +55,17 @@ namespace Topos.Faster
                 _logger.Debug("Starting FasterLog consumer task for topic {topic}", topic);
 
                 var resumePosition = await GetResumePosition(topic, cancellationToken);
-                var currentReadAddress = resumePosition.IsDefault ? log.BeginAddress : resumePosition.Offset;
+                var readAddress = resumePosition.IsDefault ? log.BeginAddress : resumePosition.Offset;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        using var iterator = log.Scan(currentReadAddress, long.MaxValue);
+                        using var iterator = log.Scan(readAddress, long.MaxValue);
 
                         while (!cancellationToken.IsCancellationRequested)
                         {
-                            await iterator.WaitAsync(cancellationToken);
-
-                            while (iterator.GetNext(out var bytes, out var entryLength, out var currentAddress,
-                                out var nextAddress))
+                            while (iterator.GetNext(out var bytes, out _, out _, out var nextAddress))
                             {
                                 var transportMessage = _logEntrySerializer.Deserialize(bytes);
                                 var receivedTransportMessage = new ReceivedTransportMessage(
@@ -77,8 +74,10 @@ namespace Topos.Faster
 
                                 _consumerDispatcher.Dispatch(receivedTransportMessage);
 
-                                currentReadAddress = nextAddress;
+                                readAddress = nextAddress;
                             }
+
+                            await iterator.WaitAsync(cancellationToken);
                         }
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
