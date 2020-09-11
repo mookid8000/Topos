@@ -4,13 +4,14 @@ using System.IO;
 using System.Threading;
 using Topos.Consumer;
 using Topos.Faster;
+using Topos.Internals;
 using Topos.Logging;
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
 
 namespace Topos.Config
 {
-    public static class FileSystemConfigurationExtensions
+    public static class FasterLogConfigurationExtensions
     {
         public static void UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
         {
@@ -18,7 +19,17 @@ namespace Topos.Config
 
             CheckDirectoryPath(directoryPath);
 
-            StandardConfigurer.Open(configurer).Register(c => new FasterLogFileSystemProducerImplementation(directoryPath, c.Get<ILoggerFactory>()));
+            StandardConfigurer.Open(configurer)
+                .Register(c => new FasterLogProducerImplementation(
+                    loggerFactory: c.Get<ILoggerFactory>(),
+                    deviceManager: c.Get<IDeviceManager>(),
+                    logEntrySerializer: c.Get<ILogEntrySerializer>()
+                ))
+                .Other<IDeviceManager>().Register(c => new DefaultDeviceManager(
+                    loggerFactory: c.Get<ILoggerFactory>(),
+                    directoryPath: directoryPath
+                ))
+                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer());
         }
 
         public static void UseFileSystem(this StandardConfigurer<IConsumerImplementation> configurer, string directoryPath)
@@ -27,13 +38,15 @@ namespace Topos.Config
 
             CheckDirectoryPath(directoryPath);
 
-            StandardConfigurer.Open(configurer).Register(c =>
+            var registrar = StandardConfigurer.Open(configurer);
+
+            registrar.Register(c =>
             {
                 var loggerFactory = c.Get<ILoggerFactory>();
                 var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
                 var group = c.Get<GroupId>();
-                
-                return new FasterLogFileSystemConsumerImplementation(
+
+                return new FasterLogConsumerImplementation(
                     directoryPath: directoryPath,
                     loggerFactory: loggerFactory,
                     topics: topics,

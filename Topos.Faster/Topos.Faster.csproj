@@ -3,7 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Topos</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.FASTER.Core" Version="1.6.2" />
+    <PackageReference Include="protobuf-net" Version="3.0.29" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Topos\Topos.csproj" />

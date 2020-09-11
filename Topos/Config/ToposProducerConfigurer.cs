@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Producer;
@@ -48,6 +49,11 @@ namespace Topos.Config
             });
 
             var resolutionResult = _injectionist.Get<IToposProducer>();
+
+            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+            {
+                initializable.Initialize();
+            }
 
             return resolutionResult.Instance;
         }
