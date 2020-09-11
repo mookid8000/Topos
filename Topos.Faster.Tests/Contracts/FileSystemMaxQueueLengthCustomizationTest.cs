@@ -5,7 +5,7 @@ using Topos.Tests.Contracts.Broker;
 namespace Topos.Faster.Tests.Contracts
 {
     [TestFixture]
-    public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FileSystemBrokerFactory>
+    public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FasterLogBrokerFactory>
     {
         public FileSystemMaxQueueLengthCustomizationTest()
         {

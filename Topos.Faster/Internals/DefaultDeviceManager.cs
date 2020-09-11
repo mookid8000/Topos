@@ -34,7 +34,11 @@ namespace Topos.Internals
 
         FasterLog InitializeLog(string directoryPath, string topic)
         {
-            var filePath = Path.Combine(directoryPath, $"{topic}.log");
+            var logDirectory = Path.Combine(directoryPath, topic);
+
+            EnsureDirectoryExists(logDirectory);
+
+            var filePath = Path.Combine(logDirectory, $"{topic}.log");
             var device = Devices.CreateLogDevice(filePath);
             var log = new FasterLog(new FasterLogSettings { LogDevice = device });
 

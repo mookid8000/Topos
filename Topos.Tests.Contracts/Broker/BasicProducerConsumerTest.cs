@@ -215,9 +215,12 @@ but got
                     Console.WriteLine($"Received {messages.Count} msgs");
                 })
                 .Positions(p => p.StoreInMemory())
+                .Topics(t => t.Subscribe("topic1").Subscribe("topic2"))
                 .Create();
 
             Using(consumer);
+
+            consumer.Start();
 
             await Task.Delay(TimeSpan.FromSeconds(1));
         }

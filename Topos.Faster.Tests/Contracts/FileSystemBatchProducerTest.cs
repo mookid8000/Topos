@@ -5,7 +5,7 @@ using Topos.Tests.Contracts.Broker;
 namespace Topos.Faster.Tests.Contracts
 {
     [TestFixture]
-    public class FileSystemBatchProducerTest : BatchProducerTest<FileSystemBrokerFactory>
+    public class FileSystemBatchProducerTest : BatchProducerTest<FasterLogBrokerFactory>
     {
         public FileSystemBatchProducerTest()
         {

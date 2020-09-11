@@ -5,13 +5,13 @@ using Topos.Tests.Contracts.Factories;
 
 namespace Topos.Faster.Tests.Contracts
 {
-    public class FileSystemBrokerFactory : DisposableFactory, IBrokerFactory
+    public class FasterLogBrokerFactory : DisposableFactory, IBrokerFactory
     {
         readonly TemporaryTestDirectory _temporaryTestDirectory = new TemporaryTestDirectory();
 
         int _counter;
 
-        public FileSystemBrokerFactory() => Using(_temporaryTestDirectory);
+        public FasterLogBrokerFactory() => Using(_temporaryTestDirectory);
 
         public ToposProducerConfigurer ConfigureProducer() =>
             Configure

@@ -38,23 +38,21 @@ namespace Topos.Config
 
             CheckDirectoryPath(directoryPath);
 
-            var registrar = StandardConfigurer.Open(configurer);
-
-            registrar.Register(c =>
-            {
-                var loggerFactory = c.Get<ILoggerFactory>();
-                var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
-                var group = c.Get<GroupId>();
-
-                return new FasterLogConsumerImplementation(
-                    directoryPath: directoryPath,
-                    loggerFactory: loggerFactory,
-                    topics: topics,
-                    group.Id,
+            StandardConfigurer.Open(configurer)
+                .Register(c => new FasterLogConsumerImplementation(
+                    loggerFactory: c.Get<ILoggerFactory>(),
+                    deviceManager: c.Get<IDeviceManager>(),
+                    logEntrySerializer: c.Get<ILogEntrySerializer>(),
+                    topics: c.Has<Topics>() ? c.Get<Topics>() : new Topics(),
+                    group: c.Get<GroupId>().Id,
                     consumerDispatcher: c.Get<IConsumerDispatcher>(),
                     positionManager: c.Get<IPositionManager>()
-                );
-            });
+                ))
+                .Other<IDeviceManager>().Register(c => new DefaultDeviceManager(
+                    loggerFactory: c.Get<ILoggerFactory>(),
+                    directoryPath: directoryPath
+                ))
+                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer());
         }
 
         static void CheckDirectoryPath(string directoryPath)

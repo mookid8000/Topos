@@ -4,6 +4,7 @@ namespace Topos.Faster
 {
     public interface ILogEntrySerializer
     {
-        byte[] Serialize(string partitionKey, TransportMessage transportMessage);
+        byte[] Serialize(TransportMessage transportMessage);
+        TransportMessage Deserialize(byte[] bytes);
     }
 }

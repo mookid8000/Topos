@@ -8,18 +8,24 @@ namespace Topos.Internals
 {
     class ProtobufLogEntrySerializer : ILogEntrySerializer
     {
-        public byte[] Serialize(string partitionKey, TransportMessage transportMessage)
+        public byte[] Serialize(TransportMessage transportMessage)
         {
             var entry = new FasterLogEntry
             {
-                PartitionKey = partitionKey, 
-                Headers = transportMessage.Headers, 
+                Headers = transportMessage.Headers,
                 Body = transportMessage.Body
             };
 
             return Serialize(entry);
         }
-        
+
+        TransportMessage ILogEntrySerializer.Deserialize(byte[] bytes)
+        {
+            var entry = Deserialize(bytes);
+
+            return new TransportMessage(entry.Headers, entry.Body);
+        }
+
         static byte[] Serialize(FasterLogEntry entry)
         {
             using var destination = new MemoryStream();
@@ -37,10 +43,8 @@ namespace Topos.Internals
         struct FasterLogEntry
         {
             [ProtoMember(1)]
-            public string PartitionKey { get; set; }
-            [ProtoMember(2)]
             public Dictionary<string, string> Headers { get; set; }
-            [ProtoMember(3)]
+            [ProtoMember(2)]
             public byte[] Body { get; set; }
         }
     }

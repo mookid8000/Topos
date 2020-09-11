@@ -130,7 +130,7 @@ namespace Topos.Faster
         {
             foreach (var transportMessage in task.TransportMessages)
             {
-                var bytes = _logEntrySerializer.Serialize(task.PartitionKey, transportMessage);
+                var bytes = _logEntrySerializer.Serialize(transportMessage);
 
                 log.Enqueue(bytes);
             }
@@ -138,13 +138,13 @@ namespace Topos.Faster
 
         public void Dispose()
         {
-            // not initialized or already disposed? who cares
-            if (_writer == null) return;
-
-            _logger.Info("Disposing FasterLog producer");
-
             try
             {
+                // not initialized or already disposed? who cares
+                if (_writer == null) return;
+
+                _logger.Info("Disposing FasterLog producer");
+
                 _cancellationTokenSource.Cancel();
 
                 var timeout = TimeSpan.FromSeconds(4);
@@ -157,6 +157,7 @@ namespace Topos.Faster
             finally
             {
                 _writer = null;
+                _cancellationTokenSource.Dispose();
             }
         }
 
