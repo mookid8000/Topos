@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="fastmember" Version="1.5.0" />
-    <PackageReference Include="newtonsoft.json" Version="12.0.1" />
+    <PackageReference Include="newtonsoft.json" Version="12.0.3" />
     <PackageReference Include="polly" Version="7.2.0" />
   </ItemGroup>
 

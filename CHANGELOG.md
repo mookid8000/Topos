@@ -105,6 +105,9 @@
 ## 0.0.77
 * Add FASTER log broker implementation
 
+## 0.0.78
+* Update some packages
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

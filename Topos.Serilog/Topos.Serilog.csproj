@@ -5,6 +5,8 @@
     <Company>Rebus FM</Company>
     <Authors>mookid8000</Authors>
     <RootNamespace>Topos</RootNamespace>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
