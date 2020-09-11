@@ -16,9 +16,11 @@ namespace Topos.Config
         /// <summary>
         /// Configures Topos to use Microsoft's FASTER Log and the file system as the event store
         /// </summary>
-        public static void UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
+        public static FasterProducerConfigurationBuilder UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
+
+            var builder = new FasterProducerConfigurationBuilder();
 
             CheckDirectoryPath(directoryPath);
 
@@ -26,13 +28,22 @@ namespace Topos.Config
                 .Register(c => new FasterLogProducerImplementation(
                     loggerFactory: c.Get<ILoggerFactory>(),
                     deviceManager: c.Get<IDeviceManager>(),
-                    logEntrySerializer: c.Get<ILogEntrySerializer>()
+                    logEntrySerializer: c.Get<ILogEntrySerializer>(),
+                    eventExpirationHelper: c.Get<EventExpirationHelper>()
                 ))
                 .Other<IDeviceManager>().Register(c => new DefaultDeviceManager(
                     loggerFactory: c.Get<ILoggerFactory>(),
                     directoryPath: directoryPath
                 ))
-                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer());
+                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer())
+                .Other<EventExpirationHelper>().Register(c => new EventExpirationHelper(
+                    loggerFactory: c.Get<ILoggerFactory>(),
+                    deviceManager: c.Get<IDeviceManager>(),
+                    maxAgesPerTopic: builder.GetMaxAges(),
+                    logEntrySerializer: c.Get<ILogEntrySerializer>()
+                ));
+
+            return builder;
         }
 
         /// <summary>

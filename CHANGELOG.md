@@ -111,6 +111,9 @@
 ## 0.0.79
 * Small adjustments
 
+## 0.0.80
+* Add ability to do log truncation based on time
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FASTER.core;
 using Topos.Consumer;
+using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -17,17 +18,19 @@ namespace Topos.Faster
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ConcurrentQueue<WriteTask> _writeTasks = new ConcurrentQueue<WriteTask>();
-        readonly IDeviceManager _deviceManager;
+        readonly EventExpirationHelper _eventExpirationHelper;
         readonly ILogEntrySerializer _logEntrySerializer;
+        readonly IDeviceManager _deviceManager;
         readonly ILogger _logger;
 
         Task _writer;
 
-        public FasterLogProducerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer)
+        public FasterLogProducerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer, EventExpirationHelper eventExpirationHelper)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             _deviceManager = deviceManager ?? throw new ArgumentNullException(nameof(deviceManager));
             _logEntrySerializer = logEntrySerializer ?? throw new ArgumentNullException(nameof(logEntrySerializer));
+            _eventExpirationHelper = eventExpirationHelper ?? throw new ArgumentNullException(nameof(eventExpirationHelper));
             _logger = loggerFactory.GetLogger(GetType());
         }
 
@@ -116,6 +119,8 @@ namespace Topos.Faster
                 {
                     tasks[index].Succeed();
                 }
+
+                _eventExpirationHelper.RegisterActivity(topic);
             }
             catch (Exception exception)
             {

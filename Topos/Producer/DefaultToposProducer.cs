@@ -60,6 +60,11 @@ namespace Topos.Producer
                 headers[ToposHeaders.MessageId] = Guid.NewGuid().ToString();
             }
 
+            if (!headers.ContainsKey(ToposHeaders.Time))
+            {
+                headers[ToposHeaders.Time] = DateTimeOffset.Now.ToIso8601DateTimeOffset();
+            }
+
             var logicalMessage = new LogicalMessage(headers, body);
             var transportMessage = _messageSerializer.Serialize(logicalMessage);
             return transportMessage;
