@@ -9,6 +9,7 @@ using Topos.Consumer;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
+#pragma warning disable 1998
 
 namespace Topos.Faster
 {
@@ -61,9 +62,6 @@ namespace Topos.Faster
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromSeconds(0.3), CancellationToken.None);
-                Console.WriteLine($"requested: {cancellationToken.IsCancellationRequested}");
-
                 try
                 {
                     var tasks = DequeueNext(100);
@@ -85,7 +83,7 @@ namespace Topos.Faster
                     _logger.Error(exception, "Unhandled exception in FasterLog writer task");
                 }
             }
-        
+
             _logger.Debug("Stopped FasterLog serialized writer task");
         }
 
@@ -94,10 +92,10 @@ namespace Topos.Faster
             await Task.WhenAll(
                 tasks
                     .GroupBy(t => t.Topic)
-                    .Select(group => Write(
+                    .Select(async group => await Task.Run(async () => Write(
                         topic: group.Key,
                         tasks: group.ToList()
-                    ))
+                    )))
             );
         }
 
@@ -194,6 +192,6 @@ namespace Topos.Faster
             public void Succeed() => _taskCompletionSource.SetResult(null);
 
             public void Fail(Exception exception) => _taskCompletionSource.SetException(exception);
-        }
+       }
     }
 }

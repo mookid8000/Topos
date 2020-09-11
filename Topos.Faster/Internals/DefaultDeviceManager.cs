@@ -38,6 +38,7 @@ namespace Topos.Internals
             var device = Devices.CreateLogDevice(filePath);
             var log = new FasterLog(new FasterLogSettings { LogDevice = device });
 
+            _disposables.Add(device);
             _disposables.Add(log);
 
             return log;
