@@ -17,7 +17,7 @@ using ILogger = Topos.Logging.ILogger;
 
 namespace Topos.Kafkaesque
 {
-    class FileSystemConsumerImplementation : IConsumerImplementation, IDisposable
+    class KafkaesqueFileSystemConsumerImplementation : IConsumerImplementation, IDisposable
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly IConsumerDispatcher _consumerDispatcher;
@@ -28,7 +28,7 @@ namespace Topos.Kafkaesque
 
         bool _disposed;
 
-        public FileSystemConsumerImplementation(string directoryPath, ILoggerFactory loggerFactory, IEnumerable<string> topics, string group, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
+        public KafkaesqueFileSystemConsumerImplementation(string directoryPath, ILoggerFactory loggerFactory, IEnumerable<string> topics, string group, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
         {
             if (topics == null) throw new ArgumentNullException(nameof(topics));
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
@@ -36,7 +36,7 @@ namespace Topos.Kafkaesque
             _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
 
-            _logger = loggerFactory.GetLogger(typeof(FileSystemConsumerImplementation));
+            _logger = loggerFactory.GetLogger(typeof(KafkaesqueFileSystemConsumerImplementation));
 
             _workers = topics
                 .Select(topic => new Thread(() => PumpTopic(topic)) { Name = $"Kafkaesque worker for topic '{topic}'" })

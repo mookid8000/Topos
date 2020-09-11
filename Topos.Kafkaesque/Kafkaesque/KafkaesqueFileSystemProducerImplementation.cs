@@ -14,7 +14,7 @@ using ILogger = Topos.Logging.ILogger;
 
 namespace Topos.Kafkaesque
 {
-    class FileSystemProducerImplementation : IProducerImplementation
+    class KafkaesqueFileSystemProducerImplementation : IProducerImplementation
     {
         readonly ConcurrentDictionary<string, Lazy<LogWriter>> _writers = new ConcurrentDictionary<string, Lazy<LogWriter>>();
         readonly string _directoryPath;
@@ -22,10 +22,10 @@ namespace Topos.Kafkaesque
 
         bool _disposed;
 
-        public FileSystemProducerImplementation(string directoryPath, ILoggerFactory loggerFactory)
+        public KafkaesqueFileSystemProducerImplementation(string directoryPath, ILoggerFactory loggerFactory)
         {
             _directoryPath = directoryPath;
-            _logger = loggerFactory.GetLogger(typeof(FileSystemProducerImplementation));
+            _logger = loggerFactory.GetLogger(typeof(KafkaesqueFileSystemProducerImplementation));
             _logger.Info("Kafkaesque producer initialized with directory {directoryPath}", directoryPath);
         }
 

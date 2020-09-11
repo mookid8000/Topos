@@ -7,10 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="kafkaesque" Version="0.0.8" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\Kafkaesque\Kafkaesque\Kafkaesque.csproj" />
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 

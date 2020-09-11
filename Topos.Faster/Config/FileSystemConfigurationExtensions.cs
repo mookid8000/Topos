@@ -4,9 +4,7 @@ using System.IO;
 using System.Threading;
 using Topos.Consumer;
 using Topos.Faster;
-using Topos.Internals;
 using Topos.Logging;
-
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
 

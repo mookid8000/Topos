@@ -19,7 +19,7 @@ namespace Topos.Config
 
             CheckDirectoryPath(directoryPath);
 
-            StandardConfigurer.Open(configurer).Register(c => new FileSystemProducerImplementation(directoryPath, c.Get<ILoggerFactory>()));
+            StandardConfigurer.Open(configurer).Register(c => new KafkaesqueFileSystemProducerImplementation(directoryPath, c.Get<ILoggerFactory>()));
         }
 
         public static void UseFileSystem(this StandardConfigurer<IConsumerImplementation> configurer, string directoryPath)
@@ -34,7 +34,7 @@ namespace Topos.Config
                 var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
                 var group = c.Get<GroupId>();
                 
-                return new FileSystemConsumerImplementation(
+                return new KafkaesqueFileSystemConsumerImplementation(
                     directoryPath: directoryPath,
                     loggerFactory: loggerFactory,
                     topics: topics,
