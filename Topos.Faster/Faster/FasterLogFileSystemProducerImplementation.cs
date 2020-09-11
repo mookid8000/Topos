@@ -5,9 +5,9 @@ using Topos.Serialization;
 
 namespace Topos.Faster
 {
-    class FileSystemProducerImplementation : IProducerImplementation
+    class FasterLogFileSystemProducerImplementation : IProducerImplementation
     {
-        public FileSystemProducerImplementation(string directoryPath, ILoggerFactory loggerFactory)
+        public FasterLogFileSystemProducerImplementation(string directoryPath, ILoggerFactory loggerFactory)
         {
             
         }
