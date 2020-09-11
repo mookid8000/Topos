@@ -56,6 +56,12 @@ if %ERRORLEVEL% neq 0 (
  	goto exit_fail
 )
 
+dotnet pack "%root%/Topos.Faster" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+if %ERRORLEVEL% neq 0 (
+	popd
+ 	goto exit_fail
+)
+
 dotnet pack "%root%/Topos.MongoDb" -c Release -o "%deploydir%" /p:PackageVersion=%version%
 if %ERRORLEVEL% neq 0 (
 	popd

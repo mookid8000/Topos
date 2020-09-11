@@ -6,6 +6,7 @@ using Topos.Consumer;
 using Topos.Faster;
 using Topos.Helpers;
 using Topos.Logging;
+#pragma warning disable 1998
 
 namespace Topos.Internals
 {
@@ -34,18 +35,33 @@ namespace Topos.Internals
 
         FasterLog InitializeLog(string directoryPath, string topic)
         {
-            var logDirectory = Path.Combine(directoryPath, topic);
+            var deviceKey = $"Type=Device;Directory={directoryPath};Topic={topic}";
+            var logKey = $"Type=Log;Directory={directoryPath};Topic={topic}";
 
-            EnsureDirectoryExists(logDirectory);
+            var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
+            {
+                var logDirectory = Path.Combine(directoryPath, topic);
 
-            var filePath = Path.Combine(logDirectory, $"{topic}.log");
-            var device = Devices.CreateLogDevice(filePath);
-            var log = new FasterLog(new FasterLogSettings { LogDevice = device });
+                EnsureDirectoryExists(logDirectory);
 
-            _disposables.Add(device);
-            _disposables.Add(log);
+                var filePath = Path.Combine(logDirectory, $"{topic}.log");
+                return Devices.CreateLogDevice(filePath);
+            });
 
-            return log;
+            _disposables.Add(pooledDevice);
+
+            var device = pooledDevice.Instance;
+
+            var pooledLog = SingletonPool.GetInstance(logKey, () =>
+            {
+                var log = new FasterLog(new FasterLogSettings { LogDevice = device });
+
+                return log;
+            });
+
+            _disposables.Add(pooledLog);
+
+            return pooledLog.Instance;
         }
 
         void EnsureDirectoryExists(string directoryPath)
@@ -55,7 +71,7 @@ namespace Topos.Internals
             try
             {
                 _logger.Debug("Creating directory {directoryPath}", directoryPath);
-                
+
                 Directory.CreateDirectory(directoryPath);
             }
             catch

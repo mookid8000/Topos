@@ -5,13 +5,12 @@ using System.Threading;
 using Topos.Consumer;
 using Topos.Kafkaesque;
 using Topos.Logging;
-
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
 
 namespace Topos.Config
 {
-    public static class FileSystemConfigurationExtensions
+    public static class KafkaesqueConfigurationExtensions
     {
         public static void UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
         {

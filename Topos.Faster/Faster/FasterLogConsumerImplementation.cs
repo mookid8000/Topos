@@ -77,7 +77,9 @@ namespace Topos.Faster
                                 readAddress = nextAddress;
                             }
 
+                            Console.WriteLine("WAITING");
                             await iterator.WaitAsync(cancellationToken);
+                            Console.WriteLine("DONE WAITING");
                         }
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

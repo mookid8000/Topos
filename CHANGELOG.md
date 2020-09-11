@@ -102,6 +102,9 @@
 ## 0.0.76
 * Use Kafkaesque's batch API when Topos' batch API is used
 
+## 0.0.77
+* Add FASTER log broker implementation
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
