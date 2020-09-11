@@ -12,6 +12,9 @@ namespace Topos.Config
 {
     public static class KafkaesqueConfigurationExtensions
     {
+        /// <summary>
+        /// Configures Topos to use Kafkaesque and the file system as the event store
+        /// </summary>
         public static void UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
@@ -21,6 +24,9 @@ namespace Topos.Config
             StandardConfigurer.Open(configurer).Register(c => new KafkaesqueFileSystemProducerImplementation(directoryPath, c.Get<ILoggerFactory>()));
         }
 
+        /// <summary>
+        /// Configures Topos to use Kafkaesque and the file system as the event store
+        /// </summary>
         public static void UseFileSystem(this StandardConfigurer<IConsumerImplementation> configurer, string directoryPath)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));

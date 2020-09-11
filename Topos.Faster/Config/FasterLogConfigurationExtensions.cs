@@ -13,6 +13,9 @@ namespace Topos.Config
 {
     public static class FasterLogConfigurationExtensions
     {
+        /// <summary>
+        /// Configures Topos to use Microsoft's FASTER Log and the file system as the event store
+        /// </summary>
         public static void UseFileSystem(this StandardConfigurer<IProducerImplementation> configurer, string directoryPath)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));
@@ -32,6 +35,9 @@ namespace Topos.Config
                 .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer());
         }
 
+        /// <summary>
+        /// Configures Topos to use Microsoft's FASTER Log and the file system as the event store
+        /// </summary>
         public static void UseFileSystem(this StandardConfigurer<IConsumerImplementation> configurer, string directoryPath)
         {
             if (configurer == null) throw new ArgumentNullException(nameof(configurer));

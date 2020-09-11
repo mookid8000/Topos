@@ -108,6 +108,9 @@
 ## 0.0.78
 * Update some packages
 
+## 0.0.79
+* Small adjustments
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

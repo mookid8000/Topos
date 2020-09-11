@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FASTER.core;
 using Topos.Consumer;
 using Topos.Logging;
 using Topos.Serialization;
@@ -31,7 +30,6 @@ namespace Topos.Faster
             _consumerDispatcher = consumerDispatcher ?? throw new ArgumentNullException(nameof(consumerDispatcher));
             _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
             _logger = loggerFactory.GetLogger(GetType());
-
             _topics = topics.ToList();
         }
 
@@ -77,9 +75,7 @@ namespace Topos.Faster
                                 readAddress = nextAddress;
                             }
 
-                            Console.WriteLine("WAITING");
                             await iterator.WaitAsync(cancellationToken);
-                            Console.WriteLine("DONE WAITING");
                         }
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

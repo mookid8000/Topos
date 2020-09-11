@@ -10,14 +10,6 @@ namespace Topos.Internals
 
         public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
         {
-            var realFactory = factory;
-
-            factory = () =>
-            {
-                Console.WriteLine($"CREATING {key}");
-                return realFactory();
-            };
-
             var pooledObject = _pool.AddOrUpdate(
                 key: key,
                 addValueFactory: _ => PooledObject.New(() => factory()).Increment(),
@@ -34,8 +26,6 @@ namespace Topos.Internals
                     addValueFactory: _ => PooledObject.New(() => factory()),
                     updateValueFactory: (_, existing) => existing.Decrement()
                 );
-
-                Console.WriteLine($"DISPOSING {key}");
 
                 result.MaybeDispose();
             });
