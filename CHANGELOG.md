@@ -114,6 +114,9 @@
 ## 0.0.80
 * Add ability to do log truncation based on time
 
+## 0.0.81
+* Pretty wild optimization of Faster producer (introduce semaphore to avoid unnecessary waiting)
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

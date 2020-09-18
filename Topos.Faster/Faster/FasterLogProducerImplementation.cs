@@ -18,6 +18,7 @@ namespace Topos.Faster
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ConcurrentQueue<WriteTask> _writeTasks = new ConcurrentQueue<WriteTask>();
+        readonly SemaphoreSlim _queueItems = new SemaphoreSlim(0, maxCount: int.MaxValue);
         readonly EventExpirationHelper _eventExpirationHelper;
         readonly ILogEntrySerializer _logEntrySerializer;
         readonly IDeviceManager _deviceManager;
@@ -38,6 +39,7 @@ namespace Topos.Faster
         {
             var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage });
             _writeTasks.Enqueue(writeTask);
+            _queueItems.Release();
             return writeTask.Task;
         }
 
@@ -45,6 +47,7 @@ namespace Topos.Faster
         {
             var writeTask = new WriteTask(topic, partitionKey, transportMessages);
             _writeTasks.Enqueue(writeTask);
+            _queueItems.Release();
             return writeTask.Task;
         }
 
@@ -67,11 +70,13 @@ namespace Topos.Faster
             {
                 try
                 {
+                    await _queueItems.WaitAsync(cancellationToken);
+
                     var tasks = DequeueNext(100);
 
                     if (!tasks.Any())
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(0.2), cancellationToken);
+                        await Task.Delay(TimeSpan.FromSeconds(0.1), cancellationToken);
                         continue;
                     }
 
@@ -198,6 +203,6 @@ namespace Topos.Faster
             public void Succeed() => _taskCompletionSource.SetResult(null);
 
             public void Fail(Exception exception) => _taskCompletionSource.SetException(exception);
-       }
+        }
     }
 }
