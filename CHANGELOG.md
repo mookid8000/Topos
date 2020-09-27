@@ -117,6 +117,9 @@
 ## 0.0.81
 * Pretty wild optimization of Faster producer (introduce semaphore to avoid unnecessary waiting)
 
+## 0.0.82
+* Update Faster to 1.6.3
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

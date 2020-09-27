@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Kafkaesque\Kafkaesque\Kafkaesque.csproj" />
+    <PackageReference Include="kafkaesque" Version="0.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 
