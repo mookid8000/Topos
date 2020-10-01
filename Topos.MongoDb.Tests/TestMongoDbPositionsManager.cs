@@ -40,8 +40,8 @@ namespace Topos.MongoDb.Tests
 
             Assert.That(position, Is.Not.Null);
 
-            Assert.That(position.Value.Partition, Is.EqualTo(2));
-            Assert.That(position.Value.Offset, Is.EqualTo(100));
+            Assert.That(position.Partition, Is.EqualTo(2));
+            Assert.That(position.Offset, Is.EqualTo(100));
         }
 
         [Test]
@@ -55,8 +55,8 @@ namespace Topos.MongoDb.Tests
 
             Assert.That(position, Is.Not.Null);
 
-            Assert.That(position.Value.Partition, Is.EqualTo(2));
-            Assert.That(position.Value.Offset, Is.EqualTo(110));
+            Assert.That(position.Partition, Is.EqualTo(2));
+            Assert.That(position.Offset, Is.EqualTo(110));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Topos.AzureBlobs.Tests
         {
             var manager = new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, "does-not-exist");
 
-            Assert.That(await manager.Get("whatever", 1), Is.Null);
+            Assert.That(await manager.Get("whatever", 1), Is.EqualTo(Position.Default("whatever", 1)));
         }
 
         [Test]
@@ -25,9 +25,9 @@ namespace Topos.AzureBlobs.Tests
             var position = await manager.Get("my-topic", 3);
 
             Assert.That(position, Is.Not.Null);
-            Assert.That(position.Value.Topic, Is.EqualTo("my-topic"));
-            Assert.That(position.Value.Partition, Is.EqualTo(3));
-            Assert.That(position.Value.Offset, Is.EqualTo(500));
+            Assert.That(position.Topic, Is.EqualTo("my-topic"));
+            Assert.That(position.Partition, Is.EqualTo(3));
+            Assert.That(position.Offset, Is.EqualTo(500));
         }
 
         [Test]
@@ -40,9 +40,9 @@ namespace Topos.AzureBlobs.Tests
             var position = await manager.Get("topic70", 3);
 
             Assert.That(position, Is.Not.Null);
-            Assert.That(position.Value.Topic, Is.EqualTo("topic70"));
-            Assert.That(position.Value.Partition, Is.EqualTo(3));
-            Assert.That(position.Value.Offset, Is.EqualTo(500));
+            Assert.That(position.Topic, Is.EqualTo("topic70"));
+            Assert.That(position.Partition, Is.EqualTo(3));
+            Assert.That(position.Offset, Is.EqualTo(500));
         }
     }
 }

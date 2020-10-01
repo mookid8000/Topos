@@ -19,15 +19,17 @@ namespace Topos.Tests.Contracts.Positions
         {
             var manager = Create();
 
-            var position1 = await manager.Get(Guid.NewGuid().ToString(), 0);
-            var position2 = await manager.Get(Guid.NewGuid().ToString(), 2);
-            var position3 = await manager.Get(Guid.NewGuid().ToString(), 32);
-            var position4 = await manager.Get(Guid.NewGuid().ToString(), 123);
+            var topic1 = Guid.NewGuid().ToString();
+            var topic2 = Guid.NewGuid().ToString();
+            var topic3 = Guid.NewGuid().ToString();
 
-            Assert.That(position1, Is.EqualTo(default(Position?)));
-            Assert.That(position2, Is.EqualTo(default(Position?)));
-            Assert.That(position3, Is.EqualTo(default(Position?)));
-            Assert.That(position4, Is.EqualTo(default(Position?)));
+            var position1 = await manager.Get(topic1, 0);
+            var position2 = await manager.Get(topic2, 2);
+            var position3 = await manager.Get(topic3, 32);
+
+            Assert.That(position1, Is.EqualTo(Position.Default(topic1, 0)));
+            Assert.That(position2, Is.EqualTo(Position.Default(topic2, 2)));
+            Assert.That(position3, Is.EqualTo(Position.Default(topic3, 32)));
         }
 
         [Test]

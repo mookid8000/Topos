@@ -2,10 +2,8 @@
 
 namespace Topos.Consumer
 {
-    public struct Position
+    public class Position
     {
-        readonly bool _hasValue;
-
         public const int DefaultOffset = -1;
 
         public const int OnlyNewOffset = -2;
@@ -26,22 +24,20 @@ namespace Topos.Consumer
         public int Partition { get; }
         public long Offset { get; }
 
-        public bool IsDefault => !_hasValue || Offset == DefaultOffset;
+        public bool IsDefault => Offset == DefaultOffset;
+        
+        public bool IsOnlyNew => Offset == OnlyNewOffset;
 
         public Position(string topic, int partition, long offset)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             Partition = partition;
             Offset = offset;
-            _hasValue = true;
         }
 
         public override string ToString() => $"{Topic}: {Partition}/{Offset}";
 
-        public bool Equals(Position other)
-        {
-            return string.Equals(Topic, other.Topic) && Partition == other.Partition && Offset == other.Offset;
-        }
+        public bool Equals(Position other) => string.Equals(Topic, other.Topic) && Partition == other.Partition && Offset == other.Offset;
 
         public override bool Equals(object obj)
         {
@@ -60,15 +56,9 @@ namespace Topos.Consumer
             }
         }
 
-        public static bool operator ==(Position left, Position right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(Position left, Position right) => left.Equals(right);
 
-        public static bool operator !=(Position left, Position right)
-        {
-            return !left.Equals(right);
-        }
+        public static bool operator !=(Position left, Position right) => !left.Equals(right);
 
         public Position Advance(int offset) => new Position(Topic, Partition, Offset + offset);
     }

@@ -17,11 +17,11 @@ namespace Topos.InMem
 
         public async Task Set(Position position) => _positionsStorage.Set(position);
 
-        public async Task<Position?> Get(string topic, int partition)
+        public async Task<Position> Get(string topic, int partition)
         {
             var results = _positionsStorage.Get(topic, new[] { partition });
 
-            return results.FirstOrDefault();
+            return results.FirstOrDefault() ?? Position.Default(topic, partition);
         }
     }
 }

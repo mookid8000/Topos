@@ -68,8 +68,26 @@ namespace Topos.Internals
                     .ToListAsync();
 
                 return results
-                    .Select(a => a.Position?.Advance(1).ToTopicPartitionOffset() // either resume from the event following the last one successfully committed
-                                ?? a.TopicPartition.WithOffset(Offset.Beginning));
+                    .Select(a =>
+                    {
+                        if (a.Position.IsDefault) return a.TopicPartition.WithOffset(Offset.Beginning);
+                        if (a.Position.IsOnlyNew) return a.TopicPartition.WithOffset(Offset.Stored);
+
+                        return a.Position.Advance(1).ToTopicPartitionOffset();
+
+                        //return (isDefault: a.Position.IsDefault, isOnlyNew: a.Position.IsOnlyNew) switch
+                        //{
+                        //    (isDefault: true, _) => a.TopicPartition.WithOffset(Offset.Beginning),
+                        //    (_, isOnlyNew: true) => a.TopicPartition.WithOffset(Offset.Stored),
+
+                        //    _ => a.Position.Advance(1).ToTopicPartitionOffset()
+                        //};
+
+                        //return
+                        //    a.Position?.Advance(1)
+                        //        .ToTopicPartitionOffset() // either resume from the event following the last one successfully committed
+                        //    ?? a.TopicPartition.WithOffset(Offset.Beginning);
+                    });
             });
         }
 
@@ -83,20 +101,20 @@ namespace Topos.Internals
 
             if (!partitionsList.Any()) return;
 
-            var partitionsByTopic = partitionsList
-                .GroupBy(p => p.Topic)
-                .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
-                .ToList();
-
-            logger.Info("Revocation: {@partitions}", partitionsByTopic);
-
-            if (partitionsRevokedHandler != null)
-            {
-                AsyncHelpers.RunSync(() => partitionsRevokedHandler(context, partitionsList.Select(p => p.TopicPartition)));
-            }
-
             AsyncHelpers.RunSync(async () =>
             {
+                var partitionsByTopic = partitionsList
+                    .GroupBy(p => p.Topic)
+                    .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
+                    .ToList();
+
+                logger.Info("Revocation: {@partitions}", partitionsByTopic);
+
+                if (partitionsRevokedHandler != null)
+                {
+                    await partitionsRevokedHandler(context, partitionsList.Select(p => p.TopicPartition));
+                }
+
                 foreach (var revocation in partitionsByTopic)
                 {
                     await consumerDispatcher.Revoke(revocation.Topic, revocation.Partitions);

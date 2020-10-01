@@ -43,14 +43,12 @@ namespace Topos.AzureBlobs
             {
                 var container = await _getContainerReference.Value();
                 var blob = container.GetBlockBlobReference(blobName);
+
+                using var destination = await blob.OpenWriteAsync();
                 
-                using (var destination = await blob.OpenWriteAsync())
-                {
-                    using (var writer = new StreamWriter(destination, Encoding.UTF8))
-                    {
-                        await writer.WriteAsync(position.Offset.ToString());
-                    }
-                }
+                using var writer = new StreamWriter(destination, Encoding.UTF8);
+                
+                await writer.WriteAsync(position.Offset.ToString());
             }
             catch (Exception exception)
             {
@@ -58,7 +56,7 @@ namespace Topos.AzureBlobs
             }
         }
 
-        public async Task<Position?> Get(string topic, int partition)
+        public async Task<Position> Get(string topic, int partition)
         {
             var blobName = GetBlobName(topic, partition);
 
@@ -67,31 +65,29 @@ namespace Topos.AzureBlobs
                 var blob = await _client.GetContainerReference(_containerName)
                     .GetBlobReferenceFromServerAsync(blobName);
 
-                using (var source = await blob.OpenReadAsync())
+                using var source = await blob.OpenReadAsync();
+                
+                using var reader = new StreamReader(source, Encoding.UTF8);
+                
+                var text = await reader.ReadToEndAsync();
+
+                if (string.IsNullOrWhiteSpace(text)) return Position.Default(topic, partition);
+
+                if (!long.TryParse(text, out var position))
                 {
-                    using (var reader = new StreamReader(source, Encoding.UTF8))
-                    {
-                        var text = await reader.ReadToEndAsync();
-
-                        if (string.IsNullOrWhiteSpace(text)) return null;
-
-                        if (!long.TryParse(text, out var position))
-                        {
-                            throw new FormatException(
-                                $@"The position text read from {blobName} in container {_containerName}
+                    throw new FormatException(
+                        $@"The position text read from {blobName} in container {_containerName}
 
 {text}
 
 could not be parsed into a long!");
-                        }
-
-                        return new Position(topic, partition, position);
-                    }
                 }
+
+                return new Position(topic, partition, position);
             }
             catch (StorageException storageException) when (storageException.RequestInformation.HttpStatusCode == HttpStatusNotFound)
             {
-                return null;
+                return Position.Default(topic, partition);
             }
             catch (Exception exception)
             {

@@ -26,15 +26,14 @@ namespace Topos.Config
 
             public Task Set(Position position) => _positionManager.Set(position);
 
-            public async Task<Position?> Get(string topic, int partition)
+            public async Task<Position> Get(string topic, int partition)
             {
                 var position = await _positionManager.Get(topic, partition);
 
-                return (position, _startFromPosition) switch
+                return (isDefault: position.IsDefault, startFrom: _startFromPosition) switch
                 {
-                    (null, StartFromPosition.Beginning) => Position.Default(topic, partition),
-
-                    (null, StartFromPosition.Now) => Position.OnlyNew(topic, partition),
+                    (isDefault: true, startFrom: StartFromPosition.Beginning) => Position.Default(topic, partition),
+                    (isDefault: true, startFrom: StartFromPosition.Now) => Position.OnlyNew(topic, partition),
 
                     _ => position
                 };
