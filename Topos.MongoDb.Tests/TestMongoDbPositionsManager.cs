@@ -26,9 +26,9 @@ namespace Topos.MongoDb.Tests
         [Test]
         public async Task GetsNothingWhenAskingForPositionsInitially()
         {
-            var position = await _positionManager.Get("test-topic", 1);
+            var position = await _positionManager.Get("test-topic", partition: 1);
 
-            Assert.That(position, Is.Null, $"Did not expect to receive anything - got this: {position}");
+            Assert.That(position, Is.EqualTo(Position.Default("test-topic", partition: 1)));
         }
 
         [Test]
