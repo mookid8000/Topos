@@ -117,7 +117,7 @@
 ## 0.0.81
 * Pretty wild optimization of Faster producer (introduce semaphore to avoid unnecessary waiting)
 
-## 0.0.82
+## 0.0.83
 * Enable calling `SetInitialPosition` when configuring positions manager, specifying either `StartFromPosition.Beginning` or `StartFromPosition.Now` - enables consuming only new events
 
 ---
