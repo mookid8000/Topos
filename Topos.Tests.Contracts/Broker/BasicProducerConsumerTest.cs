@@ -12,9 +12,7 @@ using Testy.Extensions;
 using Topos.Producer;
 using Topos.Tests.Contracts.Stubs;
 // ReSharper disable ArgumentsStyleLiteral
-
 // ReSharper disable ArgumentsStyleAnonymousFunction
-
 #pragma warning disable 1998
 
 namespace Topos.Tests.Contracts.Broker
@@ -22,6 +20,70 @@ namespace Topos.Tests.Contracts.Broker
     public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractFixtureBase where TBrokerFactory : IBrokerFactory, new()
     {
         IBrokerFactory _brokerFactory;
+
+        [Test]
+        public async Task CatchUpTest_AllHistory()
+        {
+            var receivedMessages = new ConcurrentQueue<string>();
+            var topic = BrokerFactory.GetNewTopic();
+            var producer = BrokerFactory.ConfigureProducer().Create();
+
+            Using(producer);
+
+            await producer.Send(topic, new ToposMessage("message 1"));
+
+            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+                .Handle(async (messages, context, token) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
+                .Topics(t => t.Subscribe(topic))
+                .Positions(p =>
+                {
+                    p.StoreInMemory();
+                    p.SetInitialPosition(StartFromPosition.Beginning);
+                })
+                .Start();
+
+            Using(consumer);
+
+            await producer.Send(topic, new ToposMessage("message 2"));
+
+            await receivedMessages.WaitOrDie(
+                completionExpression: q => q.Count == 2,
+                failExpression: q => q.Count > 2,
+                failureDetailsFunction: () => $"Expected to receive exactly 2 messages, but got this: {string.Join("; ", receivedMessages)}"
+            );
+        }
+
+        [Test]
+        public async Task CatchUpTest_OnlyNew()
+        {
+            var receivedMessages = new ConcurrentQueue<string>();
+            var topic = BrokerFactory.GetNewTopic();
+            var producer = BrokerFactory.ConfigureProducer().Create();
+
+            Using(producer);
+
+            await producer.Send(topic, new ToposMessage("message 1"));
+
+            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+                .Handle(async (messages, context, token) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
+                .Topics(t => t.Subscribe(topic))
+                .Positions(p =>
+                {
+                    p.StoreInMemory();
+                    p.SetInitialPosition(StartFromPosition.Now);
+                })
+                .Start();
+
+            Using(consumer);
+
+            await producer.Send(topic, new ToposMessage("message 2"));
+
+            await receivedMessages.WaitOrDie(
+                completionExpression: q => q.Count == 1,
+                failExpression: q => q.Count > 1,
+                failureDetailsFunction: () => $"Expected to receive exactly 1 messages, but got this: {string.Join("; ", receivedMessages)}"
+            );
+        }
 
         [Test]
         public async Task DoesNotLogTaskCancelledException()

@@ -8,7 +8,19 @@ namespace Topos.Consumer
 
         public const int DefaultOffset = -1;
 
+        public const int OnlyNewOffset = -2;
+
+        /// <summary>
+        /// Gets the "default" position, which is the lowest possible position. Brokers should interpret this position as "as much as you've got", so
+        /// passing this position when resuming should get all events available in the broker
+        /// </summary>
         public static Position Default(string topic, int partition) => new Position(topic, partition, DefaultOffset);
+
+        /// <summary>
+        /// Gets the "only new" position, which brokers should interpret as "only new events", so
+        /// passing this position when resuming should get only events written after the consumer starts
+        /// </summary>
+        public static Position OnlyNew(string topic, int partition) => new Position(topic, partition, OnlyNewOffset);
 
         public string Topic { get; }
         public int Partition { get; }
