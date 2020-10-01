@@ -102,7 +102,7 @@ namespace Topos.Faster
         {
             if (resumePosition.IsDefault) return log.BeginAddress;
 
-            if (resumePosition.IsOnlyNew) return log.FlushedUntilAddress;
+            if (resumePosition.IsOnlyNew) return log.TailAddress;
 
             return resumePosition.Offset;
         }

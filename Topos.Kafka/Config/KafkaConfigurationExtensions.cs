@@ -33,11 +33,6 @@ namespace Topos.Config
             StandardConfigurer.Open(configurer)
                 .Register(c =>
                 {
-                    //if (builder.AutomaticallyAddProducerToContextFlag)
-                    //{
-                        
-                    //}
-
                     var loggerFactory = c.Get<ILoggerFactory>();
                     var topics = c.Has<Topics>() ? c.Get<Topics>() : new Topics();
                     var group = c.Get<GroupId>();
@@ -46,19 +41,7 @@ namespace Topos.Config
                     var consumerContext = c.Get<ConsumerContext>();
                     var partitionsAssignedHandler = builder.GetPartitionsAssignedHandler();
                     var partitionsRevokedHandler = builder.GetPartitionsRevokedHandler();
-
-                    //if (builder.AutomaticallyAddProducerToContextFlag)
-                    //{
-                    //    try
-                    //    {
-                    //        var toposProducer = c.Get<IToposProducer>();
-                    //        consumerContext.SetItem(toposProducer);
-                    //    }
-                    //    catch (Exception exception)
-                    //    {
-                    //        throw new ApplicationException("The consumer was configured to automatically provide a producer for the consumer context, but something went wrong when initializing it", exception);
-                    //    }
-                    //}
+                    var startPosition = c.Has<PositionsStorageConfigurationExtensions.ExplicitlySetInitialPosition>() ? c.Get<PositionsStorageConfigurationExtensions.ExplicitlySetInitialPosition>().Position : StartFromPosition.Beginning;
 
                     return new KafkaConsumerImplementation(
                         loggerFactory: loggerFactory,
@@ -70,7 +53,8 @@ namespace Topos.Config
                         context: consumerContext,
                         configurationCustomizer: config => builder.Apply(config),
                         partitionsAssignedHandler: partitionsAssignedHandler,
-                        partitionsRevokedHandler: partitionsRevokedHandler
+                        partitionsRevokedHandler: partitionsRevokedHandler,
+                        startPosition: startPosition
                     );
                 });
 

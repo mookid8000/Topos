@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Topos.Config;
 using Topos.Consumer;
 using Topos.Logging;
 using Topos.Serialization;
@@ -24,6 +25,7 @@ namespace Topos.Kafka
         readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
+        readonly StartFromPosition _startPosition;
         readonly ConsumerContext _context;
         readonly Thread _worker;
         readonly ILogger _logger;
@@ -33,12 +35,14 @@ namespace Topos.Kafka
 
         bool _disposed;
 
-        public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics, string group,
+        public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics,
+            string @group,
             IConsumerDispatcher consumerDispatcher, IPositionManager positionManager,
             ConsumerContext context,
-            Func<ConsumerConfig, ConsumerConfig> configurationCustomizer = null,
-            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler = null,
-            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler = null)
+            Func<ConsumerConfig, ConsumerConfig> configurationCustomizer,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler,
+            Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
+            StartFromPosition startPosition)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));
@@ -52,6 +56,7 @@ namespace Topos.Kafka
             _configurationCustomizer = configurationCustomizer;
             _partitionsAssignedHandler = partitionsAssignedHandler;
             _partitionsRevokedHandler = partitionsRevokedHandler;
+            _startPosition = startPosition;
             _worker = new Thread(Run) { IsBackground = true };
         }
 
@@ -72,7 +77,13 @@ namespace Topos.Kafka
                 BootstrapServers = _address,
                 GroupId = _group,
 
-                AutoOffsetReset = AutoOffsetReset.Earliest,
+                AutoOffsetReset = _startPosition switch
+                {
+                    StartFromPosition.Beginning => AutoOffsetReset.Earliest,
+                    StartFromPosition.Now => AutoOffsetReset.Latest,
+                    _ => throw new ArgumentException($"Unknown start position: {_startPosition}")
+                },
+
                 EnableAutoCommit = false,
             };
 

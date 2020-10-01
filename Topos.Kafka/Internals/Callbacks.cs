@@ -71,23 +71,12 @@ namespace Topos.Internals
                     .Select(a =>
                     {
                         if (a.Position.IsDefault) return a.TopicPartition.WithOffset(Offset.Beginning);
-                        if (a.Position.IsOnlyNew) return a.TopicPartition.WithOffset(Offset.Stored);
+                        
+                        if (a.Position.IsOnlyNew) return a.TopicPartition.WithOffset(Offset.End);
 
                         return a.Position.Advance(1).ToTopicPartitionOffset();
-
-                        //return (isDefault: a.Position.IsDefault, isOnlyNew: a.Position.IsOnlyNew) switch
-                        //{
-                        //    (isDefault: true, _) => a.TopicPartition.WithOffset(Offset.Beginning),
-                        //    (_, isOnlyNew: true) => a.TopicPartition.WithOffset(Offset.Stored),
-
-                        //    _ => a.Position.Advance(1).ToTopicPartitionOffset()
-                        //};
-
-                        //return
-                        //    a.Position?.Advance(1)
-                        //        .ToTopicPartitionOffset() // either resume from the event following the last one successfully committed
-                        //    ?? a.TopicPartition.WithOffset(Offset.Beginning);
-                    });
+                    })
+                    .ToList();
             });
         }
 

@@ -10,7 +10,21 @@ namespace Topos.Config
         {
             var registrar = StandardConfigurer.Open(configurer);
 
+            if (registrar.Other<ExplicitlySetInitialPosition>().HasService())
+            {
+                throw new InvalidOperationException($"Cannot set resume position to {startFromPosition}, because it has already been set!");
+            }
+
+            registrar.Other<ExplicitlySetInitialPosition>().Register(c => new ExplicitlySetInitialPosition(startFromPosition));
+
             registrar.Decorate(c => new InitialPositionDecorator(c.Get<IPositionManager>(), startFromPosition));
+        }
+
+        public class ExplicitlySetInitialPosition
+        {
+            public StartFromPosition Position { get; }
+
+            public ExplicitlySetInitialPosition(StartFromPosition position) => Position = position;
         }
 
         class InitialPositionDecorator : IPositionManager
@@ -39,11 +53,5 @@ namespace Topos.Config
                 };
             }
         }
-    }
-
-    public enum StartFromPosition
-    {
-        Beginning,
-        Now
     }
 }

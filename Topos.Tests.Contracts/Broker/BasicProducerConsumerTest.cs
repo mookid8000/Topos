@@ -44,12 +44,16 @@ namespace Topos.Tests.Contracts.Broker
 
             Using(consumer);
 
+            // give consumer a chance to start up before new stuff happens
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
             await producer.Send(topic, new ToposMessage("message 2"));
 
             await receivedMessages.WaitOrDie(
                 completionExpression: q => q.Count == 2,
                 failExpression: q => q.Count > 2,
-                failureDetailsFunction: () => $"Expected to receive exactly 2 messages, but got this: {string.Join("; ", receivedMessages)}"
+                failureDetailsFunction: () => $"Expected to receive exactly 2 messages, but got this: {string.Join("; ", receivedMessages)}",
+                timeoutSeconds: 15
             );
         }
 
@@ -76,12 +80,16 @@ namespace Topos.Tests.Contracts.Broker
 
             Using(consumer);
 
+            // give consumer a chance to start up before new stuff happens
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
             await producer.Send(topic, new ToposMessage("message 2"));
 
             await receivedMessages.WaitOrDie(
                 completionExpression: q => q.Count == 1,
                 failExpression: q => q.Count > 1,
-                failureDetailsFunction: () => $"Expected to receive exactly 1 messages, but got this: {string.Join("; ", receivedMessages)}"
+                failureDetailsFunction: () => $"Expected to receive exactly 1 messages, but got this: {string.Join("; ", receivedMessages)}",
+                timeoutSeconds: 15
             );
         }
 
