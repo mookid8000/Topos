@@ -9,8 +9,6 @@ using Topos.Config;
 using Topos.Consumer;
 using Topos.InMem;
 using Topos.Producer;
-using Topos.Tests.Contracts.Extensions;
-using Topos.Tests.Extensions;
 // ReSharper disable ArgumentsStyleLiteral
 #pragma warning disable 1998
 
@@ -148,7 +146,7 @@ Failed with details: {errorDetailsFactory()}
                 return _positionManager.Set(position);
             }
 
-            public Task<Position?> Get(string topic, int partition)
+            public Task<Position> Get(string topic, int partition)
             {
                 return _positionManager.Get(topic, partition);
             }

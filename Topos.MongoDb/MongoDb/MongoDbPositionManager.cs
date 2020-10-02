@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,7 +9,6 @@ namespace Topos.MongoDb
     public class MongoDbPositionManager : IPositionManager
     {
         readonly IMongoCollection<BsonDocument> _positions;
-        static readonly Position[] EmptyListOfPositions = Enumerable.Empty<Position>().ToArray();
 
         public MongoDbPositionManager(IMongoDatabase database, string collectionName)
         {
@@ -34,7 +32,7 @@ namespace Topos.MongoDb
             await _positions.UpdateOneAsync(criteria, update, new UpdateOptions { IsUpsert = true });
         }
 
-        public async Task<Position?> Get(string topic, int partition)
+        public async Task<Position> Get(string topic, int partition)
         {
             var query = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
             {
@@ -42,13 +40,13 @@ namespace Topos.MongoDb
             });
 
             var document = await _positions.Find(query).FirstOrDefaultAsync();
-            if (document == null) return null;
+            if (document == null) return Position.Default(topic, partition);
 
             var fieldName = partition.ToString();
 
             return document.Contains(fieldName)
                 ? new Position(topic, partition, document[fieldName].AsInt64)
-                : default(Position?);
+                : Position.Default(topic, partition);
         }
     }
 }

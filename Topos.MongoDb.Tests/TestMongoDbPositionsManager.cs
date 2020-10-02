@@ -26,9 +26,9 @@ namespace Topos.MongoDb.Tests
         [Test]
         public async Task GetsNothingWhenAskingForPositionsInitially()
         {
-            var position = await _positionManager.Get("test-topic", 1);
+            var position = await _positionManager.Get("test-topic", partition: 1);
 
-            Assert.That(position, Is.Null, $"Did not expect to receive anything - got this: {position}");
+            Assert.That(position, Is.EqualTo(Position.Default("test-topic", partition: 1)));
         }
 
         [Test]
@@ -40,8 +40,8 @@ namespace Topos.MongoDb.Tests
 
             Assert.That(position, Is.Not.Null);
 
-            Assert.That(position.Value.Partition, Is.EqualTo(2));
-            Assert.That(position.Value.Offset, Is.EqualTo(100));
+            Assert.That(position.Partition, Is.EqualTo(2));
+            Assert.That(position.Offset, Is.EqualTo(100));
         }
 
         [Test]
@@ -55,8 +55,8 @@ namespace Topos.MongoDb.Tests
 
             Assert.That(position, Is.Not.Null);
 
-            Assert.That(position.Value.Partition, Is.EqualTo(2));
-            Assert.That(position.Value.Offset, Is.EqualTo(110));
+            Assert.That(position.Partition, Is.EqualTo(2));
+            Assert.That(position.Offset, Is.EqualTo(110));
         }
     }
 }

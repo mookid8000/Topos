@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FASTER.core;
 using Topos.Consumer;
 using Topos.Logging;
 using Topos.Serialization;
@@ -53,7 +54,7 @@ namespace Topos.Faster
                 _logger.Debug("Starting FasterLog consumer task for topic {topic}", topic);
 
                 var resumePosition = await GetResumePosition(topic, cancellationToken);
-                var readAddress = resumePosition.IsDefault ? log.BeginAddress : resumePosition.Offset;
+                var readAddress = GetReadAddress(resumePosition, log);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -95,6 +96,15 @@ namespace Topos.Faster
             }
 
             _logger.Debug("Stopped FasterLog consumer task for topic {topic}", topic);
+        }
+
+        static long GetReadAddress(Position resumePosition, FasterLog log)
+        {
+            if (resumePosition.IsDefault) return log.BeginAddress;
+
+            if (resumePosition.IsOnlyNew) return log.TailAddress;
+
+            return resumePosition.Offset;
         }
 
         async Task<Position> GetResumePosition(string topic, CancellationToken cancellationToken)

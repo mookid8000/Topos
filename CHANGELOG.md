@@ -120,6 +120,12 @@
 ## 0.0.82
 * Update Faster to 1.6.3
 
+## 0.0.83
+* Enable calling `SetInitialPosition` when configuring positions manager, specifying either `StartFromPosition.Beginning` or `StartFromPosition.Now` - enables consuming only new events
+
+## 0.0.84
+* Reduce waiting time in message handler loops by using a semaphore to signal that there's work to do
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

@@ -40,7 +40,7 @@ namespace Topos.FileSystem
             File.WriteAllText(filePath, position.Offset.ToString());
         }
 
-        public async Task<Position?> Get(string topic, int partition)
+        public async Task<Position> Get(string topic, int partition)
         {
             var filePath = GetFilePath(topic, partition);
 
@@ -57,7 +57,7 @@ namespace Topos.FileSystem
             }
             catch (FileNotFoundException)
             {
-                return default(Position?);
+                return Position.Default(topic, partition);
             }
         }
 

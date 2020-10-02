@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Polly;
 using Polly.Retry;
 using Topos.Config;
+using Topos.Helpers;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
@@ -27,6 +28,7 @@ namespace Topos.Consumer
 
         readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
         readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
+        readonly AsyncSemaphore _messagesSemaphore = new AsyncSemaphore(initialCount: 0, maxCount: int.MaxValue);
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         readonly MessageHandlerDelegate _callback;
@@ -54,7 +56,11 @@ namespace Topos.Consumer
 
         public bool IsReadyForMore => _messages.Count < _maxPrefetchQueueLength;
 
-        public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage) => _messages.Enqueue(receivedLogicalMessage);
+        public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage)
+        {
+            _messages.Enqueue(receivedLogicalMessage);
+            _messagesSemaphore.Increment();
+        }
 
         public void Start(ILogger logger, ConsumerContext context)
         {
@@ -115,6 +121,8 @@ namespace Topos.Consumer
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
+                    await _messagesSemaphore.DecrementAsync(cancellationToken);
+
                     // IMPORTANT: The check for count must be first! Otherwise, we might pop a message and not add it to the batch... :|
                     while (messageBatch.Count < _maximumBatchSize && _messages.TryDequeue(out var message))
                     {
@@ -123,7 +131,7 @@ namespace Topos.Consumer
 
                     if (messageBatch.Count < _minimumBatchSize)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                        await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
                         continue;
                     }
 
@@ -160,13 +168,14 @@ namespace Topos.Consumer
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // we're exiting
-                _logger.Info("Message handler stopped");
+                // it's ok, we're shutting down
             }
             catch (Exception exception)
             {
                 _logger.Error(exception, "Unhandled message handler exception");
             }
+
+            _logger.Info("Message handler stopped");
         }
 
         public async Task Drain(CancellationToken token)
@@ -183,12 +192,11 @@ namespace Topos.Consumer
 
         public void Clear(string topic, IEnumerable<int> partitionsList)
         {
-            if (_positions.TryGetValue(topic, out var positions))
+            if (!_positions.TryGetValue(topic, out var positions)) return;
+            
+            foreach (var partition in partitionsList)
             {
-                foreach (var partition in partitionsList)
-                {
-                    positions.TryRemove(partition, out _);
-                }
+                positions.TryRemove(partition, out _);
             }
         }
 
@@ -206,6 +214,7 @@ namespace Topos.Consumer
             try
             {
                 using (_cancellationTokenSource)
+                using (_messagesSemaphore)
                 {
                     Stop();
 

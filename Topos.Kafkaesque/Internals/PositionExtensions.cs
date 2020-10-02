@@ -1,4 +1,5 @@
-﻿using Topos.Consumer;
+﻿using System;
+using Topos.Consumer;
 
 namespace Topos.Internals
 {
@@ -6,13 +7,9 @@ namespace Topos.Internals
     {
         static readonly KafkaesquePosition DefaultKafkaesquePosition = new KafkaesquePosition(-1, -1);
 
-        public static KafkaesquePosition ToKafkaesquePosition(this Position positionOrNull) => ToKafkaesquePosition((Position?)positionOrNull);
-
-        public static KafkaesquePosition ToKafkaesquePosition(this Position? positionOrNull)
+        public static KafkaesquePosition ToKafkaesquePosition(this Position position)
         {
-            if (positionOrNull == null) return DefaultKafkaesquePosition;
-
-            var position = positionOrNull.Value;
+            if (position == null) throw new ArgumentNullException(nameof(position));
 
             if (position.IsDefault) return DefaultKafkaesquePosition;
 
