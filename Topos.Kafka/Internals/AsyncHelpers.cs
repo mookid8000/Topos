@@ -52,11 +52,7 @@ namespace Topos.Internals
 
             bool _done;
 
-            public CustomSynchronizationContext(Func<Task> task)
-            {
-                if (task == null) throw new ArgumentNullException(nameof(task), "Please remember to pass a Task to be executed");
-                _task = task;
-            }
+            public CustomSynchronizationContext(Func<Task> task) => _task = task ?? throw new ArgumentNullException(nameof(task), "Please remember to pass a Task to be executed");
 
             public override void Post(SendOrPostCallback function, object state)
             {
@@ -88,9 +84,7 @@ namespace Topos.Internals
 
                 while (!_done)
                 {
-                    Tuple<SendOrPostCallback, object> task;
-
-                    if (_items.TryDequeue(out task))
+                    if (_items.TryDequeue(out var task))
                     {
                         task.Item1(task.Item2);
 

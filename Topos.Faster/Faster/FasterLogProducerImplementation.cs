@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FASTER.core;
 using Topos.Consumer;
+using Topos.Helpers;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
@@ -18,7 +19,7 @@ namespace Topos.Faster
     {
         readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly ConcurrentQueue<WriteTask> _writeTasks = new ConcurrentQueue<WriteTask>();
-        readonly SemaphoreSlim _queueItems = new SemaphoreSlim(0, maxCount: int.MaxValue);
+        readonly AsyncSemaphore _queueItems = new AsyncSemaphore(initialCount: 0, maxCount: int.MaxValue);
         readonly EventExpirationHelper _eventExpirationHelper;
         readonly ILogEntrySerializer _logEntrySerializer;
         readonly IDeviceManager _deviceManager;
@@ -38,17 +39,15 @@ namespace Topos.Faster
         public Task Send(string topic, string partitionKey, TransportMessage transportMessage)
         {
             var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage });
-            _writeTasks.Enqueue(writeTask);
-            _queueItems.Release();
-            return writeTask.Task;
+
+            return EnqueueWriteTask(writeTask);
         }
 
         public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
         {
             var writeTask = new WriteTask(topic, partitionKey, transportMessages);
-            _writeTasks.Enqueue(writeTask);
-            _queueItems.Release();
-            return writeTask.Task;
+
+            return EnqueueWriteTask(writeTask);
         }
 
         public void Initialize()
@@ -58,6 +57,13 @@ namespace Topos.Faster
             _logger.Info("Initializing FasterLog producer");
 
             _writer = Task.Run(WriterTask);
+        }
+
+        Task EnqueueWriteTask(WriteTask writeTask)
+        {
+            _writeTasks.Enqueue(writeTask);
+            _queueItems.Increment();
+            return writeTask.Task;
         }
 
         async Task WriterTask()
@@ -70,15 +76,11 @@ namespace Topos.Faster
             {
                 try
                 {
-                    await _queueItems.WaitAsync(cancellationToken);
+                    await _queueItems.DecrementAsync(cancellationToken);
 
                     var tasks = DequeueNext(100);
 
-                    if (!tasks.Any())
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(0.1), cancellationToken);
-                        continue;
-                    }
+                    if (!tasks.Any()) continue;
 
                     await Write(tasks);
                 }
@@ -113,9 +115,9 @@ namespace Topos.Faster
             {
                 var log = _deviceManager.GetLog(topic);
 
-                foreach (var task in tasks)
+                for (var index = 0; index < tasks.Count; index++)
                 {
-                    Write(log, task);
+                    Write(log, tasks[index]);
                 }
 
                 await log.CommitAsync();
