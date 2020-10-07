@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Threading;
 using Topos.Serialization;
 
 namespace Topos.InMem
@@ -7,18 +8,19 @@ namespace Topos.InMem
     {
         readonly ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>> _messages = new ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>>();
 
+        long _offsetCounter;
+
         public void Send(string topic, TransportMessage message)
         {
-            var queue = GetQueueForTopic(topic);
-            var inMemTransportMessage = new InMemTransportMessage(message, 1);
+            var inMemTransportMessage = new InMemTransportMessage(
+                transportMessage: message,
+                offset: Interlocked.Increment(ref _offsetCounter)
+            );
 
-            queue.Enqueue(inMemTransportMessage);
+            GetQueueForTopic(topic).Enqueue(inMemTransportMessage);
         }
 
-        ConcurrentQueue<InMemTransportMessage> GetQueueForTopic(string topic)
-        {
-            return _messages.GetOrAdd(topic, _ => new ConcurrentQueue<InMemTransportMessage>());
-        }
+        ConcurrentQueue<InMemTransportMessage> GetQueueForTopic(string topic) => _messages.GetOrAdd(topic, _ => new ConcurrentQueue<InMemTransportMessage>());
 
         class InMemTransportMessage
         {
