@@ -131,6 +131,12 @@
 * Update Microsoft.FASTER.Core dep to 1.7.4
 * Update Confluent.Kafka dep to 1.5.2
 
+## 0.0.86
+* Update MongoDB.Driver to 2.11.4
+* Update Protobuf-net to 3.0.52
+* Update Polly to 7.2.1
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
