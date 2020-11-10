@@ -128,6 +128,8 @@
 
 ## 0.0.85
 * Increase FASTER Log page size to 23 bits (= 8 MB)
+* Update Microsoft.FASTER.Core dep to 1.7.4
+* Update Confluent.Kafka dep to 1.5.2
 
 ---
 
