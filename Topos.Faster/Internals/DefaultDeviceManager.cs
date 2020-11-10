@@ -54,7 +54,11 @@ namespace Topos.Internals
 
             var pooledLog = SingletonPool.GetInstance(logKey, () =>
             {
-                var log = new FasterLog(new FasterLogSettings { LogDevice = device });
+                var log = new FasterLog(new FasterLogSettings
+                {
+                    LogDevice = device,
+                    PageSizeBits = 23   //< page size is 2^23 = 8 MB
+                });
 
                 return log;
             });

@@ -126,6 +126,9 @@
 ## 0.0.84
 * Reduce waiting time in message handler loops by using a semaphore to signal that there's work to do
 
+## 0.0.85
+* Increase FASTER Log page size to 23 bits (= 8 MB)
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
