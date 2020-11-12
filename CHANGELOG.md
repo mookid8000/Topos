@@ -139,6 +139,9 @@
 ## 0.0.87
 * Open for adding Kafka consumer/producer customizers from the outside
 
+## 0.0.88
+* Add license info to NuGet package of main lib
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
