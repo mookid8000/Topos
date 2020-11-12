@@ -127,6 +127,16 @@
 * Reduce waiting time in message handler loops by using a semaphore to signal that there's work to do
 
 ## 0.0.85
+* Increase FASTER Log page size to 23 bits (= 8 MB)
+* Update Microsoft.FASTER.Core dep to 1.7.4
+* Update Confluent.Kafka dep to 1.5.2
+
+## 0.0.86
+* Update MongoDB.Driver to 2.11.4
+* Update Protobuf-net to 3.0.52
+* Update Polly to 7.2.1
+
+## 0.0.87
 * Open for adding Kafka consumer/producer customizers from the outside
 
 ---

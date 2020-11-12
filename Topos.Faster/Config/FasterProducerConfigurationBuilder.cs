@@ -6,7 +6,7 @@ namespace Topos.Config
     public class FasterProducerConfigurationBuilder
     {
         readonly Dictionary<string, TimeSpan> _maxAges = new Dictionary<string, TimeSpan>();
-        
+
         internal IEnumerable<KeyValuePair<string, TimeSpan>> GetMaxAges() => _maxAges;
 
         /// <summary>
