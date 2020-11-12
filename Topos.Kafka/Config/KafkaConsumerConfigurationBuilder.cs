@@ -14,10 +14,14 @@ namespace Topos.Config
     {
         static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = new Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[0];
 
+        /// <summary>
+        /// Adds a <see cref="ConsumerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
+        /// used to build the consumer
+        /// </summary>
+        public static void AddCustomizer(KafkaConsumerConfigurationBuilder builder, Func<ConsumerConfig, ConsumerConfig> customizer) => builder._customizers.Add(customizer);
+
         readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new List<Func<ConsumerConfig, ConsumerConfig>>();
-
-        internal void AddCustomizer(Func<ConsumerConfig, ConsumerConfig> customizer) => _customizers.Add(customizer);
-
+        
         /// <summary>
         /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
         /// </summary>

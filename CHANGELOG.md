@@ -126,6 +126,9 @@
 ## 0.0.84
 * Reduce waiting time in message handler loops by using a semaphore to signal that there's work to do
 
+## 0.0.85
+* Open for adding Kafka consumer/producer customizers from the outside
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

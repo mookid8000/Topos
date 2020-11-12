@@ -12,7 +12,7 @@ namespace Topos.Config
         /// </summary>
         public static KafkaProducerConfigurationBuilder WithConfluentCloud(this KafkaProducerConfigurationBuilder builder, string key, string secret)
         {
-            builder.AddCustomizer(config =>
+            KafkaProducerConfigurationBuilder.AddCustomizer(builder, config =>
             {
                 config.SaslUsername = key;
                 config.SaslPassword = secret;
@@ -33,20 +33,20 @@ namespace Topos.Config
         /// </summary>
         public static KafkaConsumerConfigurationBuilder WithConfluentCloud(this KafkaConsumerConfigurationBuilder builder, string key, string secret)
         {
-            builder.AddCustomizer(config =>
-            {
-                config.SaslUsername = key;
-                config.SaslPassword = secret;
-                
-                config.SessionTimeoutMs = 6000;
-                config.SecurityProtocol = SecurityProtocol.SaslSsl;
-                config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = false;
+            KafkaConsumerConfigurationBuilder.AddCustomizer(builder, config =>
+             {
+                 config.SaslUsername = key;
+                 config.SaslPassword = secret;
+
+                 config.SessionTimeoutMs = 6000;
+                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
+                 config.SaslMechanism = SaslMechanism.Plain;
+                 config.EnableSslCertificateVerification = false;
 
                 //config.Set("connections.max.idle.ms", "60000");
 
                 return config;
-            });
+             });
 
             return builder;
         }

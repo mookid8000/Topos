@@ -8,9 +8,13 @@ namespace Topos.Config
 {
     public class KafkaProducerConfigurationBuilder
     {
-        readonly List<Func<ProducerConfig, ProducerConfig>> _customizers = new List<Func<ProducerConfig, ProducerConfig>>();
+        /// <summary>
+        /// Adds a <see cref="ProducerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
+        /// used to build the producer
+        /// </summary>
+        public static void AddCustomizer(KafkaProducerConfigurationBuilder builder, Func<ProducerConfig, ProducerConfig> customizer) => builder._customizers.Add(customizer);
 
-        internal void AddCustomizer(Func<ProducerConfig, ProducerConfig> customizer) => _customizers.Add(customizer);
+        readonly List<Func<ProducerConfig, ProducerConfig>> _customizers = new List<Func<ProducerConfig, ProducerConfig>>();
 
         internal ProducerConfig Apply(ProducerConfig config)
         {
@@ -29,7 +33,7 @@ namespace Topos.Config
                 config.SaslMechanism = SaslMechanism.Plain;
                 config.EnableSslCertificateVerification = false;
             });
-            
+
             return config;
         }
     }
