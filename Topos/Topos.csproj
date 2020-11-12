@@ -5,6 +5,7 @@
     <Company>Rebus FM</Company>
     <Authors>mookid8000</Authors>
     <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
