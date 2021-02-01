@@ -146,6 +146,7 @@
 * Update Confluent.Kafka to 1.5.3
 * Update Microsoft.FASTER.Core to 1.8.0
 * Update MongoDB.Driver to 2.11.6
+* Update protobuf-net to 3.0.73
 
 ---
 

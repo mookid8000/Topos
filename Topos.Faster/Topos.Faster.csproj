@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard20;net50</TargetFrameworks>
     <Company>Rebus FM</Company>
     <Authors>mookid8000</Authors>
     <RootNamespace>Topos</RootNamespace>
@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.FASTER.Core" Version="1.8.0" />
-    <PackageReference Include="protobuf-net" Version="3.0.52" />
+    <PackageReference Include="protobuf-net" Version="3.0.73" />
   </ItemGroup>
 
   <ItemGroup>
