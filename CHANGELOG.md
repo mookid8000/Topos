@@ -142,6 +142,11 @@
 ## 0.0.88
 * Add license info to NuGet package of main lib
 
+## 0.0.89
+* Update Confluent.Kafka to 1.5.3
+* Update Microsoft.FASTER.Core to 1.8.0
+* Update MongoDB.Driver to 2.11.6
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
