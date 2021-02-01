@@ -36,7 +36,7 @@ namespace Topos.Kafka
         bool _disposed;
 
         public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics,
-            string @group,
+            string group,
             IConsumerDispatcher consumerDispatcher, IPositionManager positionManager,
             ConsumerContext context,
             Func<ConsumerConfig, ConsumerConfig> configurationCustomizer,
@@ -236,7 +236,6 @@ namespace Topos.Kafka
                     if (!_worker.Join(TimeSpan.FromSeconds(5)))
                     {
                         _logger.Error("Kafka consumer worker for group {consumerGroup} did not finish executing within 5 s", _group);
-                        _worker.Abort();
                     }
                 }
             }
