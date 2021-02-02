@@ -311,7 +311,7 @@ but got
                 {
                     var receivedString = messages.Select(m => m.Body).FirstOrDefault() as string;
 
-                    if (receivedString == "HEJ MED DIG MIN VEN")
+                    if (string.Equals(receivedString, "HEJ MED DIG MIN VEN", StringComparison.Ordinal))
                     {
                         gotTheString.Set();
                         return;
