@@ -35,17 +35,15 @@ namespace Topos.Internals
 
         public static IEnumerable<TopicPartitionOffset> PartitionsAssigned(
             ILogger logger,
-            IEnumerable<TopicPartition> partitions,
+            IReadOnlyList<TopicPartition> partitions,
             IPositionManager positionManager,
             Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler,
             ConsumerContext context
         )
         {
-            var partitionsList = partitions.ToList();
+            if (!partitions.Any()) return Enumerable.Empty<TopicPartitionOffset>();
 
-            if (!partitionsList.Any()) return Enumerable.Empty<TopicPartitionOffset>();
-
-            var partitionsByTopic = partitionsList
+            var partitionsByTopic = partitions
                 .GroupBy(p => p.Topic)
                 .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                 .ToList();
@@ -54,12 +52,12 @@ namespace Topos.Internals
 
             if (partitionsAssignedHandler != null)
             {
-                AsyncHelpers.RunSync(() => partitionsAssignedHandler(context, partitionsList));
+                AsyncHelpers.RunSync(() => partitionsAssignedHandler(context, partitions));
             }
 
             return AsyncHelpers.GetAsync(async () =>
             {
-                var results = await partitionsList
+                var results = await partitions
                     .Select(async tp => new
                     {
                         TopicPartition = tp,
@@ -71,7 +69,7 @@ namespace Topos.Internals
                     .Select(a =>
                     {
                         if (a.Position.IsDefault) return a.TopicPartition.WithOffset(Offset.Beginning);
-                        
+
                         if (a.Position.IsOnlyNew) return a.TopicPartition.WithOffset(Offset.End);
 
                         return a.Position.Advance(1).ToTopicPartitionOffset();
@@ -81,18 +79,16 @@ namespace Topos.Internals
         }
 
         public static void PartitionsRevoked(ILogger logger,
-            List<TopicPartitionOffset> partitions,
+            IReadOnlyList<TopicPartitionOffset> partitions,
             IConsumerDispatcher consumerDispatcher,
             Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
             ConsumerContext context)
         {
-            var partitionsList = partitions.ToList();
-
-            if (!partitionsList.Any()) return;
+            if (!partitions.Any()) return;
 
             AsyncHelpers.RunSync(async () =>
             {
-                var partitionsByTopic = partitionsList
+                var partitionsByTopic = partitions
                     .GroupBy(p => p.Topic)
                     .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                     .ToList();
@@ -101,7 +97,7 @@ namespace Topos.Internals
 
                 if (partitionsRevokedHandler != null)
                 {
-                    await partitionsRevokedHandler(context, partitionsList.Select(p => p.TopicPartition));
+                    await partitionsRevokedHandler(context, partitions.Select(p => p.TopicPartition));
                 }
 
                 foreach (var revocation in partitionsByTopic)

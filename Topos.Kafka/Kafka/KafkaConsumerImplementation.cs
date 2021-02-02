@@ -95,8 +95,8 @@ namespace Topos.Kafka
             var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
-                .SetPartitionsAssignedHandler((cns, partitions) => PartitionsAssigned(_logger, partitions, _positionManager, _partitionsAssignedHandler, _context))
-                .SetPartitionsRevokedHandler((cns, partitions) => PartitionsRevoked(_logger, partitions, _consumerDispatcher, _partitionsRevokedHandler, _context))
+                .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
+                .SetPartitionsRevokedHandler((_, partitions) => PartitionsRevoked(_logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context))
                 .Build();
 
             var topicsToSubscribeTo = new HashSet<string>(_topics);
@@ -136,8 +136,9 @@ namespace Topos.Kafka
                     {
                         consumer.Close();
                     }
-                    catch
+                    catch (Exception exception)
                     {
+                        _logger.Warn(exception, "An error occurred when closing consumer");
                     }
 
                     _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
@@ -150,9 +151,10 @@ namespace Topos.Kafka
             try
             {
                 var consumeResult = consumer.Consume(cancellationToken);
-                if (consumeResult == null)
+
+                if (consumeResult == null || consumeResult.IsPartitionEOF)
                 {
-                    Thread.Sleep(100); //< chill (but it should not happen)
+                    Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).Wait(cancellationToken); //< chill (but it should not happen)
                     return;
                 }
 
@@ -181,7 +183,6 @@ namespace Topos.Kafka
                 );
 
                 _logger.Debug("Received event {position}", position);
-
                 _consumerDispatcher.Dispatch(message);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -195,15 +196,7 @@ namespace Topos.Kafka
             catch (Exception exception)
             {
                 _logger.Warn(exception, "Unhandled exception in Kafka consumer loop - waiting 30 s");
-
-                try
-                {
-                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken)
-                        .Wait(cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                }
+                Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
             }
         }
 

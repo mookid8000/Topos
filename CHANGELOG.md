@@ -148,6 +148,9 @@
 * Update MongoDB.Driver to 2.11.6
 * Update protobuf-net to 3.0.73
 
+## 0.0.90
+* Smaaaal adjustments
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
