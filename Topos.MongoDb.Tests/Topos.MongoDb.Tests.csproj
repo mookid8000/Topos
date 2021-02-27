@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="microsoft.net.test.sdk" Version="16.8.3" />
+    <PackageReference Include="microsoft.net.test.sdk" Version="16.9.1" />
     <PackageReference Include="mongodb.driver" Version="2.11.6" />
     <PackageReference Include="nunit" Version="3.13.1" />
     <PackageReference Include="nunit3testadapter" Version="3.17.0">
