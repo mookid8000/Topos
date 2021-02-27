@@ -153,6 +153,8 @@
 
 ## 0.0.91
 * Handle one particular exception
+* Update Kafka driver to 1.6.2
+* Update FASTER to 1.8.2
 
 ---
 
