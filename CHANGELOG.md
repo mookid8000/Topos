@@ -151,6 +151,9 @@
 ## 0.0.90
 * Smaaaal adjustments
 
+## 0.0.91
+* Handle one particular exception
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

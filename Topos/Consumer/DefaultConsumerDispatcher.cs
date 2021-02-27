@@ -114,6 +114,10 @@ namespace Topos.Consumer
             {
                 // it's ok, we're shutting down
             }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Error when flushing positions in revoke callback");
+            }
             finally
             {
                 _setPositionsSemaphore.Release();
