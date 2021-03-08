@@ -156,6 +156,11 @@
 * Update Kafka driver to 1.6.2
 * Update FASTER to 1.8.2
 
+## 0.0.92
+* Update MongoDB driver to 2.12.0
+* Update FASTER to 1.8.3
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
