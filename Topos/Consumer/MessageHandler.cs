@@ -12,6 +12,7 @@ using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleNamedExpression
+// ReSharper disable ArgumentsStyleAnonymousFunction
 
 namespace Topos.Consumer
 {
@@ -123,47 +124,42 @@ namespace Topos.Consumer
                 {
                     await _messagesSemaphore.DecrementAsync(cancellationToken);
 
-                    // IMPORTANT: The check for count must be first! Otherwise, we might pop a message and not add it to the batch... :|
-                    while (messageBatch.Count < _maximumBatchSize && _messages.TryDequeue(out var message))
+                    // while we still have room for messages
+                    while (messageBatch.Count < _maximumBatchSize)
                     {
+                        // break out if the queue is empty
+                        if (!_messages.TryDequeue(out var message)) break;
+
                         messageBatch.Add(message);
                     }
 
+                    // if we're under the minimum batch size, wait a short while before trying again
                     if (messageBatch.Count < _minimumBatchSize)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                        await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
                         continue;
                     }
 
-                    try
-                    {
-                        await _callbackPolicy.ExecuteAsync(token => _callback(messageBatch, _context, token), cancellationToken);
+                    // dispatch message batch to handlers
+                    await _callbackPolicy.ExecuteAsync(token => _callback(messageBatch, _context, token), cancellationToken);
 
-                        var maxPositionByPartition = messageBatch
-                            .GroupBy(m => new { m.Position.Topic, m.Position.Partition })
-                            .Select(a => new
-                            {
-                                a.Key.Topic,
-                                a.Key.Partition,
-                                Offset = a.Max(p => p.Position.Offset)
-                            })
-                            .ToList();
+                    var maxPositions = messageBatch
+                        .GroupBy(m => new { m.Position.Topic, m.Position.Partition })
+                        .Select(a => new Position(a.Key.Topic, a.Key.Partition, a.Max(p => p.Position.Offset)))
+                        .ToList();
 
-                        foreach (var max in maxPositionByPartition)
-                        {
-                            _positions.GetOrAdd(max.Topic, _ => new ConcurrentDictionary<int, long>())[max.Partition] = max.Offset;
-                        }
+                    foreach (var position in maxPositions)
+                    {
+                        var topicPositions = _positions.GetOrAdd(position.Topic, _ => new ConcurrentDictionary<int, long>());
 
-                        messageBatch.Clear();
+                        topicPositions.AddOrUpdate(
+                            key: position.Partition,
+                            addValue: position.Offset,
+                            updateValueFactory: (_, currentOffset) => Math.Max(position.Offset, currentOffset) //< ensure we'll never downwrite an offset
+                        );
                     }
-                    catch (OperationCanceledException) when (_cancellationTokenSource.IsCancellationRequested)
-                    {
-                        // it's ok, we're shutting down
-                    }
-                    catch (Exception exception)
-                    {
-                        _logger.Error(exception, "Critical error when handling messages");
-                    }
+
+                    messageBatch.Clear();
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -183,7 +179,7 @@ namespace Topos.Consumer
             // wait until queue is empty
             while (!token.IsCancellationRequested && _messages.Count > 0)
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), token);
+                await Task.Delay(TimeSpan.FromMilliseconds(200), token);
             }
 
             // wait a little while extra
@@ -193,19 +189,15 @@ namespace Topos.Consumer
         public void Clear(string topic, IEnumerable<int> partitionsList)
         {
             if (!_positions.TryGetValue(topic, out var positions)) return;
-            
+
             foreach (var partition in partitionsList)
             {
                 positions.TryRemove(partition, out _);
             }
         }
 
-        public IEnumerable<Position> GetPositions()
-        {
-            return _positions
-                .SelectMany(topic => topic.Value
-                    .Select(partition => new Position(topic.Key, partition.Key, partition.Value)));
-        }
+        public IEnumerable<Position> GetPositions() => _positions
+            .SelectMany(topic => topic.Value.Select(partition => new Position(topic.Key, partition.Key, partition.Value)));
 
         public void Dispose()
         {

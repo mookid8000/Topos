@@ -24,6 +24,7 @@ namespace Topos.Consumer
         readonly ILoggerFactory _loggerFactory;
         readonly MessageHandler[] _handlers;
         readonly Policy _dispatchPolicy;
+        readonly AsyncPolicy _flushPolicy;
         readonly ILogger _logger;
 
         bool _disposed;
@@ -42,6 +43,10 @@ namespace Topos.Consumer
             _dispatchPolicy = Policy
                 .Handle<Exception>(exception => !(exception is OperationCanceledException && _cancellationTokenSource.IsCancellationRequested)) //< let these exceptions bubble out when we're shutting down
                 .WaitAndRetryForever(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when dispatching message - waiting {delay} before trying again", delay));
+
+            _flushPolicy = Policy
+                .Handle<Exception>(exception => !(exception is OperationCanceledException && _cancellationTokenSource.IsCancellationRequested)) //< let these exceptions bubble out when we're shutting down
+                .WaitAndRetryForeverAsync(_ => TimeSpan.FromSeconds(30), (exception, delay) => _logger.Error(exception, "Error when flushing positions - waiting {delay} before trying again", delay));
         }
 
         public void Initialize()
@@ -54,7 +59,7 @@ namespace Topos.Consumer
                 handler.Start(logger, _consumerContext);
             }
 
-            _flusherLoopTask = Task.Run(async () => await RunPositionsFlusher());
+            _flusherLoopTask = Task.Run(RunPositionsFlusher);
         }
 
         public void Dispatch(ReceivedTransportMessage transportMessage)
@@ -126,23 +131,29 @@ namespace Topos.Consumer
 
         async Task RunPositionsFlusher()
         {
+            async Task DoFlush(CancellationToken cancellationToken)
+            {
+                await _setPositionsSemaphore.WaitAsync(cancellationToken);
+
+                try
+                {
+                    await SetPositions();
+                }
+                finally
+                {
+                    _setPositionsSemaphore.Release();
+                }
+            }
+
             var token = _cancellationTokenSource.Token;
+
             try
             {
                 while (!token.IsCancellationRequested)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1), token);
 
-                    await _setPositionsSemaphore.WaitAsync(token);
-
-                    try
-                    {
-                        await SetPositions();
-                    }
-                    finally
-                    {
-                        _setPositionsSemaphore.Release();
-                    }
+                    await _flushPolicy.ExecuteAsync(DoFlush, token);
                 }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -160,6 +171,7 @@ namespace Topos.Consumer
                 {
                     await SetPositions();
                 }
+                // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
             }
         }

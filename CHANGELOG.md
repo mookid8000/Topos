@@ -163,6 +163,9 @@
 ## 0.0.93
 * Add System.Text.Json serializer package
 
+## 0.0.94
+* Minor tweak aroud handling positions
+
 
 ---
 
