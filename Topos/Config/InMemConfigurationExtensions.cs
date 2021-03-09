@@ -9,7 +9,7 @@ namespace Topos.Config
         public static void UseInMemory(this StandardConfigurer<IProducerImplementation> configurer, InMemEventBroker eventBroker)
         {
             StandardConfigurer.Open(configurer)
-                .Register(c => new InMemProducerImplementation(eventBroker));
+                .Register(_ => new InMemProducerImplementation(eventBroker));
         }
 
         public static void UseInMemory(this StandardConfigurer<IConsumerImplementation> configurer, InMemEventBroker eventBroker)
@@ -30,7 +30,7 @@ namespace Topos.Config
         {
             var registrar = StandardConfigurer.Open(configurer);
 
-            registrar.Register(c => new InMemPositionsManager(positionsStorage ?? new InMemPositionsStorage()));
+            registrar.Register(_ => new InMemPositionsManager(positionsStorage ?? new InMemPositionsStorage()));
         }
     }
 }

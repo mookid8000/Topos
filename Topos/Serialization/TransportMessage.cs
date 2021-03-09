@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Topos.Consumer;
 
 namespace Topos.Serialization
 {
@@ -13,16 +12,6 @@ namespace Topos.Serialization
         {
             Headers = headers ?? throw new ArgumentNullException(nameof(headers));
             Body = body;
-        }
-    }
-
-    public class ReceivedTransportMessage : TransportMessage
-    {
-        public Position Position { get; }
-
-        public ReceivedTransportMessage(Position position, Dictionary<string, string> headers, byte[] body) : base(headers, body)
-        {
-            Position = position;
         }
     }
 }

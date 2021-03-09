@@ -200,17 +200,7 @@ namespace Topos.Kafka
             }
         }
 
-        static Dictionary<string, string> GetHeaders(Headers headers)
-        {
-            var dictionary = new Dictionary<string, string>();
-
-            foreach (var kvp in headers)
-            {
-                dictionary[kvp.Key] = Encoding.UTF8.GetString(kvp.GetValueBytes());
-            }
-
-            return dictionary;
-        }
+        static Dictionary<string, string> GetHeaders(Headers headers) => headers.ToDictionary(h => h.Key, h => Encoding.UTF8.GetString(h.GetValueBytes()));
 
         public void Dispose()
         {

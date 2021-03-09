@@ -13,7 +13,7 @@ namespace Topos.Config
 
             var registrar = StandardConfigurer.Open(configurer);
 
-            registrar.Register(c => new FileSystemPositionsManager(directoryPath));
+            registrar.Register(_ => new FileSystemPositionsManager(directoryPath));
         }
     }
 }

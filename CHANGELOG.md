@@ -160,6 +160,9 @@
 * Update MongoDB driver to 2.12.0
 * Update FASTER to 1.8.3
 
+## 0.0.93
+* Add System.Text.Json serializer package
+
 
 ---
 
