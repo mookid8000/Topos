@@ -33,7 +33,7 @@ namespace Topos.PostgreSql
             await connection.OpenAsync();
 
             var query = @"
-              INSERT INTO topos.kafka_position (
+              INSERT INTO topos.position_manager (
                 consumer_group,
                 topic,
                 partition,
@@ -47,9 +47,9 @@ namespace Topos.PostgreSql
               UPDATE SET
                   position = @position
               WHERE
-                  topos.kafka_position.consumer_group = @consumer_group AND
-                  topos.kafka_position.topic = @topic AND
-                  topos.kafka_position.partition = @partition
+                  topos.position_manager.consumer_group = @consumer_group AND
+                  topos.position_manager.topic = @topic AND
+                  topos.position_manager.partition = @partition
             ";
 
             using var cmd = new NpgsqlCommand(query, connection);
@@ -75,7 +75,7 @@ namespace Topos.PostgreSql
 
             var getPositionQuery = @"
               SELECT position
-              FROM topos.kafka_position
+              FROM topos.position_manager
               WHERE
                     consumer_group = @consumer_group AND
                     topic = @topic AND
@@ -103,7 +103,7 @@ namespace Topos.PostgreSql
         {
             var schemaSetup = @"
                     CREATE SCHEMA topos;
-                    CREATE TABLE topos.kafka_position (
+                    CREATE TABLE topos.position_manager (
                         consumer_group varchar(255),
                         topic varchar(255),
                         partition integer,
@@ -115,7 +115,6 @@ namespace Topos.PostgreSql
             await connection.OpenAsync();
 
             using var transaction = await connection.BeginTransactionAsync();
-
             using var cmd = new NpgsqlCommand(schemaSetup, connection, transaction);
 
             var result = await cmd.ExecuteNonQueryAsync();
