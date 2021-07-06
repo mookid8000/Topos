@@ -61,9 +61,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.SystemTextJson", "Top
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.SystemTextJson.Tests", "Topos.SystemTextJson.Tests\Topos.SystemTextJson.Tests.csproj", "{5C74171A-8A86-4E1F-803A-74F7E811FBA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.PostgreSql", "Topos.PostgreSql\Topos.PostgreSql.csproj", "{17AC8EF1-FCCA-40F4-910D-B358B35A0EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.PostgreSql", "Topos.PostgreSql\Topos.PostgreSql.csproj", "{17AC8EF1-FCCA-40F4-910D-B358B35A0EAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topos.PostgreSql.Tests", "Topos.PostgreSql.Tests\Topos.PostgreSql.Tests.csproj", "{0F8E21BF-FF3D-4D56-AA2E-BCAF56D25012}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos.PostgreSql.Tests", "Topos.PostgreSql.Tests\Topos.PostgreSql.Tests.csproj", "{0F8E21BF-FF3D-4D56-AA2E-BCAF56D25012}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgresql", "postgresql", "{433BF58D-7550-40DB-BF51-210A08CEA343}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -171,6 +173,8 @@ Global
 		{9D07C4BE-8FDA-4F8C-9785-4B9AC43A7D10} = {26DE6D8A-3567-41FD-9249-22D01AA20BE7}
 		{D474EA8C-B752-4A31-9ED1-D4A268F74243} = {C2AA7F9B-EBF1-4BF6-A4F4-3CC32DA5907F}
 		{5C74171A-8A86-4E1F-803A-74F7E811FBA2} = {C2AA7F9B-EBF1-4BF6-A4F4-3CC32DA5907F}
+		{17AC8EF1-FCCA-40F4-910D-B358B35A0EAC} = {433BF58D-7550-40DB-BF51-210A08CEA343}
+		{0F8E21BF-FF3D-4D56-AA2E-BCAF56D25012} = {433BF58D-7550-40DB-BF51-210A08CEA343}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F89951B-C638-43F3-BEC1-70A5F8338E10}

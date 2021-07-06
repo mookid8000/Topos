@@ -166,6 +166,8 @@
 ## 0.0.94
 * Minor tweak aroud handling positions
 
+## 0.0.95
+* Add PostgreSQL-based position manager - thanks [runeanielsen]
 
 ---
 
