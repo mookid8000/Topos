@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="newtonsoft.json" Version="12.0.3" />
-    <PackageReference Include="nunit" Version="3.13.1" />
+    <PackageReference Include="nunit" Version="3.13.2" />
     <PackageReference Include="testy" Version="0.3.0" />
   </ItemGroup>
 

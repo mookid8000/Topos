@@ -168,6 +168,7 @@
 
 ## 0.0.95
 * Add PostgreSQL-based position manager - thanks [runeanielsen]
+* Update Kafka driver to 1.7.0/
 
 ---
 
