@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.5" />
-    <PackageReference Include="microsoft.azure.storage.blob" Version="11.2.2" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="11.2.3" />
   </ItemGroup>
 
   <ItemGroup>

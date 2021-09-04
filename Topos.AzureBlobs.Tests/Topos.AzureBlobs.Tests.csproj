@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.azure.keyvault.core" Version="3.0.5" />
-    <PackageReference Include="microsoft.azure.storage.blob" Version="11.2.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="microsoft.azure.storage.blob" Version="11.2.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="nunit" Version="3.13.2" />
     <PackageReference Include="nunit3testadapter" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
