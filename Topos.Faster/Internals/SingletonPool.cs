@@ -6,7 +6,7 @@ namespace Topos.Internals
 {
     public class SingletonPool
     {
-        static readonly ConcurrentDictionary<string, PooledObject> _pool = new ConcurrentDictionary<string, PooledObject>();
+        static readonly ConcurrentDictionary<string, PooledObject> _pool = new();
 
         public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
         {
@@ -60,14 +60,12 @@ namespace Topos.Internals
 
         class PooledObject
         {
-            public static PooledObject New(Func<IDisposable> factory)
-            {
-                return new PooledObject(new Lazy<IDisposable>(factory), 0, factory);
-            }
+            public static PooledObject New(Func<IDisposable> factory) => new(new Lazy<IDisposable>(factory), 0, factory);
 
             public Lazy<IDisposable> LazyObject { get; private set; }
 
             public int ReferenceCount { get; }
+            
             public Func<IDisposable> OriginalFactory { get; }
 
             public PooledObject(Lazy<IDisposable> lazyObject, int referenceCount, Func<IDisposable> originalFactory)
@@ -77,9 +75,9 @@ namespace Topos.Internals
                 OriginalFactory = originalFactory;
             }
 
-            public PooledObject Increment() => new PooledObject(LazyObject, ReferenceCount + 1, OriginalFactory);
+            public PooledObject Increment() => new(LazyObject, ReferenceCount + 1, OriginalFactory);
             
-            public PooledObject Decrement() => new PooledObject(LazyObject, ReferenceCount - 1, OriginalFactory);
+            public PooledObject Decrement() => new(LazyObject, ReferenceCount - 1, OriginalFactory);
 
             public void MaybeDispose()
             {

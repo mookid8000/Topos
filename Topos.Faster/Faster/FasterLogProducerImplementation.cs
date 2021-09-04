@@ -17,9 +17,9 @@ namespace Topos.Faster
 {
     class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     {
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        readonly ConcurrentQueue<WriteTask> _writeTasks = new ConcurrentQueue<WriteTask>();
-        readonly AsyncSemaphore _queueItems = new AsyncSemaphore(initialCount: 0, maxCount: int.MaxValue);
+        readonly CancellationTokenSource _cancellationTokenSource = new();
+        readonly ConcurrentQueue<WriteTask> _writeTasks = new();
+        readonly AsyncSemaphore _queueItems = new(initialCount: 0, maxCount: int.MaxValue);
         readonly EventExpirationHelper _eventExpirationHelper;
         readonly ILogEntrySerializer _logEntrySerializer;
         readonly IDeviceManager _deviceManager;
@@ -187,7 +187,7 @@ namespace Topos.Faster
 
         class WriteTask
         {
-            readonly TaskCompletionSource<object> _taskCompletionSource = new TaskCompletionSource<object>();
+            readonly TaskCompletionSource<object> _taskCompletionSource = new();
 
             public string Topic { get; }
             public string PartitionKey { get; }

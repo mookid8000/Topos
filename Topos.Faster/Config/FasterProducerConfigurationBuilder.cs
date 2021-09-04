@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+// ReSharper disable UnusedMember.Global
 
 namespace Topos.Config
 {
     public class FasterProducerConfigurationBuilder
     {
-        readonly Dictionary<string, TimeSpan> _maxAges = new Dictionary<string, TimeSpan>();
+        readonly Dictionary<string, TimeSpan> _maxAges = new();
 
         internal IEnumerable<KeyValuePair<string, TimeSpan>> GetMaxAges() => _maxAges;
 

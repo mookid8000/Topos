@@ -16,8 +16,8 @@ namespace Topos.Internals
     {
         public static readonly TimeSpan DefaultMaxAge = TimeSpan.FromDays(7.1);
 
-        readonly ConcurrentDictionary<string, Lazy<Task>> _compactionTasks = new ConcurrentDictionary<string, Lazy<Task>>();
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        readonly ConcurrentDictionary<string, Lazy<Task>> _compactionTasks = new();
+        readonly CancellationTokenSource _cancellationTokenSource = new();
         readonly ConcurrentDictionary<string, TimeSpan> _maxEventAgePerTopic;
         readonly ILogEntrySerializer _logEntrySerializer;
         readonly IDeviceManager _deviceManager;

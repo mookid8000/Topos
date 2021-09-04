@@ -12,7 +12,7 @@ namespace Topos.Faster
 {
     class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
     {
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        readonly CancellationTokenSource _cancellationTokenSource = new();
         readonly ILogEntrySerializer _logEntrySerializer;
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;

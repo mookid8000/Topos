@@ -8,6 +8,7 @@ using Topos.Internals;
 using Topos.Logging;
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
+// ReSharper disable UnusedMember.Global
 
 namespace Topos.Config
 {
