@@ -12,8 +12,8 @@ namespace Topos.Internals
 {
     class DefaultDeviceManager : IInitializable, IDisposable, IDeviceManager
     {
-        readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new ConcurrentDictionary<string, Lazy<FasterLog>>();
-        readonly Disposables _disposables = new Disposables();
+        readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new();
+        readonly Disposables _disposables = new();
         readonly string _directoryPath;
         readonly ILogger _logger;
 
@@ -87,6 +87,6 @@ namespace Topos.Internals
             }
         }
 
-        public void Dispose() => _disposables?.Dispose();
+        public void Dispose() => _disposables.Dispose();
     }
 }
