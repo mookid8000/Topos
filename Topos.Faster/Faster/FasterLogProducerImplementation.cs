@@ -82,7 +82,7 @@ namespace Topos.Faster
 
                     if (!tasks.Any()) continue;
 
-                    await Write(tasks);
+                    await Write(tasks, cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -97,19 +97,20 @@ namespace Topos.Faster
             _logger.Debug("Stopped FasterLog serialized writer task");
         }
 
-        async Task Write(IEnumerable<WriteTask> tasks)
+        async Task Write(IEnumerable<WriteTask> tasks, CancellationToken cancellationToken)
         {
             await Task.WhenAll(
                 tasks
                     .GroupBy(t => t.Topic)
                     .Select(async group => await Task.Run(async () => Write(
                         topic: group.Key,
-                        tasks: group.ToList()
-                    )))
+                        tasks: group.ToList(),
+                        cancellationToken: cancellationToken
+                    ), cancellationToken))
             );
         }
 
-        async Task Write(string topic, IReadOnlyList<WriteTask> tasks)
+        async Task Write(string topic, IReadOnlyList<WriteTask> tasks, CancellationToken cancellationToken)
         {
             try
             {
@@ -117,10 +118,15 @@ namespace Topos.Faster
 
                 for (var index = 0; index < tasks.Count; index++)
                 {
-                    Write(log, tasks[index]);
+                    foreach (var transportMessage in tasks[index].TransportMessages)
+                    {
+                        var bytes = _logEntrySerializer.Serialize(transportMessage);
+
+                        await log.EnqueueAsync(bytes, cancellationToken);
+                    }
                 }
 
-                await log.CommitAsync();
+                await log.CommitAsync(cancellationToken);
 
                 for (var index = 0; index < tasks.Count; index++)
                 {
