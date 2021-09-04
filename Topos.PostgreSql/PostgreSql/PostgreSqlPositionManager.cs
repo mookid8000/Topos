@@ -29,7 +29,8 @@ namespace Topos.PostgreSql
 
         public async Task Set(Position position)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
+            
             await connection.OpenAsync();
 
             var query = @"
@@ -52,7 +53,7 @@ namespace Topos.PostgreSql
                   topos.position_manager.partition = @partition
             ";
 
-            using var cmd = new NpgsqlCommand(query, connection);
+            await using var cmd = new NpgsqlCommand(query, connection);
 
             cmd.Parameters.AddWithValue("@consumer_group", _consumerGroup);
             cmd.Parameters.AddWithValue("@topic", position.Topic);
@@ -70,7 +71,8 @@ namespace Topos.PostgreSql
 
         public async Task<Position> Get(string topic, int partition)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
+            
             await connection.OpenAsync();
 
             var getPositionQuery = @"
@@ -82,7 +84,7 @@ namespace Topos.PostgreSql
                     partition = @partition
             ";
 
-            using var cmd = new NpgsqlCommand(getPositionQuery, connection);
+            await using var cmd = new NpgsqlCommand(getPositionQuery, connection);
 
             cmd.Parameters.AddWithValue("@consumer_group", _consumerGroup);
             cmd.Parameters.AddWithValue("@topic", topic);
@@ -111,11 +113,11 @@ namespace Topos.PostgreSql
                         PRIMARY KEY(consumer_group, topic, partition)
                      );";
 
-            using var connection = new NpgsqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var transaction = await connection.BeginTransactionAsync();
-            using var cmd = new NpgsqlCommand(schemaSetup, connection, transaction);
+            await using var transaction = await connection.BeginTransactionAsync();
+            await using var cmd = new NpgsqlCommand(schemaSetup, connection, transaction);
 
             var result = await cmd.ExecuteNonQueryAsync();
             if (result == 0)
@@ -123,10 +125,8 @@ namespace Topos.PostgreSql
                 await transaction.RollbackAsync();
                 throw new Exception("Failed setting up schema and table");
             }
-            else
-            {
-                await transaction.CommitAsync();
-            }
+
+            await transaction.CommitAsync();
         }
 
         private async Task<bool> SchemaExist()
@@ -134,10 +134,10 @@ namespace Topos.PostgreSql
             var schemaExistsQuery =
                 "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'topos'";
 
-            using var connection = new NpgsqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            using var cmd = new NpgsqlCommand(schemaExistsQuery, connection);
+            await using var cmd = new NpgsqlCommand(schemaExistsQuery, connection);
 
             var result = await cmd.ExecuteScalarAsync();
 
