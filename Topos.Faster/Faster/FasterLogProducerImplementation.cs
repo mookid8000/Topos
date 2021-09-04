@@ -102,7 +102,7 @@ namespace Topos.Faster
             await Task.WhenAll(
                 tasks
                     .GroupBy(t => t.Topic)
-                    .Select(async group => await Task.Run(async () => Write(
+                    .Select(async group => await Task.Run(async () => await Write(
                         topic: group.Key,
                         tasks: group.ToList(),
                         cancellationToken: cancellationToken
