@@ -172,6 +172,7 @@
 
 ## 0.0.96
 * Update some packages
+* Update FASTER to 1.8.4
 
 ---
 
