@@ -92,7 +92,7 @@ namespace Topos.Kafka
                 consumerConfig = _configurationCustomizer(consumerConfig);
             }
 
-            var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
+            using var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
                 .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
                 .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
                 .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
@@ -109,41 +109,38 @@ namespace Topos.Kafka
 
             _logger.Info("Starting Kafka consumer worker for group {consumerGroup}", _group);
 
-            using (consumer)
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    TryProcessNextMessage(consumer, cancellationToken);
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // it's alright
+            }
+            catch (ThreadAbortException)
+            {
+                _logger.Warn("Kafka consumer worker aborted!");
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Unhandled exception in Kafka consumer");
+            }
+            finally
             {
                 try
                 {
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        TryProcessNextMessage(consumer, cancellationToken);
-                    }
+                    consumer.Close();
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                catch (Exception)
                 {
-                    // it's alright
                 }
-                catch (ThreadAbortException)
-                {
-                    _logger.Warn("Kafka consumer worker aborted!");
-                }
-                catch (Exception exception)
-                {
-                    _logger.Error(exception, "Unhandled exception in Kafka consumer");
-                }
-                finally
-                {
-                    try
-                    {
-                        consumer.Close();
-                    }
-                    catch (Exception exception)
-                    {
-                        _logger.Warn(exception, "An error occurred when closing consumer");
-                    }
 
-                    _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
-                }
+                _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
             }
+
         }
 
         void TryProcessNextMessage(IConsumer<string, byte[]> consumer, CancellationToken cancellationToken)
@@ -196,7 +193,14 @@ namespace Topos.Kafka
             catch (Exception exception)
             {
                 _logger.Warn(exception, "Unhandled exception in Kafka consumer loop - waiting 30 s");
-                Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
+                try
+                {
+                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // it's alright
+                }
             }
         }
 

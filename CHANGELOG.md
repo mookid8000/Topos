@@ -174,6 +174,9 @@
 * Update some packages
 * Update FASTER to 1.8.4
 
+## 0.0.97
+* Minor tweaks around disposal of things
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

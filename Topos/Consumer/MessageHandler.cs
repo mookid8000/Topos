@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Polly;
 using Polly.Retry;
 using Topos.Config;
+using Topos.Extensions;
 using Topos.Helpers;
 using Topos.Logging;
 using Topos.Logging.Null;
@@ -210,7 +211,7 @@ namespace Topos.Consumer
                 {
                     Stop();
 
-                    if (!_task.Wait(TimeSpan.FromSeconds(5)))
+                    if (!_task.WaitSafe(TimeSpan.FromSeconds(5)))
                     {
                         _logger.Warn("Message handler worker task did not stop within 5 s timeout");
                     }

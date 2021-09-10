@@ -24,7 +24,9 @@ namespace Topos.PostgreSql
             _consumerGroup = consumerGroup;
 
             if (!SchemaExist().Result)
+            {
                 InitSchema().Wait();
+            }
         }
 
         public async Task Set(Position position)

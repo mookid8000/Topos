@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Polly;
+using Topos.Extensions;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
@@ -74,7 +75,7 @@ namespace Topos.Consumer
 
                     while (!handler.IsReadyForMore)
                     {
-                        Task.Delay(TimeSpan.FromSeconds(1), token).Wait(token);
+                        Task.Delay(TimeSpan.FromSeconds(1), token).WaitSafe(token);
                     }
 
                     handler.Enqueue(receivedLogicalMessage);
@@ -226,7 +227,7 @@ namespace Topos.Consumer
 
                 if (_flusherLoopTask != null)
                 {
-                    if (!_flusherLoopTask.Wait(TimeSpan.FromSeconds(3)))
+                    if (!_flusherLoopTask.WaitSafe(TimeSpan.FromSeconds(3)))
                     {
                         _logger.Warn("Positions flusher loop did not exit/finish committing the last position within 3 s timeout - positions may not have been properly committed");
                     }

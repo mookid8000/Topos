@@ -143,7 +143,7 @@ namespace Topos.Internals
 
                 var timeout = TimeSpan.FromSeconds(4);
 
-                if (!Task.WhenAll(compactionTasks).Wait(timeout))
+                if (!Task.WhenAll(compactionTasks).WaitSafe(timeout))
                 {
                     _logger.Warn("One or more compaction tasks did not exit within timeout {timeout}", timeout);
                 }
@@ -154,8 +154,6 @@ namespace Topos.Internals
             {
                 _compactionTasks.Clear();
             }
-
-
         }
     }
 }

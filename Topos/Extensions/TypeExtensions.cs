@@ -6,8 +6,8 @@ namespace Topos.Extensions
 {
     public static class TypeExtensions
     {
-        static readonly ConcurrentDictionary<Type, string> TypeNameCache = new ConcurrentDictionary<Type, string>();
-        static readonly ConcurrentDictionary<string, Type> TypeCache = new ConcurrentDictionary<string, Type>();
+        static readonly ConcurrentDictionary<Type, string> TypeNameCache = new();
+        static readonly ConcurrentDictionary<string, Type> TypeCache = new();
 
         public static string GetSimpleAssemblyQualifiedTypeName(this Type type)
         {

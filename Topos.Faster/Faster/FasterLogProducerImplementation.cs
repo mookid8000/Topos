@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FASTER.core;
 using Topos.Consumer;
+using Topos.Extensions;
 using Topos.Helpers;
 using Topos.Internals;
 using Topos.Logging;
@@ -167,7 +168,7 @@ namespace Topos.Faster
 
                 var timeout = TimeSpan.FromSeconds(4);
 
-                if (!_writer.Wait(timeout))
+                if (!_writer.WaitSafe(timeout))
                 {
                     _logger.Warn("Background writer task did not exit within timeout of {timeout}", timeout);
                 }

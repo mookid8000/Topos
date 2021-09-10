@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FASTER.core;
 using Topos.Consumer;
+using Topos.Extensions;
 using Topos.Logging;
 using Topos.Serialization;
 
@@ -141,7 +142,7 @@ namespace Topos.Faster
 
                 var timeout = TimeSpan.FromSeconds(4);
 
-                if (!Task.WhenAll(_workers.ToArray()).Wait(timeout))
+                if (!Task.WhenAll(_workers.ToArray()).WaitSafe(timeout))
                 {
                     _logger.Warn("One or more background consumer tasks did not exit within timeout of {timeout}", timeout);
                 }
