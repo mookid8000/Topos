@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Topos.Config;
 using Topos.Consumer;
 using Topos.Logging;
+#pragma warning disable 1998
 
 namespace Topos.InMem
 {

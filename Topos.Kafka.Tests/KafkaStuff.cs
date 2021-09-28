@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Topos.Logging.Console;
 using Topos.Tests;
+#pragma warning disable 1998
 
 namespace Topos.Kafka.Tests
 {
