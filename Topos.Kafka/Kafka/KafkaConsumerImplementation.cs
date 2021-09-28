@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Config;
 using Topos.Consumer;
+using Topos.Extensions;
 using Topos.Logging;
 using Topos.Serialization;
 using static Topos.Internals.Callbacks;
@@ -88,11 +89,7 @@ namespace Topos.Kafka
                 {
                     _logger.Error(exception, "Unhandled exception in thread worker loop of group {consumerGroup} - waiting 30 s before resuming", _group);
 
-                    try
-                    {
-                        Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
-                    }
-                    catch { }
+                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).WaitSafe(cancellationToken);
                 }
             }
         }
@@ -217,14 +214,7 @@ namespace Topos.Kafka
             catch (Exception exception)
             {
                 _logger.Warn(exception, "Unhandled exception in Kafka consumer loop - waiting 30 s");
-                try
-                {
-                    Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // it's alright
-                }
+                Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).WaitSafe(cancellationToken);
             }
         }
 

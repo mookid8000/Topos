@@ -12,6 +12,10 @@ namespace Topos.Extensions
             {
                 return task.Wait((int)timeout.TotalMilliseconds, cancellationToken);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return true;
+            }
             catch (Exception) when (task.Status == TaskStatus.Canceled)
             {
                 return true;
@@ -23,11 +27,14 @@ namespace Topos.Extensions
             try
             {
                 task.Wait(cancellationToken);
-
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // no problem
             }
             catch (Exception) when (task.Status == TaskStatus.Canceled)
             {
-
+                // no problem
             }
         }
     }
