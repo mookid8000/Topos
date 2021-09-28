@@ -19,10 +19,10 @@ namespace Topos.Kafka
 {
     public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     {
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsAssignedHandler;
         readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsRevokedHandler;
         readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
+        readonly CancellationTokenSource _cancellationTokenSource = new();
         readonly IConsumerDispatcher _consumerDispatcher;
         readonly IPositionManager _positionManager;
         readonly StartFromPosition _startPosition;
@@ -72,6 +72,33 @@ namespace Topos.Kafka
 
         void Run()
         {
+            var cancellationToken = _cancellationTokenSource.Token;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    InnerRun(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // it's fine
+                }
+                catch (Exception exception)
+                {
+                    _logger.Error(exception, "Unhandled exception in thread worker loop of group {consumerGroup} - waiting 30 s before resuming", _group);
+
+                    try
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).Wait(cancellationToken);
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        void InnerRun(CancellationToken cancellationToken)
+        {
             var consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = _address,
@@ -104,8 +131,6 @@ namespace Topos.Kafka
             _logger.Info("Kafka consumer for group {consumerGroup} subscribing to topics: {topics}", _group, topicsToSubscribeTo);
 
             consumer.Subscribe(topicsToSubscribeTo);
-
-            var cancellationToken = _cancellationTokenSource.Token;
 
             _logger.Info("Starting Kafka consumer worker for group {consumerGroup}", _group);
 
@@ -140,7 +165,6 @@ namespace Topos.Kafka
 
                 _logger.Info("Kafka consumer worker for group {consumerGroup} stopped", _group);
             }
-
         }
 
         void TryProcessNextMessage(IConsumer<string, byte[]> consumer, CancellationToken cancellationToken)

@@ -177,6 +177,9 @@
 ## 0.0.97
 * Minor tweaks around disposal of things
 
+## 0.0.98
+* Update Confluent.Kafka to 1.8.1
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
