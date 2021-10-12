@@ -16,7 +16,7 @@ var producer = Configure
 Using(producer);
 
 // send events like this:;
-await producer.Send("someeents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
+await producer.Send("someevents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
 ```
 
 Let's go through the different configuration parts:
