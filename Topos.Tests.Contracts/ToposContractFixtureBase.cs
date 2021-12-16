@@ -6,7 +6,7 @@ namespace Topos.Tests.Contracts
 {
     public abstract class ToposContractFixtureBase
     {
-        readonly ConcurrentStack<IDisposable> _disposables = new ConcurrentStack<IDisposable>();
+        readonly ConcurrentStack<IDisposable> _disposables = new();
 
         [SetUp]
         public void SetUp()

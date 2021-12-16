@@ -21,19 +21,26 @@ namespace Topos.Tests.Contracts.Broker
     {
         IBrokerFactory _brokerFactory;
 
+        protected override void AdditionalSetUp()
+        {
+            base.AdditionalSetUp();
+
+            _brokerFactory = Using(new TBrokerFactory());
+        }
+
         [Test]
         public async Task CatchUpTest_AllHistory()
         {
             var receivedMessages = new ConcurrentQueue<string>();
-            var topic = BrokerFactory.GetNewTopic();
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var topic = _brokerFactory.GetNewTopic();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             await producer.Send(topic, new ToposMessage("message 1"));
 
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
-                .Handle(async (messages, context, token) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
+                .Handle(async (messages, _, _) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
                 .Topics(t => t.Subscribe(topic))
                 .Positions(p =>
                 {
@@ -61,14 +68,14 @@ namespace Topos.Tests.Contracts.Broker
         public async Task CatchUpTest_OnlyNew()
         {
             var receivedMessages = new ConcurrentQueue<string>();
-            var topic = BrokerFactory.GetNewTopic();
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var topic = _brokerFactory.GetNewTopic();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             await producer.Send(topic, new ToposMessage("message 1"));
 
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
                 .Handle(async (messages, context, token) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
                 .Topics(t => t.Subscribe(topic))
                 .Positions(p =>
@@ -96,15 +103,15 @@ namespace Topos.Tests.Contracts.Broker
         [Test]
         public async Task DoesNotLogTaskCancelledException()
         {
-            var topic = BrokerFactory.GetNewTopic();
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var topic = _brokerFactory.GetNewTopic();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             var logs = new ListLoggerFactory();
             var weAreInTheHandler = new ManualResetEvent(initialState: false);
 
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
                 .Logging(l => l.Use(logs))
                 .Handle(async (messages, context, token) =>
                 {
@@ -137,15 +144,15 @@ namespace Topos.Tests.Contracts.Broker
         public async Task CanOvercomeExceptions()
         {
             var receivedStrings = new ConcurrentQueue<string>();
-            var topic = BrokerFactory.GetNewTopic();
+            var topic = _brokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             var random = new Random(DateTime.Now.GetHashCode());
 
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
                 .Handle(async (messages, context, token) =>
                 {
                     var strings = messages.Select(m => m.Body).Cast<string>();
@@ -169,15 +176,15 @@ namespace Topos.Tests.Contracts.Broker
         public async Task ConsumerCanPickUpWhereItLeftOff()
         {
             var receivedStrings = new ConcurrentQueue<string>();
-            var topic = BrokerFactory.GetNewTopic();
+            var topic = _brokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             IDisposable CreateConsumer(InMemPositionsStorage storage)
             {
-                return BrokerFactory.ConfigureConsumer("default-group")
+                return _brokerFactory.ConfigureConsumer("default-group")
                     .Handle(async (messages, context, token) =>
                     {
                         var strings = messages.Select(m => m.Body).Cast<string>();
@@ -269,7 +276,7 @@ but got
         [Test]
         public async Task CanStartProducer()
         {
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
@@ -279,7 +286,7 @@ but got
         [Test]
         public async Task CanStartConsumer()
         {
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
                 .Handle(async (messages, context, token) =>
                 {
                     Console.WriteLine($"Received {messages.Count} msgs");
@@ -298,15 +305,15 @@ but got
         [Test]
         public async Task CanProduceAndConsume()
         {
-            var topic = BrokerFactory.GetNewTopic();
+            var topic = _brokerFactory.GetNewTopic();
 
-            var producer = BrokerFactory.ConfigureProducer().Create();
+            var producer = _brokerFactory.ConfigureProducer().Create();
 
             Using(producer);
 
             var gotTheString = new ManualResetEvent(false);
 
-            var consumer = BrokerFactory.ConfigureConsumer("default-group")
+            var consumer = _brokerFactory.ConfigureConsumer("default-group")
                 .Handle(async (messages, context, token) =>
                 {
                     var receivedString = messages.Select(m => m.Body).FirstOrDefault() as string;
@@ -330,17 +337,6 @@ but got
             await producer.Send(topic, new ToposMessage("HEJ MED DIG MIN VEN"));
 
             gotTheString.WaitOrDie(errorMessage: "Waited for the text 'HEJ MED DIG MIN VEN' to arrive in the consumer");
-        }
-
-        IBrokerFactory BrokerFactory
-        {
-            get
-            {
-                if (_brokerFactory != null) return _brokerFactory;
-                _brokerFactory = new TBrokerFactory();
-                Using(_brokerFactory);
-                return _brokerFactory;
-            }
         }
     }
 }

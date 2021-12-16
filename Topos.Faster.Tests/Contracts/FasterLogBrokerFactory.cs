@@ -7,7 +7,7 @@ namespace Topos.Faster.Tests.Contracts
 {
     public class FasterLogBrokerFactory : DisposableFactory, IBrokerFactory
     {
-        readonly TemporaryTestDirectory _temporaryTestDirectory = new TemporaryTestDirectory();
+        readonly TemporaryTestDirectory _temporaryTestDirectory = new();
 
         int _counter;
 
