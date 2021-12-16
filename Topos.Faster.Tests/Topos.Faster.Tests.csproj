@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net50</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="microsoft.net.test.sdk" Version="16.11.0" />
+    <PackageReference Include="microsoft.net.test.sdk" Version="17.0.0" />
     <PackageReference Include="nunit" Version="3.13.2" />
-    <PackageReference Include="nunit3testadapter" Version="4.0.0" />
+    <PackageReference Include="nunit3testadapter" Version="4.1.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
+    <PackageReference Include="serilog.sinks.console" Version="4.0.1" />
     <PackageReference Include="testy" Version="0.3.0" />
   </ItemGroup>
 

@@ -180,6 +180,13 @@
 ## 0.0.98
 * Update Confluent.Kafka to 1.8.1
 
+## 0.0.99
+* Update Confluent.Kafka to 1.8.2
+* Update Microsoft.FASTER.Core to 1.9.9
+* Update MongoDb.Driver to 2.14.1
+* Update npgsql to 6.0.1
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

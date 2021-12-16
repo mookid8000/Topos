@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard20;net50</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Company>Rebus FM</Company>
     <Authors>mookid8000</Authors>
     <LangVersion>latest</LangVersion>
