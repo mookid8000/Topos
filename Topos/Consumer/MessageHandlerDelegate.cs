@@ -8,4 +8,4 @@ namespace Topos.Consumer;
 /// <summary>
 /// Delegate type used for message handlers
 /// </summary>
-public delegate Task MessageHandlerDelegate(IReadOnlyCollection<ReceivedLogicalMessage> messages, ConsumerContext context, CancellationToken cancellationToken);
+public delegate Task MessageHandlerDelegate(IReadOnlyList<ReceivedLogicalMessage> messages, ConsumerContext context, CancellationToken cancellationToken);

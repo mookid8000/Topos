@@ -186,6 +186,8 @@
 * Update MongoDb.Driver to 2.14.1
 * Update npgsql to 6.0.1
 
+## 0.1.0
+* Dispatch received logical messages in `IReadOnlyList` because we might as well allow indexing
 
 ---
 

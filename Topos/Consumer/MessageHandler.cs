@@ -28,10 +28,10 @@ public class MessageHandler : IDisposable
 
     const int DefaultMaxPrefetchQueueLength = 100000;
 
-    readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
-    readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new ConcurrentQueue<ReceivedLogicalMessage>();
-    readonly AsyncSemaphore _messagesSemaphore = new AsyncSemaphore(initialCount: 0, maxCount: int.MaxValue);
-    readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new();
+    readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new();
+    readonly AsyncSemaphore _messagesSemaphore = new(initialCount: 0, maxCount: int.MaxValue);
+    readonly CancellationTokenSource _cancellationTokenSource = new();
 
     readonly MessageHandlerDelegate _callback;
     readonly AsyncRetryPolicy _callbackPolicy;
