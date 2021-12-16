@@ -14,7 +14,7 @@ namespace Topos.AzureBlobs
     public class AzureBlobsPositionManager : IPositionManager
     {
         const int HttpStatusNotFound = 404;
-        readonly ConcurrentDictionary<string, string> _legalBlobNames = new ConcurrentDictionary<string, string>();
+        readonly ConcurrentDictionary<string, string> _legalBlobNames = new();
         readonly Lazy<Func<Task<CloudBlobContainer>>> _getContainerReference;
         readonly CloudBlobClient _client;
         readonly string _containerName;

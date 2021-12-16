@@ -23,7 +23,7 @@ namespace Topos.Faster
 
         IReadOnlyList<Task> _workers;
 
-        public FasterLogConsumerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer, IEnumerable<string> topics, string group, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
+        public FasterLogConsumerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer, IEnumerable<string> topics, IConsumerDispatcher consumerDispatcher, IPositionManager positionManager)
         {
             if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
             if (topics == null) throw new ArgumentNullException(nameof(topics));

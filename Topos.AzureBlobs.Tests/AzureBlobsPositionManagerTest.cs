@@ -16,7 +16,7 @@ namespace Topos.AzureBlobs.Tests
     {
         public class AzureBlobsPositionManagerFactory : IPositionsManagerFactory
         {
-            readonly ConcurrentBag<string> _containersToRemove = new ConcurrentBag<string>();
+            readonly ConcurrentBag<string> _containersToRemove = new();
 
             public IPositionManager Create()
             {

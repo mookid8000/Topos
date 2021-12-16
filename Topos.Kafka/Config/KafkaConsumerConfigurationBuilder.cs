@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Topos.Consumer;
 using Topos.Internals;
-using Topos.Producer;
+
 // ReSharper disable RedundantDefaultMemberInitializer
 
 namespace Topos.Config
 {
     public class KafkaConsumerConfigurationBuilder
     {
-        static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = new Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[0];
+        static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = Array.Empty<Func<ConsumerContext, IEnumerable<TopicPartition>, Task>>();
 
         /// <summary>
         /// Adds a <see cref="ConsumerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
@@ -20,7 +20,7 @@ namespace Topos.Config
         /// </summary>
         public static void AddCustomizer(KafkaConsumerConfigurationBuilder builder, Func<ConsumerConfig, ConsumerConfig> customizer) => builder._customizers.Add(customizer);
 
-        readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new List<Func<ConsumerConfig, ConsumerConfig>>();
+        readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new();
         
         /// <summary>
         /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
@@ -39,16 +39,6 @@ namespace Topos.Config
             OnPartitionsRevokedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
             return this;
         }
-
-        ///// <summary>
-        ///// Configures that the consumer should automatically make an <see cref="IToposProducer"/> available in the <see cref="ConsumerContext"/>,
-        ///// thus making it super-easy for the consumer to send events.
-        ///// </summary>
-        //public KafkaConsumerConfigurationBuilder AutomaticallyAddProducerToContext()
-        //{
-        //    AutomaticallyAddProducerToContextFlag = true;
-        //    return this;
-        //}
 
         internal ConsumerConfig Apply(ConsumerConfig config)
         {
@@ -70,8 +60,6 @@ namespace Topos.Config
 
             return config;
         }
-
-        //internal bool AutomaticallyAddProducerToContextFlag { get; set; } = false;
 
         internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsAssignedEvent;
 

@@ -36,7 +36,7 @@ namespace Topos.Config
                     loggerFactory: c.Get<ILoggerFactory>(),
                     directoryPath: directoryPath
                 ))
-                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer())
+                .Other<ILogEntrySerializer>().Register(_ => new ProtobufLogEntrySerializer())
                 .Other<EventExpirationHelper>().Register(c => new EventExpirationHelper(
                     loggerFactory: c.Get<ILoggerFactory>(),
                     deviceManager: c.Get<IDeviceManager>(),
@@ -70,7 +70,7 @@ namespace Topos.Config
                     loggerFactory: c.Get<ILoggerFactory>(),
                     directoryPath: directoryPath
                 ))
-                .Other<ILogEntrySerializer>().Register(c => new ProtobufLogEntrySerializer());
+                .Other<ILogEntrySerializer>().Register(_ => new ProtobufLogEntrySerializer());
         }
 
         static void CheckDirectoryPath(string directoryPath)

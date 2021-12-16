@@ -132,7 +132,7 @@ namespace Topos.Kafka.Tests
                     })
                     .Topics(t => t.Subscribe(topic))
                     .Serialization(s => s.UseNewtonsoftJson())
-                    .Handle(async (messages, _, __) =>
+                    .Handle(async (messages, _, _) =>
                     {
                         foreach (var message in messages)
                         {

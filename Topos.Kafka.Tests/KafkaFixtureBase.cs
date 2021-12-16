@@ -52,11 +52,11 @@ namespace Topos.Kafka.Tests
 
         static void WithAdminClient(ILogger logger, Action<IAdminClient> callback)
         {
-            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address, configurationCustomizer: ConfigurationCustomizer))
-            using (var adminClient = producer.GetAdminClient())
-            {
-                callback(adminClient);
-            }
+            using var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(logger), KafkaTestConfig.Address, configurationCustomizer: ConfigurationCustomizer);
+            
+            using var adminClient = producer.GetAdminClient();
+            
+            callback(adminClient);
         }
 
         static ProducerConfig ConfigurationCustomizer(ProducerConfig config)

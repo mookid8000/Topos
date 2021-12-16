@@ -15,7 +15,7 @@ namespace Topos.Kafka
 {
     public class KafkaProducerImplementation : IProducerImplementation
     {
-        static readonly Headers EmptyHeaders = new Headers();
+        static readonly Headers EmptyHeaders = new();
 
         readonly IProducer<string, byte[]> _producer;
         readonly int _kafkaOutgoingQueueMaxMessages;
@@ -53,7 +53,7 @@ namespace Topos.Kafka
         {
             var configuration = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("bootstrap.servers", _config.BootstrapServers),
+                new("bootstrap.servers", _config.BootstrapServers),
             };
 
             if (!string.IsNullOrWhiteSpace(_config.SaslUsername))

@@ -7,7 +7,7 @@ namespace Topos.Kafka.Tests
 {
     class InMemExclusiveLockBandit
     {
-        readonly ConcurrentDictionary<string, object> _locks = new ConcurrentDictionary<string, object>();
+        readonly ConcurrentDictionary<string, object> _locks = new();
 
         public async Task<IDisposable> GrabLock(string key)
         {

@@ -32,7 +32,7 @@ namespace Topos.Kafka.Tests
                 .Positions(p => p.StoreInMemory())
                 .Serialization(s => s.UseNewtonsoftJson())
                 .Options(o => o.AddContextInitializer(c => c.SetItem(textProducer)))
-                .Handle(async (messages, context, token) =>
+                .Handle(async (messages, context, _) =>
                 {
                     var producer = context.GetItem<IToposProducer>();
 
@@ -53,7 +53,7 @@ namespace Topos.Kafka.Tests
                 .Topics(t => t.Subscribe(topicForWords))
                 .Positions(p => p.StoreInMemory())
                 .Serialization(s => s.UseNewtonsoftJson())
-                .Handle(async (messages, context, token) =>
+                .Handle(async (messages, _, _) =>
                 {
                     var words = messages.Select(m => m.Body)
                         .OfType<MessageWithSingleWord>().Select(m => m.Word);
@@ -70,7 +70,7 @@ namespace Topos.Kafka.Tests
             tokenizerConsumer.Start();
             wordCounterConsumer.Start();
 
-            await textProducer.SendMany(topicForText, Enumerable.Range(0, 1000).Select(n => new ToposMessage(new MessageWithText(textFromGitHub))));
+            await textProducer.SendMany(topicForText, Enumerable.Range(0, 1000).Select(_ => new ToposMessage(new MessageWithText(textFromGitHub))));
 
             await Task.Delay(TimeSpan.FromSeconds(10));
 

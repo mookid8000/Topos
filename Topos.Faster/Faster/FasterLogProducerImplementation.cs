@@ -145,16 +145,6 @@ namespace Topos.Faster
             }
         }
 
-        void Write(FasterLog log, WriteTask task)
-        {
-            foreach (var transportMessage in task.TransportMessages)
-            {
-                var bytes = _logEntrySerializer.Serialize(transportMessage);
-
-                log.Enqueue(bytes);
-            }
-        }
-
         public void Dispose()
         {
             try

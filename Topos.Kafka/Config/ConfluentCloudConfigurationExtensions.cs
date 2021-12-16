@@ -21,6 +21,7 @@ namespace Topos.Config
                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
                 config.SaslMechanism = SaslMechanism.Plain;
                 config.EnableSslCertificateVerification = false;
+                config.SocketKeepaliveEnable = true;
 
                 return config;
             });
@@ -38,12 +39,11 @@ namespace Topos.Config
                  config.SaslUsername = key;
                  config.SaslPassword = secret;
 
-                 config.SessionTimeoutMs = 6000;
+                 config.SessionTimeoutMs = 45000;
                  config.SecurityProtocol = SecurityProtocol.SaslSsl;
                  config.SaslMechanism = SaslMechanism.Plain;
                  config.EnableSslCertificateVerification = false;
-
-                //config.Set("connections.max.idle.ms", "60000");
+                 config.SocketKeepaliveEnable = true;
 
                 return config;
              });

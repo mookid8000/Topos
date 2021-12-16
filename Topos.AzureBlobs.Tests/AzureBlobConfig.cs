@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Azure.Storage;
+﻿using Microsoft.Azure.Storage;
 
 namespace Topos.AzureBlobs.Tests
 {

@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+// ReSharper disable AsyncVoidLambda
+// ReSharper disable RedundantExplicitTupleComponentName
 
 namespace Topos.Internals
 {
@@ -44,8 +46,8 @@ namespace Topos.Internals
         /// </summary>
         class CustomSynchronizationContext : SynchronizationContext
         {
-            readonly ConcurrentQueue<Tuple<SendOrPostCallback, object>> _items = new ConcurrentQueue<Tuple<SendOrPostCallback, object>>();
-            readonly AutoResetEvent _workItemsWaiting = new AutoResetEvent(false);
+            readonly ConcurrentQueue<(SendOrPostCallback Function, object State)> _items = new();
+            readonly AutoResetEvent _workItemsWaiting = new(initialState: false);
             readonly Func<Task> _task;
 
             ExceptionDispatchInfo _caughtException;
@@ -56,7 +58,7 @@ namespace Topos.Internals
 
             public override void Post(SendOrPostCallback function, object state)
             {
-                _items.Enqueue(Tuple.Create(function, state));
+                _items.Enqueue((Function: function, State: state));
                 _workItemsWaiting.Set();
             }
 
@@ -78,7 +80,7 @@ namespace Topos.Internals
                     }
                     finally
                     {
-                        Post(state => _done = true, null);
+                        Post(_ => _done = true, null);
                     }
                 }, null);
 
@@ -86,7 +88,7 @@ namespace Topos.Internals
                 {
                     if (_items.TryDequeue(out var task))
                     {
-                        task.Item1(task.Item2);
+                        task.Function(task.State);
 
                         if (_caughtException == null) continue;
 
@@ -99,15 +101,9 @@ namespace Topos.Internals
                 }
             }
 
-            public override void Send(SendOrPostCallback d, object state)
-            {
-                throw new NotSupportedException("Cannot send to same thread");
-            }
+            public override void Send(SendOrPostCallback d, object state) => throw new NotSupportedException("Cannot send to same thread");
 
-            public override SynchronizationContext CreateCopy()
-            {
-                return this;
-            }
+            public override SynchronizationContext CreateCopy() => this;
         }
     }
 }
