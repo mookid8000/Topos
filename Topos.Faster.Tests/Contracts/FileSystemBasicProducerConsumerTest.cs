@@ -2,16 +2,15 @@
 using Serilog;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Faster.Tests.Contracts
+namespace Topos.Faster.Tests.Contracts;
+
+[TestFixture]
+public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FasterLogBrokerFactory>
 {
-    [TestFixture]
-    public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FasterLogBrokerFactory>
+    public FileSystemBasicProducerConsumerTest()
     {
-        public FileSystemBasicProducerConsumerTest()
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 }

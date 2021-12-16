@@ -14,194 +14,193 @@ using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
 #pragma warning disable 1998
 
-namespace Topos.Faster
+namespace Topos.Faster;
+
+class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 {
-    class FasterLogProducerImplementation : IProducerImplementation, IInitializable
+    readonly CancellationTokenSource _cancellationTokenSource = new();
+    readonly ConcurrentQueue<WriteTask> _writeTasks = new();
+    readonly AsyncSemaphore _queueItems = new(initialCount: 0, maxCount: int.MaxValue);
+    readonly EventExpirationHelper _eventExpirationHelper;
+    readonly ILogEntrySerializer _logEntrySerializer;
+    readonly IDeviceManager _deviceManager;
+    readonly ILogger _logger;
+
+    Task _writer;
+
+    public FasterLogProducerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer, EventExpirationHelper eventExpirationHelper)
     {
-        readonly CancellationTokenSource _cancellationTokenSource = new();
-        readonly ConcurrentQueue<WriteTask> _writeTasks = new();
-        readonly AsyncSemaphore _queueItems = new(initialCount: 0, maxCount: int.MaxValue);
-        readonly EventExpirationHelper _eventExpirationHelper;
-        readonly ILogEntrySerializer _logEntrySerializer;
-        readonly IDeviceManager _deviceManager;
-        readonly ILogger _logger;
+        if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
+        _deviceManager = deviceManager ?? throw new ArgumentNullException(nameof(deviceManager));
+        _logEntrySerializer = logEntrySerializer ?? throw new ArgumentNullException(nameof(logEntrySerializer));
+        _eventExpirationHelper = eventExpirationHelper ?? throw new ArgumentNullException(nameof(eventExpirationHelper));
+        _logger = loggerFactory.GetLogger(GetType());
+    }
 
-        Task _writer;
+    public Task Send(string topic, string partitionKey, TransportMessage transportMessage)
+    {
+        var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage });
 
-        public FasterLogProducerImplementation(ILoggerFactory loggerFactory, IDeviceManager deviceManager, ILogEntrySerializer logEntrySerializer, EventExpirationHelper eventExpirationHelper)
-        {
-            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
-            _deviceManager = deviceManager ?? throw new ArgumentNullException(nameof(deviceManager));
-            _logEntrySerializer = logEntrySerializer ?? throw new ArgumentNullException(nameof(logEntrySerializer));
-            _eventExpirationHelper = eventExpirationHelper ?? throw new ArgumentNullException(nameof(eventExpirationHelper));
-            _logger = loggerFactory.GetLogger(GetType());
-        }
+        return EnqueueWriteTask(writeTask);
+    }
 
-        public Task Send(string topic, string partitionKey, TransportMessage transportMessage)
-        {
-            var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage });
+    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+    {
+        var writeTask = new WriteTask(topic, partitionKey, transportMessages);
 
-            return EnqueueWriteTask(writeTask);
-        }
+        return EnqueueWriteTask(writeTask);
+    }
 
-        public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
-        {
-            var writeTask = new WriteTask(topic, partitionKey, transportMessages);
+    public void Initialize()
+    {
+        if (_writer != null) throw new InvalidOperationException("Attempted to initialize FasterLogProducerImplementation, but it has been initialized already!");
 
-            return EnqueueWriteTask(writeTask);
-        }
+        _logger.Info("Initializing FasterLog producer");
 
-        public void Initialize()
-        {
-            if (_writer != null) throw new InvalidOperationException("Attempted to initialize FasterLogProducerImplementation, but it has been initialized already!");
+        _writer = Task.Run(WriterTask);
+    }
 
-            _logger.Info("Initializing FasterLog producer");
+    Task EnqueueWriteTask(WriteTask writeTask)
+    {
+        _writeTasks.Enqueue(writeTask);
+        _queueItems.Increment();
+        return writeTask.Task;
+    }
 
-            _writer = Task.Run(WriterTask);
-        }
+    async Task WriterTask()
+    {
+        var cancellationToken = _cancellationTokenSource.Token;
 
-        Task EnqueueWriteTask(WriteTask writeTask)
-        {
-            _writeTasks.Enqueue(writeTask);
-            _queueItems.Increment();
-            return writeTask.Task;
-        }
+        _logger.Debug("Starting FasterLog serialized writer task");
 
-        async Task WriterTask()
-        {
-            var cancellationToken = _cancellationTokenSource.Token;
-
-            _logger.Debug("Starting FasterLog serialized writer task");
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    await _queueItems.DecrementAsync(cancellationToken);
-
-                    var tasks = DequeueNext(100);
-
-                    if (!tasks.Any()) continue;
-
-                    await Write(tasks, cancellationToken);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // we're on out way out
-                }
-                catch (Exception exception)
-                {
-                    _logger.Error(exception, "Unhandled exception in FasterLog writer task");
-                }
-            }
-
-            _logger.Debug("Stopped FasterLog serialized writer task");
-        }
-
-        async Task Write(IEnumerable<WriteTask> tasks, CancellationToken cancellationToken)
-        {
-            await Task.WhenAll(
-                tasks
-                    .GroupBy(t => t.Topic)
-                    .Select(async group => await Task.Run(async () => await Write(
-                        topic: group.Key,
-                        tasks: group.ToList(),
-                        cancellationToken: cancellationToken
-                    ), cancellationToken))
-            );
-        }
-
-        async Task Write(string topic, IReadOnlyList<WriteTask> tasks, CancellationToken cancellationToken)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var log = _deviceManager.GetLog(topic);
+                await _queueItems.DecrementAsync(cancellationToken);
 
-                for (var index = 0; index < tasks.Count; index++)
-                {
-                    foreach (var transportMessage in tasks[index].TransportMessages)
-                    {
-                        var bytes = _logEntrySerializer.Serialize(transportMessage);
+                var tasks = DequeueNext(100);
 
-                        await log.EnqueueAsync(bytes, cancellationToken);
-                    }
-                }
+                if (!tasks.Any()) continue;
 
-                await log.CommitAsync(cancellationToken);
-
-                for (var index = 0; index < tasks.Count; index++)
-                {
-                    tasks[index].Succeed();
-                }
-
-                _eventExpirationHelper.RegisterActivity(topic);
+                await Write(tasks, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // we're on out way out
             }
             catch (Exception exception)
             {
-                for (var index = 0; index < tasks.Count; index++)
+                _logger.Error(exception, "Unhandled exception in FasterLog writer task");
+            }
+        }
+
+        _logger.Debug("Stopped FasterLog serialized writer task");
+    }
+
+    async Task Write(IEnumerable<WriteTask> tasks, CancellationToken cancellationToken)
+    {
+        await Task.WhenAll(
+            tasks
+                .GroupBy(t => t.Topic)
+                .Select(async group => await Task.Run(async () => await Write(
+                    topic: group.Key,
+                    tasks: group.ToList(),
+                    cancellationToken: cancellationToken
+                ), cancellationToken))
+        );
+    }
+
+    async Task Write(string topic, IReadOnlyList<WriteTask> tasks, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var log = _deviceManager.GetLog(topic);
+
+            for (var index = 0; index < tasks.Count; index++)
+            {
+                foreach (var transportMessage in tasks[index].TransportMessages)
                 {
-                    tasks[index].Fail(exception);
+                    var bytes = _logEntrySerializer.Serialize(transportMessage);
+
+                    await log.EnqueueAsync(bytes, cancellationToken);
                 }
             }
-        }
 
-        public void Dispose()
+            await log.CommitAsync(cancellationToken);
+
+            for (var index = 0; index < tasks.Count; index++)
+            {
+                tasks[index].Succeed();
+            }
+
+            _eventExpirationHelper.RegisterActivity(topic);
+        }
+        catch (Exception exception)
         {
-            try
+            for (var index = 0; index < tasks.Count; index++)
             {
-                // not initialized or already disposed? who cares
-                if (_writer == null) return;
-
-                _logger.Info("Disposing FasterLog producer");
-
-                _cancellationTokenSource.Cancel();
-
-                var timeout = TimeSpan.FromSeconds(4);
-
-                if (!_writer.WaitSafe(timeout))
-                {
-                    _logger.Warn("Background writer task did not exit within timeout of {timeout}", timeout);
-                }
-            }
-            finally
-            {
-                _writer = null;
-                _cancellationTokenSource.Dispose();
+                tasks[index].Fail(exception);
             }
         }
+    }
 
-        IReadOnlyList<WriteTask> DequeueNext(int maxCount)
+    public void Dispose()
+    {
+        try
         {
-            var list = new List<WriteTask>(maxCount);
+            // not initialized or already disposed? who cares
+            if (_writer == null) return;
 
-            while (_writeTasks.TryDequeue(out var task))
+            _logger.Info("Disposing FasterLog producer");
+
+            _cancellationTokenSource.Cancel();
+
+            var timeout = TimeSpan.FromSeconds(4);
+
+            if (!_writer.WaitSafe(timeout))
             {
-                list.Add(task);
+                _logger.Warn("Background writer task did not exit within timeout of {timeout}", timeout);
             }
-
-            return list;
         }
-
-        class WriteTask
+        finally
         {
-            readonly TaskCompletionSource<object> _taskCompletionSource = new();
-
-            public string Topic { get; }
-            public string PartitionKey { get; }
-            public IEnumerable<TransportMessage> TransportMessages { get; }
-
-            public WriteTask(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
-            {
-                Topic = topic;
-                PartitionKey = partitionKey;
-                TransportMessages = transportMessages;
-            }
-
-            public Task Task => _taskCompletionSource.Task;
-
-            public void Succeed() => _taskCompletionSource.SetResult(null);
-
-            public void Fail(Exception exception) => _taskCompletionSource.SetException(exception);
+            _writer = null;
+            _cancellationTokenSource.Dispose();
         }
+    }
+
+    IReadOnlyList<WriteTask> DequeueNext(int maxCount)
+    {
+        var list = new List<WriteTask>(maxCount);
+
+        while (_writeTasks.TryDequeue(out var task))
+        {
+            list.Add(task);
+        }
+
+        return list;
+    }
+
+    class WriteTask
+    {
+        readonly TaskCompletionSource<object> _taskCompletionSource = new();
+
+        public string Topic { get; }
+        public string PartitionKey { get; }
+        public IEnumerable<TransportMessage> TransportMessages { get; }
+
+        public WriteTask(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+        {
+            Topic = topic;
+            PartitionKey = partitionKey;
+            TransportMessages = transportMessages;
+        }
+
+        public Task Task => _taskCompletionSource.Task;
+
+        public void Succeed() => _taskCompletionSource.SetResult(null);
+
+        public void Fail(Exception exception) => _taskCompletionSource.SetException(exception);
     }
 }

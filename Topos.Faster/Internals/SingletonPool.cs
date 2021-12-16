@@ -2,93 +2,92 @@
 using System.Collections.Concurrent;
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
-namespace Topos.Internals
-{
-    public class SingletonPool
-    {
-        static readonly ConcurrentDictionary<string, PooledObject> _pool = new();
+namespace Topos.Internals;
 
-        public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
+public class SingletonPool
+{
+    static readonly ConcurrentDictionary<string, PooledObject> _pool = new();
+
+    public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
+    {
+        var pooledObject = _pool.AddOrUpdate(
+            key: key,
+            addValueFactory: _ => PooledObject.New(() => factory()).Increment(),
+            updateValueFactory: (_, existing) => existing.Increment()
+        );
+
+        var objValue = pooledObject.LazyObject.Value;
+        var instance = GetInstanceAs<TInstance>(objValue);
+
+        return new Singleton<TInstance>(instance, () =>
         {
-            var pooledObject = _pool.AddOrUpdate(
+            var result = _pool.AddOrUpdate(
                 key: key,
-                addValueFactory: _ => PooledObject.New(() => factory()).Increment(),
-                updateValueFactory: (_, existing) => existing.Increment()
+                addValueFactory: _ => PooledObject.New(() => factory()),
+                updateValueFactory: (_, existing) => existing.Decrement()
             );
 
-            var objValue = pooledObject.LazyObject.Value;
-            var instance = GetInstanceAs<TInstance>(objValue);
+            result.MaybeDispose();
+        });
+    }
 
-            return new Singleton<TInstance>(instance, () =>
-            {
-                var result = _pool.AddOrUpdate(
-                    key: key,
-                    addValueFactory: _ => PooledObject.New(() => factory()),
-                    updateValueFactory: (_, existing) => existing.Decrement()
-                );
+    public class Singleton<TInstance> : IDisposable
+    {
+        readonly Action _disposeAction;
 
-                result.MaybeDispose();
-            });
+        public Singleton(TInstance instance, Action disposeAction)
+        {
+            _disposeAction = disposeAction;
+            Instance = instance;
         }
 
-        public class Singleton<TInstance> : IDisposable
+        public TInstance Instance { get; }
+
+        public void Dispose() => _disposeAction();
+    }
+
+    static TInstance GetInstanceAs<TInstance>(IDisposable objValue) where TInstance : IDisposable
+    {
+        try
         {
-            readonly Action _disposeAction;
-
-            public Singleton(TInstance instance, Action disposeAction)
-            {
-                _disposeAction = disposeAction;
-                Instance = instance;
-            }
-
-            public TInstance Instance { get; }
-
-            public void Dispose() => _disposeAction();
+            return (TInstance)objValue;
         }
-
-        static TInstance GetInstanceAs<TInstance>(IDisposable objValue) where TInstance : IDisposable
+        catch (Exception exception)
         {
-            try
-            {
-                return (TInstance)objValue;
-            }
-            catch (Exception exception)
-            {
-                throw new ArgumentException($"Could not return instance of type {objValue.GetType()} as {typeof(TInstance)}", exception);
-            }
+            throw new ArgumentException($"Could not return instance of type {objValue.GetType()} as {typeof(TInstance)}", exception);
         }
+    }
 
-        class PooledObject
-        {
-            public static PooledObject New(Func<IDisposable> factory) => new(new Lazy<IDisposable>(factory), 0, factory);
+    class PooledObject
+    {
+        public static PooledObject New(Func<IDisposable> factory) => new(new Lazy<IDisposable>(factory), 0, factory);
 
-            public Lazy<IDisposable> LazyObject { get; private set; }
+        public Lazy<IDisposable> LazyObject { get; private set; }
 
-            public int ReferenceCount { get; }
+        public int ReferenceCount { get; }
             
-            public Func<IDisposable> OriginalFactory { get; }
+        public Func<IDisposable> OriginalFactory { get; }
 
-            public PooledObject(Lazy<IDisposable> lazyObject, int referenceCount, Func<IDisposable> originalFactory)
-            {
-                LazyObject = lazyObject;
-                ReferenceCount = referenceCount;
-                OriginalFactory = originalFactory;
-            }
+        public PooledObject(Lazy<IDisposable> lazyObject, int referenceCount, Func<IDisposable> originalFactory)
+        {
+            LazyObject = lazyObject;
+            ReferenceCount = referenceCount;
+            OriginalFactory = originalFactory;
+        }
 
-            public PooledObject Increment() => new(LazyObject, ReferenceCount + 1, OriginalFactory);
+        public PooledObject Increment() => new(LazyObject, ReferenceCount + 1, OriginalFactory);
             
-            public PooledObject Decrement() => new(LazyObject, ReferenceCount - 1, OriginalFactory);
+        public PooledObject Decrement() => new(LazyObject, ReferenceCount - 1, OriginalFactory);
 
-            public void MaybeDispose()
-            {
-                if (ReferenceCount != 0) return;
-                if (!LazyObject.IsValueCreated) return;
+        public void MaybeDispose()
+        {
+            if (ReferenceCount != 0) return;
+            if (!LazyObject.IsValueCreated) return;
 
-                LazyObject.Value.Dispose();
+            LazyObject.Value.Dispose();
 
-                // re-init lazy so we can revive this bad boy again if called for
-                LazyObject = new Lazy<IDisposable>(() => OriginalFactory());
-            }
+            // re-init lazy so we can revive this bad boy again if called for
+            LazyObject = new Lazy<IDisposable>(() => OriginalFactory());
         }
     }
 }

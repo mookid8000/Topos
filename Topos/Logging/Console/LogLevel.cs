@@ -1,8 +1,7 @@
 ﻿// ReSharper disable UnusedMember.Global
-namespace Topos.Logging.Console
+namespace Topos.Logging.Console;
+
+public enum LogLevel
 {
-    public enum LogLevel
-    {
-        Debug, Info, Warn, Error
-    }
+    Debug, Info, Warn, Error
 }

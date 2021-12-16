@@ -4,38 +4,37 @@ using System.Linq;
 using Confluent.Kafka;
 using Topos.Internals;
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public class KafkaProducerConfigurationBuilder
 {
-    public class KafkaProducerConfigurationBuilder
+    /// <summary>
+    /// Adds a <see cref="ProducerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
+    /// used to build the producer
+    /// </summary>
+    public static void AddCustomizer(KafkaProducerConfigurationBuilder builder, Func<ProducerConfig, ProducerConfig> customizer) => builder._customizers.Add(customizer);
+
+    readonly List<Func<ProducerConfig, ProducerConfig>> _customizers = new();
+
+    internal ProducerConfig Apply(ProducerConfig config)
     {
-        /// <summary>
-        /// Adds a <see cref="ProducerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
-        /// used to build the producer
-        /// </summary>
-        public static void AddCustomizer(KafkaProducerConfigurationBuilder builder, Func<ProducerConfig, ProducerConfig> customizer) => builder._customizers.Add(customizer);
+        var bootstrapServers = config.BootstrapServers;
 
-        readonly List<Func<ProducerConfig, ProducerConfig>> _customizers = new();
+        config = _customizers.Aggregate(config, (cfg, customize) => customize(cfg));
 
-        internal ProducerConfig Apply(ProducerConfig config)
+        AzureEventHubsHelper.TrySetConnectionInfo(bootstrapServers, info =>
         {
-            var bootstrapServers = config.BootstrapServers;
+            config.BootstrapServers = info.BootstrapServers;
+            config.SaslUsername = info.SaslUsername;
+            config.SaslPassword = info.SaslPassword;
 
-            config = _customizers.Aggregate(config, (cfg, customize) => customize(cfg));
+            config.RequestTimeoutMs = 60000;
+            config.SecurityProtocol = SecurityProtocol.SaslSsl;
+            config.SaslMechanism = SaslMechanism.Plain;
+            config.EnableSslCertificateVerification = false;
+            config.SocketKeepaliveEnable = true;
+        });
 
-            AzureEventHubsHelper.TrySetConnectionInfo(bootstrapServers, info =>
-            {
-                config.BootstrapServers = info.BootstrapServers;
-                config.SaslUsername = info.SaslUsername;
-                config.SaslPassword = info.SaslPassword;
-
-                config.RequestTimeoutMs = 60000;
-                config.SecurityProtocol = SecurityProtocol.SaslSsl;
-                config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = false;
-                config.SocketKeepaliveEnable = true;
-            });
-
-            return config;
-        }
+        return config;
     }
 }

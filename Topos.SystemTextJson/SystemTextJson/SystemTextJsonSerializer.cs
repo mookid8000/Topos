@@ -5,63 +5,62 @@ using System.Text.Json;
 using Topos.Extensions;
 using Topos.Serialization;
 
-namespace Topos.SystemTextJson
+namespace Topos.SystemTextJson;
+
+public class SystemTextJsonSerializer : IMessageSerializer
 {
-    public class SystemTextJsonSerializer : IMessageSerializer
+    const string DefaultContentType = "application/json; charset=utf-8";
+
+    public TransportMessage Serialize(LogicalMessage message)
     {
-        const string DefaultContentType = "application/json; charset=utf-8";
+        var headers = message.Headers.Clone();
+        var body = message.Body;
 
-        public TransportMessage Serialize(LogicalMessage message)
+        headers[ToposHeaders.ContentType] = DefaultContentType;
+        headers[ToposHeaders.MessageType] = body.GetType().GetSimpleAssemblyQualifiedTypeName();
+
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(body);
+
+        return new TransportMessage(headers, bytes);
+    }
+
+    public ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message)
+    {
+        var headers = message.Headers.Clone();
+
+        GetValue(headers, ToposHeaders.ContentType, out var contentType);
+
+        if (!string.Equals(contentType, DefaultContentType, StringComparison.OrdinalIgnoreCase))
         {
-            var headers = message.Headers.Clone();
-            var body = message.Body;
-
-            headers[ToposHeaders.ContentType] = DefaultContentType;
-            headers[ToposHeaders.MessageType] = body.GetType().GetSimpleAssemblyQualifiedTypeName();
-
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(body);
-
-            return new TransportMessage(headers, bytes);
+            throw new FormatException($"Cannot decode content type '{contentType}' yet, only '{DefaultContentType}' is understood");
         }
 
-        public ReceivedLogicalMessage Deserialize(ReceivedTransportMessage message)
+        GetValue(headers, ToposHeaders.MessageType, out var messageType);
+
+        var bytes = message.Body;
+
+        try
         {
-            var headers = message.Headers.Clone();
-
-            GetValue(headers, ToposHeaders.ContentType, out var contentType);
-
-            if (!string.Equals(contentType, DefaultContentType, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new FormatException($"Cannot decode content type '{contentType}' yet, only '{DefaultContentType}' is understood");
-            }
-
-            GetValue(headers, ToposHeaders.MessageType, out var messageType);
-
-            var bytes = message.Body;
-
-            try
-            {
-                var type = messageType.ParseType();
-                var body = JsonSerializer.Deserialize(bytes, type);
-                var position = message.Position;
-                return new ReceivedLogicalMessage(headers, body, position);
-            }
-            catch (Exception exception)
-            {
-                var json = Encoding.UTF8.GetString(bytes);
-
-                throw new FormatException($"Could not deserialize JSON text: '{json}'", exception);
-            }
+            var type = messageType.ParseType();
+            var body = JsonSerializer.Deserialize(bytes, type);
+            var position = message.Position;
+            return new ReceivedLogicalMessage(headers, body, position);
         }
-
-        static void GetValue(Dictionary<string, string> headers, string key, out string value)
+        catch (Exception exception)
         {
-            var foundHeader = headers.TryGetValue(key, out value);
+            var json = Encoding.UTF8.GetString(bytes);
 
-            if (!foundHeader)
-            {
-                throw new FormatException($"Did not find '{key}' header on the message");
-            }
+            throw new FormatException($"Could not deserialize JSON text: '{json}'", exception);
+        }
+    }
+
+    static void GetValue(Dictionary<string, string> headers, string key, out string value)
+    {
+        var foundHeader = headers.TryGetValue(key, out value);
+
+        if (!foundHeader)
+        {
+            throw new FormatException($"Did not find '{key}' header on the message");
         }
     }
 }

@@ -3,45 +3,44 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 #pragma warning disable 1998
 
-namespace Topos.Kafka.Tests
+namespace Topos.Kafka.Tests;
+
+class InMemExclusiveLockBandit
 {
-    class InMemExclusiveLockBandit
+    readonly ConcurrentDictionary<string, object> _locks = new();
+
+    public async Task<IDisposable> GrabLock(string key)
     {
-        readonly ConcurrentDictionary<string, object> _locks = new();
-
-        public async Task<IDisposable> GrabLock(string key)
+        while (true)
         {
-            while (true)
+            if (_locks.TryAdd(key, null))
             {
-                if (_locks.TryAdd(key, null))
-                {
-                    Console.WriteLine($"GRAB LOCK {key}");
-                    return new LockReleaser(key, this);
-                }
-
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
-            }
-        }
-
-        class LockReleaser : IDisposable
-        {
-            readonly string _key;
-            readonly InMemExclusiveLockBandit _bandit;
-
-            public LockReleaser(string key, InMemExclusiveLockBandit bandit)
-            {
-                _key = key;
-                _bandit = bandit;
+                Console.WriteLine($"GRAB LOCK {key}");
+                return new LockReleaser(key, this);
             }
 
-            public void Dispose() => _bandit.ReleaseLock(_key);
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
         }
+    }
 
-        void ReleaseLock(string key)
+    class LockReleaser : IDisposable
+    {
+        readonly string _key;
+        readonly InMemExclusiveLockBandit _bandit;
+
+        public LockReleaser(string key, InMemExclusiveLockBandit bandit)
         {
-            _locks.TryRemove(key, out _);
-
-            Console.WriteLine($"RELEASE LOCK {key}");
+            _key = key;
+            _bandit = bandit;
         }
+
+        public void Dispose() => _bandit.ReleaseLock(_key);
+    }
+
+    void ReleaseLock(string key)
+    {
+        _locks.TryRemove(key, out _);
+
+        Console.WriteLine($"RELEASE LOCK {key}");
     }
 }

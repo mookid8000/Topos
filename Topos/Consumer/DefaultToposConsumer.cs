@@ -1,46 +1,45 @@
 ﻿using System;
 
-namespace Topos.Consumer
+namespace Topos.Consumer;
+
+public class DefaultToposConsumer : IToposConsumer
 {
-    public class DefaultToposConsumer : IToposConsumer
+    readonly IConsumerImplementation _consumerImplementation;
+
+    bool _isStarted;
+
+    bool _disposing;
+    bool _disposed;
+
+    public event Action Disposing;
+
+    public DefaultToposConsumer(IConsumerImplementation consumerImplementation)
     {
-        readonly IConsumerImplementation _consumerImplementation;
+        _consumerImplementation = consumerImplementation ?? throw new ArgumentNullException(nameof(consumerImplementation));
+    }
 
-        bool _isStarted;
+    public void Start()
+    {
+        if (_isStarted) return;
 
-        bool _disposing;
-        bool _disposed;
+        _consumerImplementation.Start();
+        _isStarted = true;
+    }
 
-        public event Action Disposing;
+    public void Dispose()
+    {
+        if (_disposed) return;
+        if (_disposing) return;
 
-        public DefaultToposConsumer(IConsumerImplementation consumerImplementation)
+        _disposing = true;
+
+        try
         {
-            _consumerImplementation = consumerImplementation ?? throw new ArgumentNullException(nameof(consumerImplementation));
+            Disposing?.Invoke();
         }
-
-        public void Start()
+        finally
         {
-            if (_isStarted) return;
-
-            _consumerImplementation.Start();
-            _isStarted = true;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed) return;
-            if (_disposing) return;
-
-            _disposing = true;
-
-            try
-            {
-                Disposing?.Invoke();
-            }
-            finally
-            {
-                _disposed = true;
-            }
+            _disposed = true;
         }
     }
 }

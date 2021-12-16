@@ -11,92 +11,92 @@ using Topos.Routing;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleStringLiteral
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public class ToposConsumerConfigurer
 {
-    public class ToposConsumerConfigurer
+    internal readonly Injectionist _injectionist = new Injectionist();
+
+    readonly Topics _topics = new Topics();
+    readonly Handlers _handlers = new Handlers();
+    readonly Options _options = new Options();
+
+    public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure, string groupName)
     {
-        internal readonly Injectionist _injectionist = new Injectionist();
+        var configurer = StandardConfigurer<IConsumerImplementation>.New(_injectionist);
 
-        readonly Topics _topics = new Topics();
-        readonly Handlers _handlers = new Handlers();
-        readonly Options _options = new Options();
+        _injectionist.Register(c => new GroupId(groupName));
 
-        public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure, string groupName)
+        configure(configurer);
+    }
+
+    public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
+    {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var configurer = StandardConfigurer<IPositionManager>.New(_injectionist);
+
+        configure(configurer);
+
+        return this;
+    }
+
+    public ToposConsumerConfigurer Topics(Action<SubscriptionsRegistrar> topicRegistrarCallback)
+    {
+        if (topicRegistrarCallback == null) throw new ArgumentNullException(nameof(topicRegistrarCallback));
+
+        if (!_injectionist.Has<Topics>())
         {
-            var configurer = StandardConfigurer<IConsumerImplementation>.New(_injectionist);
-
-            _injectionist.Register(c => new GroupId(groupName));
-
-            configure(configurer);
+            _injectionist.Register(c => _topics);
         }
 
-        public ToposConsumerConfigurer Positions(Action<StandardConfigurer<IPositionManager>> configure)
+        topicRegistrarCallback(new SubscriptionsRegistrar(_topics));
+
+        return this;
+    }
+
+    public ToposConsumerConfigurer Options(Action<OptionsConfigurer> optionsConfigurerCallback)
+    {
+        optionsConfigurerCallback(new OptionsConfigurer(_options));
+        return this;
+    }
+
+    public ToposConsumerConfigurer Handle(MessageHandlerDelegate messageHandler)
+    {
+        if (!_injectionist.Has<Handlers>())
         {
-            if (configure == null) throw new ArgumentNullException(nameof(configure));
-            var configurer = StandardConfigurer<IPositionManager>.New(_injectionist);
-
-            configure(configurer);
-
-            return this;
+            _injectionist.Register(c => _handlers);
         }
 
-        public ToposConsumerConfigurer Topics(Action<SubscriptionsRegistrar> topicRegistrarCallback)
-        {
-            if (topicRegistrarCallback == null) throw new ArgumentNullException(nameof(topicRegistrarCallback));
+        _handlers.Add(new MessageHandler(messageHandler, _options));
 
-            if (!_injectionist.Has<Topics>())
+        return this;
+    }
+
+    public IToposConsumer Create()
+    {
+        ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
+
+        _injectionist.PossiblyRegisterDefault(c => new ConsumerContext());
+
+        _injectionist.Decorate(c =>
+        {
+            var context = c.Get<ConsumerContext>();
+
+            var customizers = _options.Get(ConsumerContext.ConsumerContextInitializersKey, new List<Action<ConsumerContext>>());
+
+            foreach (var customizer in customizers)
             {
-                _injectionist.Register(c => _topics);
+                customizer(context);
             }
 
-            topicRegistrarCallback(new SubscriptionsRegistrar(_topics));
+            return context;
+        });
 
-            return this;
-        }
-
-        public ToposConsumerConfigurer Options(Action<OptionsConfigurer> optionsConfigurerCallback)
+        _injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
         {
-            optionsConfigurerCallback(new OptionsConfigurer(_options));
-            return this;
-        }
-
-        public ToposConsumerConfigurer Handle(MessageHandlerDelegate messageHandler)
-        {
-            if (!_injectionist.Has<Handlers>())
-            {
-                _injectionist.Register(c => _handlers);
-            }
-
-            _handlers.Add(new MessageHandler(messageHandler, _options));
-
-            return this;
-        }
-
-        public IToposConsumer Create()
-        {
-            ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
-
-            _injectionist.PossiblyRegisterDefault(c => new ConsumerContext());
-
-            _injectionist.Decorate(c =>
-            {
-                var context = c.Get<ConsumerContext>();
-
-                var customizers = _options.Get(ConsumerContext.ConsumerContextInitializersKey, new List<Action<ConsumerContext>>());
-
-                foreach (var customizer in customizers)
-                {
-                    customizer(context);
-                }
-
-                return context;
-            });
-
-            _injectionist.PossiblyRegisterDefault<IConsumerDispatcher>(c =>
-            {
-                var loggerFactory = c.Get<ILoggerFactory>();
-                var messageSerializer = c.Get<IMessageSerializer>();
-                var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
+            var loggerFactory = c.Get<ILoggerFactory>();
+            var messageSerializer = c.Get<IMessageSerializer>();
+            var handlers = c.Get<Handlers>(errorMessage: @"Failing to get the handlers is a sign that the consumer has not had any handlers configured.
 
 Please remember to configure at least one handler by invoking the .Handle(..) configurer like this:
 
@@ -108,7 +108,7 @@ Please remember to configure at least one handler by invoking the .Handle(..) co
         })
         .Start()
 ");
-                var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'low water mark' position for each topic/partition.
+            var positionManager = c.Get<IPositionManager>(errorMessage: @"The consumer dispatcher needs access to a positions manager, so it can store a 'low water mark' position for each topic/partition.
 
 It can be configured by invoking the .Positions(..) configurer like this:
 
@@ -119,43 +119,42 @@ It can be configured by invoking the .Positions(..) configurer like this:
 
 ");
 
-                var consumerContext = c.Get<ConsumerContext>();
+            var consumerContext = c.Get<ConsumerContext>();
 
-                return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager, consumerContext);
-            });
+            return new DefaultConsumerDispatcher(loggerFactory, messageSerializer, handlers, positionManager, consumerContext);
+        });
 
-            _injectionist.Register<IToposConsumer>(c =>
-            {
-                var toposConsumerImplementation = c.Get<IConsumerImplementation>();
-
-                var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
-
-                defaultToposConsumer.Disposing += () =>
-                {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
-                    {
-                        instance.Dispose();
-                    }
-                };
-
-                return defaultToposConsumer;
-            });
-
-            var resolutionResult = _injectionist.Get<IToposConsumer>();
-
-            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
-            {
-                initializable.Initialize();
-            }
-
-            return resolutionResult.Instance;
-        }
-
-        public IDisposable Start()
+        _injectionist.Register<IToposConsumer>(c =>
         {
-            var consumer = Create();
-            consumer.Start();
-            return consumer;
+            var toposConsumerImplementation = c.Get<IConsumerImplementation>();
+
+            var defaultToposConsumer = new DefaultToposConsumer(toposConsumerImplementation);
+
+            defaultToposConsumer.Disposing += () =>
+            {
+                foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
+                {
+                    instance.Dispose();
+                }
+            };
+
+            return defaultToposConsumer;
+        });
+
+        var resolutionResult = _injectionist.Get<IToposConsumer>();
+
+        foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+        {
+            initializable.Initialize();
         }
+
+        return resolutionResult.Instance;
+    }
+
+    public IDisposable Start()
+    {
+        var consumer = Create();
+        consumer.Start();
+        return consumer;
     }
 }

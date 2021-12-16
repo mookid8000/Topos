@@ -2,16 +2,15 @@
 using Serilog;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Kafka.Tests.Contracts
+namespace Topos.Kafka.Tests.Contracts;
+
+[TestFixture]
+public class KafkaBatchProducerTest : BatchProducerTest<KafkaBrokerFactory>
 {
-    [TestFixture]
-    public class KafkaBatchProducerTest : BatchProducerTest<KafkaBrokerFactory>
+    public KafkaBatchProducerTest()
     {
-        public KafkaBatchProducerTest()
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 }

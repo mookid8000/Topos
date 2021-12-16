@@ -9,32 +9,31 @@ using Topos.Tests.Contracts.Factories;
 using Topos.Tests.Contracts.Positions;
 // ReSharper disable CoVariantArrayConversion
 
-namespace Topos.AzureBlobs.Tests
+namespace Topos.AzureBlobs.Tests;
+
+[TestFixture]
+public class AzureBlobsPositionManagerTest : PositionsManagerTest<AzureBlobsPositionManagerTest.AzureBlobsPositionManagerFactory>
 {
-    [TestFixture]
-    public class AzureBlobsPositionManagerTest : PositionsManagerTest<AzureBlobsPositionManagerTest.AzureBlobsPositionManagerFactory>
+    public class AzureBlobsPositionManagerFactory : IPositionsManagerFactory
     {
-        public class AzureBlobsPositionManagerFactory : IPositionsManagerFactory
+        readonly ConcurrentBag<string> _containersToRemove = new();
+
+        public IPositionManager Create()
         {
-            readonly ConcurrentBag<string> _containersToRemove = new();
+            var containerName = Guid.NewGuid().ToString("N");
+            _containersToRemove.Add(containerName);
+            return new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, containerName);
+        }
 
-            public IPositionManager Create()
-            {
-                var containerName = Guid.NewGuid().ToString("N");
-                _containersToRemove.Add(containerName);
-                return new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, containerName);
-            }
+        public void Dispose()
+        {
+            var client = AzureBlobConfig.StorageAccount.CreateCloudBlobClient();
 
-            public void Dispose()
-            {
-                var client = AzureBlobConfig.StorageAccount.CreateCloudBlobClient();
-
-                Task.WaitAll(
-                    _containersToRemove
-                        .Select(containerName => client.GetContainerReference(containerName).DeleteIfExistsAsync())
-                        .ToArray()
-                );
-            }
+            Task.WaitAll(
+                _containersToRemove
+                    .Select(containerName => client.GetContainerReference(containerName).DeleteIfExistsAsync())
+                    .ToArray()
+            );
         }
     }
 }

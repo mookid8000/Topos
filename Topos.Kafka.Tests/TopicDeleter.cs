@@ -8,61 +8,60 @@ using Serilog;
 using Topos.Serilog;
 // ReSharper disable SimplifyLinqExpression
 
-namespace Topos.Kafka.Tests
+namespace Topos.Kafka.Tests;
+
+public class TopicDeleter : IDisposable
 {
-    public class TopicDeleter : IDisposable
+    static readonly ILogger Logger = Log.ForContext<TopicDeleter>();
+    readonly string _topicName;
+
+    public TopicDeleter(string topicName)
     {
-        static readonly ILogger Logger = Log.ForContext<TopicDeleter>();
-        readonly string _topicName;
+        _topicName = topicName;
+    }
 
-        public TopicDeleter(string topicName)
+    public void Dispose()
+    {
+        using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
+        using (var adminClient = producer.GetAdminClient())
         {
-            _topicName = topicName;
-        }
+            var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
 
-        public void Dispose()
-        {
-            using (var producer = new KafkaProducerImplementation(new SerilogLoggerFactory(Logger), KafkaTestConfig.Address))
-            using (var adminClient = producer.GetAdminClient())
+            if (!metadata.Topics.Select(t => t.Topic).Contains(_topicName)) return;
+
+            Logger.Information("Deleting topic {topic}", _topicName);
+
+            ExceptionDispatchInfo exception = null;
+            var done = new ManualResetEvent(false);
+
+            Task.Run(async () =>
             {
-                var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
-
-                if (!metadata.Topics.Select(t => t.Topic).Contains(_topicName)) return;
-
-                Logger.Information("Deleting topic {topic}", _topicName);
-
-                ExceptionDispatchInfo exception = null;
-                var done = new ManualResetEvent(false);
-
-                Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        await adminClient
-                            .DeleteTopicsAsync(new[] { _topicName }, new DeleteTopicsOptions
-                            {
-                                OperationTimeout = TimeSpan.FromSeconds(10)
-                            });
-                    }
-                    catch (Exception ex)
-                    {
-                        exception = ExceptionDispatchInfo.Capture(ex);
-                    }
-                    finally
-                    {
-                        done.Set();
-                    }
-                });
-
-                if (!done.WaitOne(TimeSpan.FromSeconds(20)))
-                {
-                    throw new TimeoutException($"Timeout after waiting 20 s for topic {_topicName} to be deleted");
+                    await adminClient
+                        .DeleteTopicsAsync(new[] { _topicName }, new DeleteTopicsOptions
+                        {
+                            OperationTimeout = TimeSpan.FromSeconds(10)
+                        });
                 }
-
-                if (exception != null)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Error when deleting topic {_topicName}: {exception.SourceException}");
+                    exception = ExceptionDispatchInfo.Capture(ex);
                 }
+                finally
+                {
+                    done.Set();
+                }
+            });
+
+            if (!done.WaitOne(TimeSpan.FromSeconds(20)))
+            {
+                throw new TimeoutException($"Timeout after waiting 20 s for topic {_topicName} to be deleted");
+            }
+
+            if (exception != null)
+            {
+                Console.WriteLine($"Error when deleting topic {_topicName}: {exception.SourceException}");
             }
         }
     }

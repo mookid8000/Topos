@@ -1,8 +1,7 @@
-﻿namespace Topos.Config
+﻿namespace Topos.Config;
+
+public enum StartFromPosition
 {
-    public enum StartFromPosition
-    {
-        Beginning,
-        Now
-    }
+    Beginning,
+    Now
 }

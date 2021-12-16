@@ -1,7 +1,6 @@
-﻿namespace Topos.Consumer
+﻿namespace Topos.Consumer;
+
+public interface IInitializable
 {
-    public interface IInitializable
-    {
-        void Initialize();
-    }
+    void Initialize();
 }

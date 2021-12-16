@@ -6,34 +6,33 @@ using Topos.Logging.Console;
 using Topos.Tests;
 #pragma warning disable 1998
 
-namespace Topos.Kafka.Tests
+namespace Topos.Kafka.Tests;
+
+[TestFixture]
+public class KafkaStuff : ToposFixtureBase
 {
-    [TestFixture]
-    public class KafkaStuff : ToposFixtureBase
+    [Test]
+    public async Task ListTopics()
     {
-        [Test]
-        public async Task ListTopics()
-        {
-            var producer = new KafkaProducerImplementation(new ConsoleLoggerFactory(minimumLogLevel: LogLevel.Debug), KafkaTestConfig.Address);
+        var producer = new KafkaProducerImplementation(new ConsoleLoggerFactory(minimumLogLevel: LogLevel.Debug), KafkaTestConfig.Address);
 
-            Using(producer);
+        Using(producer);
 
-            var adminClient = producer.GetAdminClient();
+        var adminClient = producer.GetAdminClient();
 
-            Using(adminClient);
+        Using(adminClient);
 
-            var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
+        var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
 
-            Console.WriteLine($@"Topics:
+        Console.WriteLine($@"Topics:
 
 {string.Join(Environment.NewLine, metadata.Topics.Select(t => $"    {t.Topic}: {string.Join(", ", t.Partitions.Select(p => p.PartitionId))}"))}
 
 ");
 
-            //Console.WriteLine("Deleting all topics!");
+        //Console.WriteLine("Deleting all topics!");
 
-            //await adminClient.DeleteTopicsAsync(metadata.Topics.Select(t => t.Topic));
+        //await adminClient.DeleteTopicsAsync(metadata.Topics.Select(t => t.Topic));
 
-        }
     }
 }

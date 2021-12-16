@@ -2,36 +2,35 @@
 using System.Threading;
 using Topos.Serialization;
 
-namespace Topos.InMem
+namespace Topos.InMem;
+
+public class InMemEventBroker
 {
-    public class InMemEventBroker
+    readonly ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>> _messages = new ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>>();
+
+    long _offsetCounter;
+
+    public void Send(string topic, TransportMessage message)
     {
-        readonly ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>> _messages = new ConcurrentDictionary<string, ConcurrentQueue<InMemTransportMessage>>();
+        var inMemTransportMessage = new InMemTransportMessage(
+            transportMessage: message,
+            offset: Interlocked.Increment(ref _offsetCounter)
+        );
 
-        long _offsetCounter;
+        GetQueueForTopic(topic).Enqueue(inMemTransportMessage);
+    }
 
-        public void Send(string topic, TransportMessage message)
+    ConcurrentQueue<InMemTransportMessage> GetQueueForTopic(string topic) => _messages.GetOrAdd(topic, _ => new ConcurrentQueue<InMemTransportMessage>());
+
+    class InMemTransportMessage
+    {
+        public TransportMessage TransportMessage { get; }
+        public long Offset { get; }
+
+        public InMemTransportMessage(TransportMessage transportMessage, long offset)
         {
-            var inMemTransportMessage = new InMemTransportMessage(
-                transportMessage: message,
-                offset: Interlocked.Increment(ref _offsetCounter)
-            );
-
-            GetQueueForTopic(topic).Enqueue(inMemTransportMessage);
-        }
-
-        ConcurrentQueue<InMemTransportMessage> GetQueueForTopic(string topic) => _messages.GetOrAdd(topic, _ => new ConcurrentQueue<InMemTransportMessage>());
-
-        class InMemTransportMessage
-        {
-            public TransportMessage TransportMessage { get; }
-            public long Offset { get; }
-
-            public InMemTransportMessage(TransportMessage transportMessage, long offset)
-            {
-                TransportMessage = transportMessage;
-                Offset = offset;
-            }
+            TransportMessage = transportMessage;
+            Offset = offset;
         }
     }
 }

@@ -2,16 +2,15 @@
 using Serilog;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Kafka.Tests.Contracts
+namespace Topos.Kafka.Tests.Contracts;
+
+[TestFixture]
+public class KafkaMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<KafkaBrokerFactory>
 {
-    [TestFixture]
-    public class KafkaMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<KafkaBrokerFactory>
+    public KafkaMaxQueueLengthCustomizationTest()
     {
-        public KafkaMaxQueueLengthCustomizationTest()
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 }

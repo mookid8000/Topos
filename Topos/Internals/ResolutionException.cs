@@ -1,46 +1,45 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Topos.Internals
+namespace Topos.Internals;
+
+/// <inheritdoc />
+/// <summary>
+/// Exceptions that is thrown when something goes wrong while working with the injectionist
+/// </summary>
+[Serializable]
+class ResolutionException : Exception
 {
-    /// <inheritdoc />
     /// <summary>
-    /// Exceptions that is thrown when something goes wrong while working with the injectionist
+    /// Constructs the exception
     /// </summary>
-    [Serializable]
-    class ResolutionException : Exception
+    public ResolutionException(string message, string explanation = null)
+        : base(GetMessage(message, explanation))
     {
-        /// <summary>
-        /// Constructs the exception
-        /// </summary>
-        public ResolutionException(string message, string explanation = null)
-            : base(GetMessage(message, explanation))
-        {
-        }
+    }
 
-        /// <summary>
-        /// Constructs the exception
-        /// </summary>
-        public ResolutionException(Exception innerException, string message, string explanation = null)
-            : base(GetMessage(message, explanation), innerException)
-        {
-        }
+    /// <summary>
+    /// Constructs the exception
+    /// </summary>
+    public ResolutionException(Exception innerException, string message, string explanation = null)
+        : base(GetMessage(message, explanation), innerException)
+    {
+    }
 
-        static string GetMessage(string message, string explanation)
-        {
-            return string.IsNullOrWhiteSpace(explanation)
-                ? message
-                : $@"{message}
+    static string GetMessage(string message, string explanation)
+    {
+        return string.IsNullOrWhiteSpace(explanation)
+            ? message
+            : $@"{message}
 
 {explanation}";
-        }
+    }
 
-        /// <summary>
-        /// Constructs the exception
-        /// </summary>
-        public ResolutionException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
+    /// <summary>
+    /// Constructs the exception
+    /// </summary>
+    public ResolutionException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
     }
 }

@@ -2,41 +2,40 @@
 using System.Collections.Concurrent;
 using NUnit.Framework;
 
-namespace Topos.Tests.Contracts
+namespace Topos.Tests.Contracts;
+
+public abstract class ToposContractFixtureBase
 {
-    public abstract class ToposContractFixtureBase
+    readonly ConcurrentStack<IDisposable> _disposables = new();
+
+    [SetUp]
+    public void SetUp()
     {
-        readonly ConcurrentStack<IDisposable> _disposables = new();
+        AdditionalSetUp();
+    }
 
-        [SetUp]
-        public void SetUp()
+    [TearDown]
+    public void TearDown()
+    {
+        CleanUpDisposables();
+    }
+
+    protected virtual void AdditionalSetUp()
+    {
+    }
+
+    protected TDisposable Using<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
+    {
+        _disposables.Push(disposable);
+
+        return disposable;
+    }
+
+    protected void CleanUpDisposables()
+    {
+        while (_disposables.TryPop(out var disposable))
         {
-            AdditionalSetUp();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            CleanUpDisposables();
-        }
-
-        protected virtual void AdditionalSetUp()
-        {
-        }
-
-        protected TDisposable Using<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
-        {
-            _disposables.Push(disposable);
-
-            return disposable;
-        }
-
-        protected void CleanUpDisposables()
-        {
-            while (_disposables.TryPop(out var disposable))
-            {
-                disposable.Dispose();
-            }
+            disposable.Dispose();
         }
     }
 }

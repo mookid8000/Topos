@@ -1,20 +1,19 @@
 using Npgsql;
 
-namespace Topos.PostgreSql.Tests
+namespace Topos.PostgreSql.Tests;
+
+public static class PostgreSqlTestConfig
 {
-    public static class PostgreSqlTestConfig
+    public static void CleanDatabase(string connectionString)
     {
-        public static void CleanDatabase(string connectionString)
-        {
-            using var connection = new NpgsqlConnection(connectionString);
+        using var connection = new NpgsqlConnection(connectionString);
 
-            connection.Open();
+        connection.Open();
 
-            var clean = "DROP TABLE IF EXISTS topos.position_manager; DROP SCHEMA IF EXISTS topos;";
+        var clean = "DROP TABLE IF EXISTS topos.position_manager; DROP SCHEMA IF EXISTS topos;";
 
-            using var cmd = new NpgsqlCommand(clean, connection);
+        using var cmd = new NpgsqlCommand(clean, connection);
 
-            cmd.ExecuteNonQuery();
-        }
+        cmd.ExecuteNonQuery();
     }
 }

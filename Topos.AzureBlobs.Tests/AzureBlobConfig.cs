@@ -1,9 +1,8 @@
 ﻿using Microsoft.Azure.Storage;
 
-namespace Topos.AzureBlobs.Tests
+namespace Topos.AzureBlobs.Tests;
+
+static class AzureBlobConfig
 {
-    static class AzureBlobConfig
-    {
-        public static CloudStorageAccount StorageAccount => CloudStorageAccount.DevelopmentStorageAccount;
-    }
+    public static CloudStorageAccount StorageAccount => CloudStorageAccount.DevelopmentStorageAccount;
 }

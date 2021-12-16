@@ -4,24 +4,23 @@ using System.Threading.Tasks;
 using Topos.Consumer;
 #pragma warning disable 1998
 
-namespace Topos.InMem
+namespace Topos.InMem;
+
+public class InMemPositionsManager : IPositionManager
 {
-    public class InMemPositionsManager : IPositionManager
+    readonly InMemPositionsStorage _positionsStorage;
+
+    public InMemPositionsManager(InMemPositionsStorage positionsStorage)
     {
-        readonly InMemPositionsStorage _positionsStorage;
+        _positionsStorage = positionsStorage ?? throw new ArgumentNullException(nameof(positionsStorage));
+    }
 
-        public InMemPositionsManager(InMemPositionsStorage positionsStorage)
-        {
-            _positionsStorage = positionsStorage ?? throw new ArgumentNullException(nameof(positionsStorage));
-        }
+    public async Task Set(Position position) => _positionsStorage.Set(position);
 
-        public async Task Set(Position position) => _positionsStorage.Set(position);
+    public async Task<Position> Get(string topic, int partition)
+    {
+        var results = _positionsStorage.Get(topic, new[] { partition });
 
-        public async Task<Position> Get(string topic, int partition)
-        {
-            var results = _positionsStorage.Get(topic, new[] { partition });
-
-            return results.FirstOrDefault() ?? Position.Default(topic, partition);
-        }
+        return results.FirstOrDefault() ?? Position.Default(topic, partition);
     }
 }

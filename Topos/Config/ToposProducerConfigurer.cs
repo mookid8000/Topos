@@ -7,55 +7,54 @@ using Topos.Producer;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleStringLiteral
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public class ToposProducerConfigurer
 {
-    public class ToposProducerConfigurer
+    internal readonly Injectionist _injectionist = new Injectionist();
+
+    public ToposProducerConfigurer(Action<StandardConfigurer<IProducerImplementation>> configure)
     {
-        internal readonly Injectionist _injectionist = new Injectionist();
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var configurer = StandardConfigurer<IProducerImplementation>.New(_injectionist);
 
-        public ToposProducerConfigurer(Action<StandardConfigurer<IProducerImplementation>> configure)
+        configure(configurer);
+    }
+
+    public IToposProducer Create()
+    {
+        ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
+
+        _injectionist.Register<IToposProducer>(c =>
         {
-            if (configure == null) throw new ArgumentNullException(nameof(configure));
-            var configurer = StandardConfigurer<IProducerImplementation>.New(_injectionist);
+            var messageSerializer = c.Get<IMessageSerializer>();
+            var producerImplementation = c.Get<IProducerImplementation>(errorMessage: "Failing to get the producer implementation can be caused by a missing registration of IProducerImplementation");
+            var loggerFactory = c.Get<ILoggerFactory>();
 
-            configure(configurer);
-        }
+            var defaultToposProducer = new DefaultToposProducer(
+                messageSerializer,
+                producerImplementation,
+                loggerFactory
+            );
 
-        public IToposProducer Create()
-        {
-            ToposConfigurerHelpers.RegisterCommonServices(_injectionist);
-
-            _injectionist.Register<IToposProducer>(c =>
+            defaultToposProducer.Disposing += () =>
             {
-                var messageSerializer = c.Get<IMessageSerializer>();
-                var producerImplementation = c.Get<IProducerImplementation>(errorMessage: "Failing to get the producer implementation can be caused by a missing registration of IProducerImplementation");
-                var loggerFactory = c.Get<ILoggerFactory>();
-
-                var defaultToposProducer = new DefaultToposProducer(
-                    messageSerializer,
-                    producerImplementation,
-                    loggerFactory
-                );
-
-                defaultToposProducer.Disposing += () =>
+                foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
                 {
-                    foreach (var instance in c.TrackedInstances.OfType<IDisposable>().Reverse())
-                    {
-                        instance.Dispose();
-                    }
-                };
+                    instance.Dispose();
+                }
+            };
 
-                return defaultToposProducer;
-            });
+            return defaultToposProducer;
+        });
 
-            var resolutionResult = _injectionist.Get<IToposProducer>();
+        var resolutionResult = _injectionist.Get<IToposProducer>();
 
-            foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
-            {
-                initializable.Initialize();
-            }
-
-            return resolutionResult.Instance;
+        foreach (var initializable in resolutionResult.TrackedInstances.OfType<IInitializable>())
+        {
+            initializable.Initialize();
         }
+
+        return resolutionResult.Instance;
     }
 }

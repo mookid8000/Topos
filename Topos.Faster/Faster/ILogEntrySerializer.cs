@@ -1,10 +1,9 @@
 ﻿using Topos.Serialization;
 
-namespace Topos.Faster
+namespace Topos.Faster;
+
+public interface ILogEntrySerializer
 {
-    public interface ILogEntrySerializer
-    {
-        byte[] Serialize(TransportMessage transportMessage);
-        TransportMessage Deserialize(byte[] bytes);
-    }
+    byte[] Serialize(TransportMessage transportMessage);
+    TransportMessage Deserialize(byte[] bytes);
 }

@@ -8,94 +8,93 @@ using Topos.Internals;
 
 // ReSharper disable RedundantDefaultMemberInitializer
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public class KafkaConsumerConfigurationBuilder
 {
-    public class KafkaConsumerConfigurationBuilder
-    {
-        static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = Array.Empty<Func<ConsumerContext, IEnumerable<TopicPartition>, Task>>();
+    static readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] EmptyList = Array.Empty<Func<ConsumerContext, IEnumerable<TopicPartition>, Task>>();
 
-        /// <summary>
-        /// Adds a <see cref="ConsumerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
-        /// used to build the consumer
-        /// </summary>
-        public static void AddCustomizer(KafkaConsumerConfigurationBuilder builder, Func<ConsumerConfig, ConsumerConfig> customizer) => builder._customizers.Add(customizer);
+    /// <summary>
+    /// Adds a <see cref="ConsumerConfig"/> customizer to the builder. This provides the ability to customize and/or completely replace the configuration
+    /// used to build the consumer
+    /// </summary>
+    public static void AddCustomizer(KafkaConsumerConfigurationBuilder builder, Func<ConsumerConfig, ConsumerConfig> customizer) => builder._customizers.Add(customizer);
 
-        readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new();
+    readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new();
         
-        /// <summary>
-        /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
-        /// </summary>
-        public KafkaConsumerConfigurationBuilder OnPartitionsAssigned(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> handler)
+    /// <summary>
+    /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
+    /// </summary>
+    public KafkaConsumerConfigurationBuilder OnPartitionsAssigned(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> handler)
+    {
+        OnPartitionsAssignedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers the given <paramref name="handler"/> to be invoked when previously assigned topics/partitions are revoked
+    /// </summary>
+    public KafkaConsumerConfigurationBuilder OnPartitionsRevoked(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> handler)
+    {
+        OnPartitionsRevokedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
+        return this;
+    }
+
+    internal ConsumerConfig Apply(ConsumerConfig config)
+    {
+        var bootstrapServers = config.BootstrapServers;
+
+        config = _customizers.Aggregate(config, (cfg, customize) => customize(cfg));
+
+        AzureEventHubsHelper.TrySetConnectionInfo(bootstrapServers, info =>
         {
-            OnPartitionsAssignedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
-            return this;
-        }
+            config.BootstrapServers = info.BootstrapServers;
+            config.SaslUsername = info.SaslUsername;
+            config.SaslPassword = info.SaslPassword;
 
-        /// <summary>
-        /// Registers the given <paramref name="handler"/> to be invoked when previously assigned topics/partitions are revoked
-        /// </summary>
-        public KafkaConsumerConfigurationBuilder OnPartitionsRevoked(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> handler)
+            config.SessionTimeoutMs = 30000;
+            config.SecurityProtocol = SecurityProtocol.SaslSsl;
+            config.SaslMechanism = SaslMechanism.Plain;
+            config.EnableSslCertificateVerification = false;
+        });
+
+        return config;
+    }
+
+    internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsAssignedEvent;
+
+    internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsRevokedEvent;
+
+    internal Func<ConsumerContext, IEnumerable<TopicPartition>, Task> GetPartitionsAssignedHandler()
+    {
+        var handlers = GetHandlers(OnPartitionsAssignedEvent);
+
+        return async (context, partitions) =>
         {
-            OnPartitionsRevokedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
-            return this;
-        }
+            var tasks = handlers.Select(handler => handler(context, partitions));
 
-        internal ConsumerConfig Apply(ConsumerConfig config)
+            await Task.WhenAll(tasks);
+        };
+    }
+
+    internal Func<ConsumerContext, IEnumerable<TopicPartition>, Task> GetPartitionsRevokedHandler()
+    {
+        var handlers = GetHandlers(OnPartitionsRevokedEvent);
+
+        return async (context, partitions) =>
         {
-            var bootstrapServers = config.BootstrapServers;
+            var tasks = handlers.Select(handler => handler(context, partitions));
 
-            config = _customizers.Aggregate(config, (cfg, customize) => customize(cfg));
+            await Task.WhenAll(tasks);
+        };
+    }
 
-            AzureEventHubsHelper.TrySetConnectionInfo(bootstrapServers, info =>
-            {
-                config.BootstrapServers = info.BootstrapServers;
-                config.SaslUsername = info.SaslUsername;
-                config.SaslPassword = info.SaslPassword;
+    static Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] GetHandlers(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> @event)
+    {
+        return @event?.GetInvocationList()
+                   .Cast<Func<ConsumerContext, IEnumerable<TopicPartition>, Task>>()
+                   .ToArray()
 
-                config.SessionTimeoutMs = 30000;
-                config.SecurityProtocol = SecurityProtocol.SaslSsl;
-                config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = false;
-            });
-
-            return config;
-        }
-
-        internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsAssignedEvent;
-
-        internal event Func<ConsumerContext, IEnumerable<TopicPartition>, Task> OnPartitionsRevokedEvent;
-
-        internal Func<ConsumerContext, IEnumerable<TopicPartition>, Task> GetPartitionsAssignedHandler()
-        {
-            var handlers = GetHandlers(OnPartitionsAssignedEvent);
-
-            return async (context, partitions) =>
-            {
-                var tasks = handlers.Select(handler => handler(context, partitions));
-
-                await Task.WhenAll(tasks);
-            };
-        }
-
-        internal Func<ConsumerContext, IEnumerable<TopicPartition>, Task> GetPartitionsRevokedHandler()
-        {
-            var handlers = GetHandlers(OnPartitionsRevokedEvent);
-
-            return async (context, partitions) =>
-            {
-                var tasks = handlers.Select(handler => handler(context, partitions));
-
-                await Task.WhenAll(tasks);
-            };
-        }
-
-        static Func<ConsumerContext, IEnumerable<TopicPartition>, Task>[] GetHandlers(Func<ConsumerContext, IEnumerable<TopicPartition>, Task> @event)
-        {
-            return @event?.GetInvocationList()
-                       .Cast<Func<ConsumerContext, IEnumerable<TopicPartition>, Task>>()
-                       .ToArray()
-
-                   ?? EmptyList;
-        }
+               ?? EmptyList;
     }
 }

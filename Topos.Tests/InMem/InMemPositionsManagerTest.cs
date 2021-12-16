@@ -6,18 +6,17 @@ using Topos.Tests.Contracts.Factories;
 using Topos.Tests.Contracts.Positions;
 // ReSharper disable CoVariantArrayConversion
 
-namespace Topos.Tests.InMem
-{
-    [TestFixture]
-    public class InMemPositionsManagerTest : PositionsManagerTest<InMemPositionsManagerTest.InMemPositionManagerFactory>
-    {
-        public class InMemPositionManagerFactory : IPositionsManagerFactory
-        {
-            public IPositionManager Create() => new InMemPositionsManager(new InMemPositionsStorage());
+namespace Topos.Tests.InMem;
 
-            public void Dispose()
-            {
-            }
+[TestFixture]
+public class InMemPositionsManagerTest : PositionsManagerTest<InMemPositionsManagerTest.InMemPositionManagerFactory>
+{
+    public class InMemPositionManagerFactory : IPositionsManagerFactory
+    {
+        public IPositionManager Create() => new InMemPositionsManager(new InMemPositionsStorage());
+
+        public void Dispose()
+        {
         }
     }
 }

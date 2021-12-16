@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Topos.Helpers
+namespace Topos.Helpers;
+
+public class Disposables : IDisposable
 {
-    public class Disposables : IDisposable
+    readonly ConcurrentStack<IDisposable> _disposables = new ConcurrentStack<IDisposable>();
+
+    public void Add(IDisposable disposable) => _disposables.Push(disposable);
+
+    public void Dispose()
     {
-        readonly ConcurrentStack<IDisposable> _disposables = new ConcurrentStack<IDisposable>();
-
-        public void Add(IDisposable disposable) => _disposables.Push(disposable);
-
-        public void Dispose()
+        while (_disposables.TryPop(out var disposable))
         {
-            while (_disposables.TryPop(out var disposable))
-            {
-                disposable.Dispose();
-            }
+            disposable.Dispose();
         }
     }
 }

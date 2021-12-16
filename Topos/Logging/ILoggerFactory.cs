@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Topos.Logging
+namespace Topos.Logging;
+
+public interface ILoggerFactory
 {
-    public interface ILoggerFactory
-    {
-        ILogger GetLogger(Type type);
-    }
+    ILogger GetLogger(Type type);
 }

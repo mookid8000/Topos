@@ -6,104 +6,103 @@ using System.Threading.Tasks;
 // ReSharper disable AsyncVoidLambda
 // ReSharper disable RedundantExplicitTupleComponentName
 
-namespace Topos.Internals
+namespace Topos.Internals;
+
+static class AsyncHelpers
 {
-    static class AsyncHelpers
+    /// <summary>
+    /// Executes a task synchronously on the calling thread by installing a temporary synchronization context that queues continuations,
+    /// returning the result of calling the task
+    ///  </summary>
+    public static T GetAsync<T>(Func<Task<T>> task)
     {
-        /// <summary>
-        /// Executes a task synchronously on the calling thread by installing a temporary synchronization context that queues continuations,
-        /// returning the result of calling the task
-        ///  </summary>
-        public static T GetAsync<T>(Func<Task<T>> task)
+        var result = default(T);
+        RunSync(async () => result = await task());
+        return result;
+    }
+
+    /// <summary>
+    /// Executes a task synchronously on the calling thread by installing a temporary synchronization context that queues continuations
+    ///  </summary>
+    public static void RunSync(Func<Task> task)
+    {
+        var currentContext = SynchronizationContext.Current;
+        var customContext = new CustomSynchronizationContext(task);
+
+        try
         {
-            var result = default(T);
-            RunSync(async () => result = await task());
-            return result;
+            SynchronizationContext.SetSynchronizationContext(customContext);
+
+            customContext.Run();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(currentContext);
+        }
+    }
+
+    /// <summary>
+    /// Synchronization context that can be "pumped" in order to have it execute continuations posted back to it
+    /// </summary>
+    class CustomSynchronizationContext : SynchronizationContext
+    {
+        readonly ConcurrentQueue<(SendOrPostCallback Function, object State)> _items = new();
+        readonly AutoResetEvent _workItemsWaiting = new(initialState: false);
+        readonly Func<Task> _task;
+
+        ExceptionDispatchInfo _caughtException;
+
+        bool _done;
+
+        public CustomSynchronizationContext(Func<Task> task) => _task = task ?? throw new ArgumentNullException(nameof(task), "Please remember to pass a Task to be executed");
+
+        public override void Post(SendOrPostCallback function, object state)
+        {
+            _items.Enqueue((Function: function, State: state));
+            _workItemsWaiting.Set();
         }
 
         /// <summary>
-        /// Executes a task synchronously on the calling thread by installing a temporary synchronization context that queues continuations
-        ///  </summary>
-        public static void RunSync(Func<Task> task)
-        {
-            var currentContext = SynchronizationContext.Current;
-            var customContext = new CustomSynchronizationContext(task);
-
-            try
-            {
-                SynchronizationContext.SetSynchronizationContext(customContext);
-
-                customContext.Run();
-            }
-            finally
-            {
-                SynchronizationContext.SetSynchronizationContext(currentContext);
-            }
-        }
-
-        /// <summary>
-        /// Synchronization context that can be "pumped" in order to have it execute continuations posted back to it
+        /// Enqueues the function to be executed and executes all resulting continuations until it is completely done
         /// </summary>
-        class CustomSynchronizationContext : SynchronizationContext
+        public void Run()
         {
-            readonly ConcurrentQueue<(SendOrPostCallback Function, object State)> _items = new();
-            readonly AutoResetEvent _workItemsWaiting = new(initialState: false);
-            readonly Func<Task> _task;
-
-            ExceptionDispatchInfo _caughtException;
-
-            bool _done;
-
-            public CustomSynchronizationContext(Func<Task> task) => _task = task ?? throw new ArgumentNullException(nameof(task), "Please remember to pass a Task to be executed");
-
-            public override void Post(SendOrPostCallback function, object state)
+            Post(async _ =>
             {
-                _items.Enqueue((Function: function, State: state));
-                _workItemsWaiting.Set();
-            }
+                try
+                {
+                    await _task();
+                }
+                catch (Exception exception)
+                {
+                    _caughtException = ExceptionDispatchInfo.Capture(exception);
+                    throw;
+                }
+                finally
+                {
+                    Post(_ => _done = true, null);
+                }
+            }, null);
 
-            /// <summary>
-            /// Enqueues the function to be executed and executes all resulting continuations until it is completely done
-            /// </summary>
-            public void Run()
+            while (!_done)
             {
-                Post(async _ =>
+                if (_items.TryDequeue(out var task))
                 {
-                    try
-                    {
-                        await _task();
-                    }
-                    catch (Exception exception)
-                    {
-                        _caughtException = ExceptionDispatchInfo.Capture(exception);
-                        throw;
-                    }
-                    finally
-                    {
-                        Post(_ => _done = true, null);
-                    }
-                }, null);
+                    task.Function(task.State);
 
-                while (!_done)
+                    if (_caughtException == null) continue;
+
+                    _caughtException.Throw();
+                }
+                else
                 {
-                    if (_items.TryDequeue(out var task))
-                    {
-                        task.Function(task.State);
-
-                        if (_caughtException == null) continue;
-
-                        _caughtException.Throw();
-                    }
-                    else
-                    {
-                        _workItemsWaiting.WaitOne();
-                    }
+                    _workItemsWaiting.WaitOne();
                 }
             }
-
-            public override void Send(SendOrPostCallback d, object state) => throw new NotSupportedException("Cannot send to same thread");
-
-            public override SynchronizationContext CreateCopy() => this;
         }
+
+        public override void Send(SendOrPostCallback d, object state) => throw new NotSupportedException("Cannot send to same thread");
+
+        public override SynchronizationContext CreateCopy() => this;
     }
 }

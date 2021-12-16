@@ -1,54 +1,53 @@
 ﻿using Confluent.Kafka;
 
-namespace Topos.Config
+namespace Topos.Config;
+
+/// <summary>
+/// Extensions for connecting to Confluent Cloud
+/// </summary>
+public static class ConfluentCloudConfigurationExtensions
 {
     /// <summary>
-    /// Extensions for connecting to Confluent Cloud
+    /// Configures the Kafka client with good defaults for connecting to Confluent Cloud
     /// </summary>
-    public static class ConfluentCloudConfigurationExtensions
+    public static KafkaProducerConfigurationBuilder WithConfluentCloud(this KafkaProducerConfigurationBuilder builder, string key, string secret)
     {
-        /// <summary>
-        /// Configures the Kafka client with good defaults for connecting to Confluent Cloud
-        /// </summary>
-        public static KafkaProducerConfigurationBuilder WithConfluentCloud(this KafkaProducerConfigurationBuilder builder, string key, string secret)
+        KafkaProducerConfigurationBuilder.AddCustomizer(builder, config =>
         {
-            KafkaProducerConfigurationBuilder.AddCustomizer(builder, config =>
-            {
-                config.SaslUsername = key;
-                config.SaslPassword = secret;
+            config.SaslUsername = key;
+            config.SaslPassword = secret;
 
-                config.RequestTimeoutMs = 60000;
-                config.SecurityProtocol = SecurityProtocol.SaslSsl;
-                config.SaslMechanism = SaslMechanism.Plain;
-                config.EnableSslCertificateVerification = false;
-                config.SocketKeepaliveEnable = true;
+            config.RequestTimeoutMs = 60000;
+            config.SecurityProtocol = SecurityProtocol.SaslSsl;
+            config.SaslMechanism = SaslMechanism.Plain;
+            config.EnableSslCertificateVerification = false;
+            config.SocketKeepaliveEnable = true;
 
-                return config;
-            });
+            return config;
+        });
 
-            return builder;
-        }
+        return builder;
+    }
 
-        /// <summary>
-        /// Configures the Kafka client with good defaults for connecting to Confluent Cloud
-        /// </summary>
-        public static KafkaConsumerConfigurationBuilder WithConfluentCloud(this KafkaConsumerConfigurationBuilder builder, string key, string secret)
+    /// <summary>
+    /// Configures the Kafka client with good defaults for connecting to Confluent Cloud
+    /// </summary>
+    public static KafkaConsumerConfigurationBuilder WithConfluentCloud(this KafkaConsumerConfigurationBuilder builder, string key, string secret)
+    {
+        KafkaConsumerConfigurationBuilder.AddCustomizer(builder, config =>
         {
-            KafkaConsumerConfigurationBuilder.AddCustomizer(builder, config =>
-             {
-                 config.SaslUsername = key;
-                 config.SaslPassword = secret;
+            config.SaslUsername = key;
+            config.SaslPassword = secret;
 
-                 config.SessionTimeoutMs = 45000;
-                 config.SecurityProtocol = SecurityProtocol.SaslSsl;
-                 config.SaslMechanism = SaslMechanism.Plain;
-                 config.EnableSslCertificateVerification = false;
-                 config.SocketKeepaliveEnable = true;
+            config.SessionTimeoutMs = 45000;
+            config.SecurityProtocol = SecurityProtocol.SaslSsl;
+            config.SaslMechanism = SaslMechanism.Plain;
+            config.EnableSslCertificateVerification = false;
+            config.SocketKeepaliveEnable = true;
 
-                return config;
-             });
+            return config;
+        });
 
-            return builder;
-        }
+        return builder;
     }
 }

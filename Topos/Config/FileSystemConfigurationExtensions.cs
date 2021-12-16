@@ -2,18 +2,17 @@
 using Topos.Consumer;
 using Topos.FileSystem;
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public static class FileSystemConfigurationExtensions
 {
-    public static class FileSystemConfigurationExtensions
+    public static void StoreInFileSystem(this StandardConfigurer<IPositionManager> configurer, string directoryPath)
     {
-        public static void StoreInFileSystem(this StandardConfigurer<IPositionManager> configurer, string directoryPath)
-        {
-            if (configurer == null) throw new ArgumentNullException(nameof(configurer));
-            if (directoryPath == null) throw new ArgumentNullException(nameof(directoryPath));
+        if (configurer == null) throw new ArgumentNullException(nameof(configurer));
+        if (directoryPath == null) throw new ArgumentNullException(nameof(directoryPath));
 
-            var registrar = StandardConfigurer.Open(configurer);
+        var registrar = StandardConfigurer.Open(configurer);
 
-            registrar.Register(_ => new FileSystemPositionsManager(directoryPath));
-        }
+        registrar.Register(_ => new FileSystemPositionsManager(directoryPath));
     }
 }

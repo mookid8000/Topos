@@ -1,10 +1,9 @@
 ﻿using System;
 using Topos.Consumer;
 
-namespace Topos.Tests.Contracts.Factories
+namespace Topos.Tests.Contracts.Factories;
+
+public interface IPositionsManagerFactory : IDisposable
 {
-    public interface IPositionsManagerFactory : IDisposable
-    {
-        IPositionManager Create();
-    }
+    IPositionManager Create();
 }

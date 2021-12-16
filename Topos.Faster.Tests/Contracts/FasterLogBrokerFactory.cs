@@ -3,26 +3,25 @@ using Topos.Config;
 using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Factories;
 
-namespace Topos.Faster.Tests.Contracts
+namespace Topos.Faster.Tests.Contracts;
+
+public class FasterLogBrokerFactory : DisposableFactory, IBrokerFactory
 {
-    public class FasterLogBrokerFactory : DisposableFactory, IBrokerFactory
-    {
-        readonly TemporaryTestDirectory _temporaryTestDirectory = new();
+    readonly TemporaryTestDirectory _temporaryTestDirectory = new();
 
-        int _counter;
+    int _counter;
 
-        public FasterLogBrokerFactory() => Using(_temporaryTestDirectory);
+    public FasterLogBrokerFactory() => Using(_temporaryTestDirectory);
 
-        public ToposProducerConfigurer ConfigureProducer() =>
-            Configure
-                .Producer(p => p.UseFileSystem(_temporaryTestDirectory.ToString()))
-                .Logging(l => l.UseSerilog());
+    public ToposProducerConfigurer ConfigureProducer() =>
+        Configure
+            .Producer(p => p.UseFileSystem(_temporaryTestDirectory.ToString()))
+            .Logging(l => l.UseSerilog());
 
-        public ToposConsumerConfigurer ConfigureConsumer(string groupName) =>
-            Configure
-                .Consumer(groupName, c => c.UseFileSystem(_temporaryTestDirectory.ToString()))
-                .Logging(l => l.UseSerilog());
+    public ToposConsumerConfigurer ConfigureConsumer(string groupName) =>
+        Configure
+            .Consumer(groupName, c => c.UseFileSystem(_temporaryTestDirectory.ToString()))
+            .Logging(l => l.UseSerilog());
 
-        public string GetNewTopic() => $"topic{_counter++}";
-    }
+    public string GetNewTopic() => $"topic{_counter++}";
 }

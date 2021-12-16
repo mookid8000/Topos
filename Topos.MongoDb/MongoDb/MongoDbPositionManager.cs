@@ -4,49 +4,48 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Topos.Consumer;
 
-namespace Topos.MongoDb
+namespace Topos.MongoDb;
+
+public class MongoDbPositionManager : IPositionManager
 {
-    public class MongoDbPositionManager : IPositionManager
+    readonly IMongoCollection<BsonDocument> _positions;
+
+    public MongoDbPositionManager(IMongoDatabase database, string collectionName)
     {
-        readonly IMongoCollection<BsonDocument> _positions;
+        if (database == null) throw new ArgumentNullException(nameof(database));
+        if (collectionName == null) throw new ArgumentNullException(nameof(collectionName));
+        _positions = database.GetCollection<BsonDocument>(collectionName);
+    }
 
-        public MongoDbPositionManager(IMongoDatabase database, string collectionName)
+    public async Task Set(Position position)
+    {
+        var criteria = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
         {
-            if (database == null) throw new ArgumentNullException(nameof(database));
-            if (collectionName == null) throw new ArgumentNullException(nameof(collectionName));
-            _positions = database.GetCollection<BsonDocument>(collectionName);
-        }
+            {"_id", position.Topic}
+        });
 
-        public async Task Set(Position position)
+        var update = new BsonDocumentUpdateDefinition<BsonDocument>(new BsonDocument
         {
-            var criteria = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
-            {
-                {"_id", position.Topic}
-            });
+            {"$set", new BsonDocument{{position.Partition.ToString(), position.Offset}}}
+        });
 
-            var update = new BsonDocumentUpdateDefinition<BsonDocument>(new BsonDocument
-            {
-                {"$set", new BsonDocument{{position.Partition.ToString(), position.Offset}}}
-            });
+        await _positions.UpdateOneAsync(criteria, update, new UpdateOptions { IsUpsert = true });
+    }
 
-            await _positions.UpdateOneAsync(criteria, update, new UpdateOptions { IsUpsert = true });
-        }
-
-        public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> Get(string topic, int partition)
+    {
+        var query = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
         {
-            var query = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
-            {
-                {"_id", topic}
-            });
+            {"_id", topic}
+        });
 
-            var document = await _positions.Find(query).FirstOrDefaultAsync();
-            if (document == null) return Position.Default(topic, partition);
+        var document = await _positions.Find(query).FirstOrDefaultAsync();
+        if (document == null) return Position.Default(topic, partition);
 
-            var fieldName = partition.ToString();
+        var fieldName = partition.ToString();
 
-            return document.Contains(fieldName)
-                ? new Position(topic, partition, document[fieldName].AsInt64)
-                : Position.Default(topic, partition);
-        }
+        return document.Contains(fieldName)
+            ? new Position(topic, partition, document[fieldName].AsInt64)
+            : Position.Default(topic, partition);
     }
 }

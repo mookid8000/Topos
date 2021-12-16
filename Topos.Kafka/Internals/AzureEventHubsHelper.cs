@@ -3,52 +3,51 @@
 // ReSharper disable ArgumentsStyleStringLiteral
 // ReSharper disable ArgumentsStyleOther
 
-namespace Topos.Internals
+namespace Topos.Internals;
+
+class AzureEventHubsHelper
 {
-    class AzureEventHubsHelper
+    public static void TrySetConnectionInfo(string bootstrapServers, Action<EventHubsConnectionInfo> applyInfo)
     {
-        public static void TrySetConnectionInfo(string bootstrapServers, Action<EventHubsConnectionInfo> applyInfo)
+        if (!LooksLikeEventHubs(bootstrapServers)) return;
+
+        try
         {
-            if (!LooksLikeEventHubs(bootstrapServers)) return;
-
-            try
-            {
-                var parser = new ConnectionStringParser(bootstrapServers);
-
-                var endpoint = parser.GetValue("Endpoint");
-                var host = new Uri(endpoint).Host;
-
-                applyInfo(new EventHubsConnectionInfo(bootstrapServers: $"{host}:9093", saslUsername: "$ConnectionString", saslPassword: bootstrapServers));
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException("The connection string looks like an Azure Event Hubs connection string, but an error occurred when trying to parse it");
-            }
-        }
-
-        static bool LooksLikeEventHubs(string bootstrapServers)
-        {
-            if (string.IsNullOrWhiteSpace(bootstrapServers)) return false;
-
             var parser = new ConnectionStringParser(bootstrapServers);
 
-            return parser.HasElement("Endpoint")
-                   && parser.HasElement("SharedAccessKeyName")
-                   && parser.HasElement("SharedAccessKey");
+            var endpoint = parser.GetValue("Endpoint");
+            var host = new Uri(endpoint).Host;
+
+            applyInfo(new EventHubsConnectionInfo(bootstrapServers: $"{host}:9093", saslUsername: "$ConnectionString", saslPassword: bootstrapServers));
         }
-
-        public class EventHubsConnectionInfo
+        catch (Exception)
         {
-            public string BootstrapServers { get; }
-            public string SaslUsername { get; }
-            public string SaslPassword { get; }
+            throw new ArgumentException("The connection string looks like an Azure Event Hubs connection string, but an error occurred when trying to parse it");
+        }
+    }
 
-            public EventHubsConnectionInfo(string bootstrapServers, string saslUsername, string saslPassword)
-            {
-                BootstrapServers = bootstrapServers;
-                SaslUsername = saslUsername;
-                SaslPassword = saslPassword;
-            }
+    static bool LooksLikeEventHubs(string bootstrapServers)
+    {
+        if (string.IsNullOrWhiteSpace(bootstrapServers)) return false;
+
+        var parser = new ConnectionStringParser(bootstrapServers);
+
+        return parser.HasElement("Endpoint")
+               && parser.HasElement("SharedAccessKeyName")
+               && parser.HasElement("SharedAccessKey");
+    }
+
+    public class EventHubsConnectionInfo
+    {
+        public string BootstrapServers { get; }
+        public string SaslUsername { get; }
+        public string SaslPassword { get; }
+
+        public EventHubsConnectionInfo(string bootstrapServers, string saslUsername, string saslPassword)
+        {
+            BootstrapServers = bootstrapServers;
+            SaslUsername = saslUsername;
+            SaslPassword = saslPassword;
         }
     }
 }

@@ -1,18 +1,17 @@
 ﻿using System;
 using Topos.Config;
 
-namespace Topos.Routing
+namespace Topos.Routing;
+
+public class SubscriptionsRegistrar
 {
-    public class SubscriptionsRegistrar
+    readonly Topics _topics;
+
+    public SubscriptionsRegistrar(Topics topics) => _topics = topics ?? throw new ArgumentNullException(nameof(topics));
+
+    public SubscriptionsRegistrar Subscribe(string topic)
     {
-        readonly Topics _topics;
-
-        public SubscriptionsRegistrar(Topics topics) => _topics = topics ?? throw new ArgumentNullException(nameof(topics));
-
-        public SubscriptionsRegistrar Subscribe(string topic)
-        {
-            _topics.AddRange(new[] {topic});
-            return this;
-        }
+        _topics.AddRange(new[] {topic});
+        return this;
     }
 }

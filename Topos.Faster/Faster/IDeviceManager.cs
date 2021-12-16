@@ -1,15 +1,14 @@
 ﻿using FASTER.core;
 
-namespace Topos.Faster
+namespace Topos.Faster;
+
+/// <summary>
+/// Abstracts away management of FasterLog logs
+/// </summary>
+public interface IDeviceManager
 {
     /// <summary>
-    /// Abstracts away management of FasterLog logs
+    /// Gets a log for the given topic
     /// </summary>
-    public interface IDeviceManager
-    {
-        /// <summary>
-        /// Gets a log for the given topic
-        /// </summary>
-        FasterLog GetLog(string topic);
-    }
+    FasterLog GetLog(string topic);
 }

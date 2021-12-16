@@ -10,81 +10,80 @@ using Topos.Config;
 using Topos.Producer;
 #pragma warning disable 1998
 
-namespace Topos.Kafka.Tests
+namespace Topos.Kafka.Tests;
+
+[TestFixture]
+public class LittlePerformanceTest : KafkaFixtureBase
 {
-    [TestFixture]
-    public class LittlePerformanceTest : KafkaFixtureBase
+    //[TestCase(100, 10)]
+    //[TestCase(1000, 10)]
+    ////[TestCase(10000, 15)]
+    //[TestCase(100000, 20)]
+    [TestCase(1000000, 90)]
+    public async Task TakeTime(int eventCount, int consumeTimeoutSeconds)
     {
-        //[TestCase(100, 10)]
-        //[TestCase(1000, 10)]
-        ////[TestCase(10000, 15)]
-        //[TestCase(100000, 20)]
-        [TestCase(1000000, 90)]
-        public async Task TakeTime(int eventCount, int consumeTimeoutSeconds)
+        SetLogLevelTo(LogEventLevel.Information);
+
+        var topic = GetNewTopic();
+        var events = Enumerable.Range(0, eventCount).Select(n => $"THIS STRING MESSAGE IS EVENT NUMBER {n}");
+
+        var toposProducer = Configure.Producer(c => c.UseKafka(KafkaTestConfig.Address))
+            .Logging(l => l.UseSerilog())
+            .Create();
+
+        Using(toposProducer);
+
+        await Produce(toposProducer, events, eventCount, topic);
+
+        var counter = 0L;
+
+        var consumer = Configure.Consumer("default", c => c.UseKafka(KafkaTestConfig.Address))
+            .Logging(l => l.UseSerilog())
+            .Topics(t => t.Subscribe(topic))
+            .Handle(async (messages, context, token) => Interlocked.Add(ref counter, messages.Count))
+            .Positions(p => p.StoreInMemory())
+            .Create();
+
+        Using(consumer);
+
+        consumer.Start();
+
+        var stopwatch = Stopwatch.StartNew();
+        var timeout = TimeSpan.FromSeconds(consumeTimeoutSeconds);
+
+        while (true)
         {
-            SetLogLevelTo(LogEventLevel.Information);
+            var receivedCount = Interlocked.Read(ref counter);
 
-            var topic = GetNewTopic();
-            var events = Enumerable.Range(0, eventCount).Select(n => $"THIS STRING MESSAGE IS EVENT NUMBER {n}");
-
-            var toposProducer = Configure.Producer(c => c.UseKafka(KafkaTestConfig.Address))
-                .Logging(l => l.UseSerilog())
-                .Create();
-
-            Using(toposProducer);
-
-            await Produce(toposProducer, events, eventCount, topic);
-
-            var counter = 0L;
-
-            var consumer = Configure.Consumer("default", c => c.UseKafka(KafkaTestConfig.Address))
-                .Logging(l => l.UseSerilog())
-                .Topics(t => t.Subscribe(topic))
-                .Handle(async (messages, context, token) => Interlocked.Add(ref counter, messages.Count))
-                .Positions(p => p.StoreInMemory())
-                .Create();
-
-            Using(consumer);
-
-            consumer.Start();
-
-            var stopwatch = Stopwatch.StartNew();
-            var timeout = TimeSpan.FromSeconds(consumeTimeoutSeconds);
-
-            while (true)
+            if (receivedCount == eventCount)
             {
-                var receivedCount = Interlocked.Read(ref counter);
-
-                if (receivedCount == eventCount)
-                {
-                    Console.WriteLine("Done!");
-                    break;
-                }
-
-                await Task.Delay(100);
-
-                if (stopwatch.Elapsed > timeout)
-                {
-                    throw new TimeoutException($"The expected {eventCount} events were not received within timeout {timeout} - only {receivedCount} were received");
-                }
+                Console.WriteLine("Done!");
+                break;
             }
 
-            var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            await Task.Delay(100);
 
-            Console.WriteLine($"Consuming {eventCount} events took {elapsedSeconds:0.0} s - that's {eventCount / elapsedSeconds:0.0} evt/s");
+            if (stopwatch.Elapsed > timeout)
+            {
+                throw new TimeoutException($"The expected {eventCount} events were not received within timeout {timeout} - only {receivedCount} were received");
+            }
         }
 
-        static async Task Produce(IToposProducer producer, IEnumerable<string> events, int eventCount, string topic)
-        {
-            var stopwatch = Stopwatch.StartNew();
+        var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 
-            await producer.SendMany(topic, events.Select((evt, index) => new ToposMessage(evt)));
+        Console.WriteLine($"Consuming {eventCount} events took {elapsedSeconds:0.0} s - that's {eventCount / elapsedSeconds:0.0} evt/s");
+    }
 
-            //await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(topic, new ToposMessage(evt), index.ToString())));
+    static async Task Produce(IToposProducer producer, IEnumerable<string> events, int eventCount, string topic)
+    {
+        var stopwatch = Stopwatch.StartNew();
 
-            var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+        await producer.SendMany(topic, events.Select((evt, index) => new ToposMessage(evt)));
 
-            Console.WriteLine($"Producing {eventCount} events took {elapsedSeconds:0.0} s - that's {eventCount / elapsedSeconds:0.0} evt/s");
-        }
+        //await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(topic, new ToposMessage(evt), index.ToString())));
+
+        var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+        Console.WriteLine($"Producing {eventCount} events took {elapsedSeconds:0.0} s - that's {eventCount / elapsedSeconds:0.0} evt/s");
     }
 }

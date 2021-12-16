@@ -2,25 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Topos.Config
+namespace Topos.Config;
+
+public class Topics : IEnumerable<string>
 {
-    public class Topics : IEnumerable<string>
+    readonly HashSet<string> _topics = new HashSet<string>();
+
+    public void AddRange(IEnumerable<string> topics)
     {
-        readonly HashSet<string> _topics = new HashSet<string>();
-
-        public void AddRange(IEnumerable<string> topics)
+        if (topics == null) throw new ArgumentNullException(nameof(topics));
+        foreach (var topic in topics)
         {
-            if (topics == null) throw new ArgumentNullException(nameof(topics));
-            foreach (var topic in topics)
-            {
-                _topics.Add(topic);
-            }
+            _topics.Add(topic);
         }
-
-        public IEnumerator<string> GetEnumerator() => _topics.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public override string ToString() => string.Join(", ", _topics);
     }
+
+    public IEnumerator<string> GetEnumerator() => _topics.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override string ToString() => string.Join(", ", _topics);
 }

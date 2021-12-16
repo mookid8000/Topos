@@ -2,11 +2,10 @@
 using System.Threading.Tasks;
 using Topos.Serialization;
 
-namespace Topos.Consumer
+namespace Topos.Consumer;
+
+public interface IConsumerDispatcher
 {
-    public interface IConsumerDispatcher
-    {
-        void Dispatch(ReceivedTransportMessage transportMessage);
-        Task Revoke(string topic, IEnumerable<int> partitions);
-    }
+    void Dispatch(ReceivedTransportMessage transportMessage);
+    Task Revoke(string topic, IEnumerable<int> partitions);
 }

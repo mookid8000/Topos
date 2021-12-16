@@ -2,16 +2,15 @@
 using Serilog;
 using Topos.Tests.Contracts.Broker;
 
-namespace Topos.Faster.Tests.Contracts
+namespace Topos.Faster.Tests.Contracts;
+
+[TestFixture]
+public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FasterLogBrokerFactory>
 {
-    [TestFixture]
-    public class FileSystemMaxQueueLengthCustomizationTest : MaxQueueLengthCustomizationTest<FasterLogBrokerFactory>
+    public FileSystemMaxQueueLengthCustomizationTest()
     {
-        public FileSystemMaxQueueLengthCustomizationTest()
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .CreateLogger();
-        }
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 }

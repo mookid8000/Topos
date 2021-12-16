@@ -4,14 +4,13 @@ using Topos.Logging.Console;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleNamedExpression
 
-namespace Topos.Config
+namespace Topos.Config;
+
+class ToposConfigurerHelpers
 {
-    class ToposConfigurerHelpers
+    public static void RegisterCommonServices(Injectionist injectionist)
     {
-        public static void RegisterCommonServices(Injectionist injectionist)
-        {
-            injectionist.PossiblyRegisterDefault<ILoggerFactory>(c => new ConsoleLoggerFactory(minimumLogLevel: LogLevel.Debug));
-            injectionist.PossiblyRegisterDefault<IMessageSerializer>(c => new Utf8StringEncoder());
-        }
+        injectionist.PossiblyRegisterDefault<ILoggerFactory>(c => new ConsoleLoggerFactory(minimumLogLevel: LogLevel.Debug));
+        injectionist.PossiblyRegisterDefault<IMessageSerializer>(c => new Utf8StringEncoder());
     }
 }
