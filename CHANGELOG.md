@@ -189,6 +189,9 @@
 ## 0.1.0
 * Dispatch received logical messages in `IReadOnlyList` because we might as well allow indexing
 
+## 0.1.1
+* Use Nito.AsyncEx instead of `SemaphoreSlim` in places
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

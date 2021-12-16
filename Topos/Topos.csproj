@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="fastmember" Version="1.5.0" />
+    <PackageReference Include="nito.asyncex" Version="5.1.2" />
     <PackageReference Include="polly" Version="7.2.2" />
   </ItemGroup>
 

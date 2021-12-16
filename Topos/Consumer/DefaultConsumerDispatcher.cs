@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using Polly;
 using Topos.Extensions;
 using Topos.Logging;
@@ -16,9 +17,9 @@ namespace Topos.Consumer;
 
 public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, IDisposable
 {
-    readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _previouslySetPositions = new ConcurrentDictionary<string, ConcurrentDictionary<int, long>>();
-    readonly SemaphoreSlim _setPositionsSemaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-    readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _previouslySetPositions = new();
+    readonly CancellationTokenSource _cancellationTokenSource = new();
+    readonly AsyncLock _setPositionsLock = new();
     readonly IMessageSerializer _messageSerializer;
     readonly IPositionManager _positionManager;
     readonly ConsumerContext _consumerContext;
@@ -89,44 +90,41 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
 
         var token = _cancellationTokenSource.Token;
 
-        await _setPositionsSemaphore.WaitAsync(token);
-
-        try
+        using (await _setPositionsLock.LockAsync(cancellationToken: token))
         {
-            // ensure all handlers have finished processing their queues
-            foreach (var handler in _handlers)
+            try
             {
-                await handler.Drain(token);
-            }
-
-            // save all positions
-            await SetPositions();
-
-            // remove cached positions from handlers
-            foreach (var handler in _handlers)
-            {
-                handler.Clear(topic, partitionsList);
-            }
-
-            if (_previouslySetPositions.TryGetValue(topic, out var positions))
-            {
-                foreach (var partition in partitionsList)
+                // ensure all handlers have finished processing their queues
+                foreach (var handler in _handlers)
                 {
-                    positions.TryRemove(partition, out _);
+                    await handler.Drain(token);
+                }
+
+                // save all positions
+                await SetPositions();
+
+                // remove cached positions from handlers
+                foreach (var handler in _handlers)
+                {
+                    handler.Clear(topic, partitionsList);
+                }
+
+                if (_previouslySetPositions.TryGetValue(topic, out var positions))
+                {
+                    foreach (var partition in partitionsList)
+                    {
+                        positions.TryRemove(partition, out _);
+                    }
                 }
             }
-        }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
-        {
-            // it's ok, we're shutting down
-        }
-        catch (Exception exception)
-        {
-            _logger.Error(exception, "Error when flushing positions in revoke callback");
-        }
-        finally
-        {
-            _setPositionsSemaphore.Release();
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                // it's ok, we're shutting down
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Error when flushing positions in revoke callback");
+            }
         }
     }
 
@@ -134,15 +132,9 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
     {
         async Task DoFlush(CancellationToken cancellationToken)
         {
-            await _setPositionsSemaphore.WaitAsync(cancellationToken);
-
-            try
+            using (await _setPositionsLock.LockAsync(cancellationToken))
             {
                 await SetPositions();
-            }
-            finally
-            {
-                _setPositionsSemaphore.Release();
             }
         }
 
@@ -232,8 +224,6 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
                     _logger.Warn("Positions flusher loop did not exit/finish committing the last position within 3 s timeout - positions may not have been properly committed");
                 }
             }
-
-            _setPositionsSemaphore.Dispose();
         }
         finally
         {

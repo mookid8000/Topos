@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using Polly;
 using Polly.Retry;
 using Topos.Config;
 using Topos.Extensions;
-using Topos.Helpers;
 using Topos.Logging;
 using Topos.Logging.Null;
 using Topos.Serialization;
@@ -30,7 +30,7 @@ public class MessageHandler : IDisposable
 
     readonly ConcurrentDictionary<string, ConcurrentDictionary<int, long>> _positions = new();
     readonly ConcurrentQueue<ReceivedLogicalMessage> _messages = new();
-    readonly AsyncSemaphore _messagesSemaphore = new(initialCount: 0, maxCount: int.MaxValue);
+    readonly AsyncSemaphore _messagesSemaphore = new(initialCount: 0);
     readonly CancellationTokenSource _cancellationTokenSource = new();
 
     readonly MessageHandlerDelegate _callback;
@@ -61,7 +61,7 @@ public class MessageHandler : IDisposable
     public void Enqueue(ReceivedLogicalMessage receivedLogicalMessage)
     {
         _messages.Enqueue(receivedLogicalMessage);
-        _messagesSemaphore.Increment();
+        _messagesSemaphore.Release();
     }
 
     public void Start(ILogger logger, ConsumerContext context)
@@ -123,7 +123,7 @@ public class MessageHandler : IDisposable
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                await _messagesSemaphore.DecrementAsync(cancellationToken);
+                await _messagesSemaphore.WaitAsync(cancellationToken);
 
                 // while we still have room for messages
                 while (messageBatch.Count < _maximumBatchSize)
@@ -207,7 +207,6 @@ public class MessageHandler : IDisposable
         try
         {
             using (_cancellationTokenSource)
-            using (_messagesSemaphore)
             {
                 Stop();
 

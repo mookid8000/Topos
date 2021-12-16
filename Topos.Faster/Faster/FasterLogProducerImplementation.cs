@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FASTER.core;
+using Nito.AsyncEx;
 using Topos.Consumer;
 using Topos.Extensions;
-using Topos.Helpers;
 using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
@@ -20,7 +19,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 {
     readonly CancellationTokenSource _cancellationTokenSource = new();
     readonly ConcurrentQueue<WriteTask> _writeTasks = new();
-    readonly AsyncSemaphore _queueItems = new(initialCount: 0, maxCount: int.MaxValue);
+    readonly AsyncSemaphore _queueItemsSemaphore = new(initialCount: 0);
     readonly EventExpirationHelper _eventExpirationHelper;
     readonly ILogEntrySerializer _logEntrySerializer;
     readonly IDeviceManager _deviceManager;
@@ -63,7 +62,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     Task EnqueueWriteTask(WriteTask writeTask)
     {
         _writeTasks.Enqueue(writeTask);
-        _queueItems.Increment();
+        _queueItemsSemaphore.Release();
         return writeTask.Task;
     }
 
@@ -77,7 +76,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
         {
             try
             {
-                await _queueItems.DecrementAsync(cancellationToken);
+                await _queueItemsSemaphore.WaitAsync(cancellationToken);
 
                 var tasks = DequeueNext(100);
 
