@@ -62,7 +62,6 @@ namespace Topos.Config
                     deviceManager: c.Get<IDeviceManager>(),
                     logEntrySerializer: c.Get<ILogEntrySerializer>(),
                     topics: c.Has<Topics>() ? c.Get<Topics>() : new Topics(),
-                    group: c.Get<GroupId>().Id,
                     consumerDispatcher: c.Get<IConsumerDispatcher>(),
                     positionManager: c.Get<IPositionManager>()
                 ))
