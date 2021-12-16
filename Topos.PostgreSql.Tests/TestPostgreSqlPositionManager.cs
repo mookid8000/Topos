@@ -11,7 +11,7 @@ public class TestPostgreSqlPositionManager : PostgreSqlFixtureBase
 
     protected override void SetUp()
     {
-        var connectionString = "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=postgres";
+        const string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=postgres";
         CleanDatabase(connectionString);
         _positionManager = new PostgreSqlPositionManager(connectionString, "my_consumer_group");
     }

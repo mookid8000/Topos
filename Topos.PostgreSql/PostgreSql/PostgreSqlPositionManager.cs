@@ -8,20 +8,13 @@ namespace Topos.PostgreSql;
 
 public class PostgreSqlPositionManager : IPositionManager
 {
-    private readonly string _connectionString;
-    private readonly string _consumerGroup;
+    readonly string _connectionString;
+    readonly string _consumerGroup;
 
-    public PostgreSqlPositionManager(
-        string connectionString,
-        string consumerGroup)
+    public PostgreSqlPositionManager(string connectionString, string consumerGroup)
     {
-        if (string.IsNullOrEmpty(connectionString))
-            throw new ArgumentException($"{nameof(connectionString)} cannot be null or empty.");
-        if (string.IsNullOrEmpty(consumerGroup))
-            throw new ArgumentException($"{nameof(consumerGroup)} cannot be null or empty.");
-
-        _connectionString = connectionString;
-        _consumerGroup = consumerGroup;
+        _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        _consumerGroup = consumerGroup ?? throw new ArgumentNullException(nameof(consumerGroup));
 
         if (!SchemaExist().Result)
         {
@@ -32,10 +25,10 @@ public class PostgreSqlPositionManager : IPositionManager
     public async Task Set(Position position)
     {
         await using var connection = new NpgsqlConnection(_connectionString);
-            
+
         await connection.OpenAsync();
 
-        var query = @"
+        const string query = @"
               INSERT INTO topos.position_manager (
                 consumer_group,
                 topic,
@@ -74,7 +67,7 @@ public class PostgreSqlPositionManager : IPositionManager
     public async Task<Position> Get(string topic, int partition)
     {
         await using var connection = new NpgsqlConnection(_connectionString);
-            
+
         await connection.OpenAsync();
 
         var getPositionQuery = @"
@@ -103,9 +96,9 @@ public class PostgreSqlPositionManager : IPositionManager
             : new Position(topic, partition, position);
     }
 
-    private async Task InitSchema()
+    async Task InitSchema()
     {
-        var schemaSetup = @"
+        const string schemaSetup = @"
                     CREATE SCHEMA topos;
                     CREATE TABLE topos.position_manager (
                         consumer_group varchar(255),

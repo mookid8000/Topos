@@ -5,7 +5,7 @@ namespace Topos.MongoDb.Tests;
 
 public static class MongoTestConfig
 {
-    public static MongoUrl MongoUrl => new MongoUrl("mongodb://localhost/topos-test");
+    public static MongoUrl MongoUrl => new("mongodb://localhost/topos-test");
 
     public static IMongoDatabase GetCleanTestDatabase()
     {

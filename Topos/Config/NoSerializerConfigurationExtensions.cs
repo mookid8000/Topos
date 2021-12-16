@@ -13,6 +13,6 @@ public static class NoSerializerConfigurationExtensions
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
 
-        StandardConfigurer.Open(configurer).Register(c => new RawMessageSerializer());
+        StandardConfigurer.Open(configurer).Register(_ => new RawMessageSerializer());
     }
 }

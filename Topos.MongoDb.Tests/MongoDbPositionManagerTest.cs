@@ -1,7 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
 using Topos.Consumer;
-using Topos.Tests.Contracts;
 using Topos.Tests.Contracts.Factories;
 using Topos.Tests.Contracts.Positions;
 

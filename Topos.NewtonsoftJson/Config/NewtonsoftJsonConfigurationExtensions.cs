@@ -12,6 +12,6 @@ public static class NewtonsoftJsonConfigurationExtensions
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
 
-        StandardConfigurer.Open(configurer).Register(c => new JsonSerializer(settings: settings, encoding: encoding));
+        StandardConfigurer.Open(configurer).Register(_ => new JsonSerializer(settings: settings, encoding: encoding));
     }
 }

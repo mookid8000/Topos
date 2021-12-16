@@ -2,11 +2,15 @@
 using MongoDB.Driver;
 using Topos.Consumer;
 using Topos.MongoDb;
+// ReSharper disable UnusedMember.Global
 
 namespace Topos.Config;
 
 public static class MongoDbPositionsManagerConfigurationExtensions
 {
+    /// <summary>
+    /// Configures Topos to stores its consumer positions in documents in MongoDB. Individual documents will be created for each relevant topic with fields for each partition.
+    /// </summary>
     public static void StoreInMongoDb(this StandardConfigurer<IPositionManager> configurer, IMongoDatabase database, string collectionName)
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
@@ -15,6 +19,6 @@ public static class MongoDbPositionsManagerConfigurationExtensions
 
         var registrar = StandardConfigurer.Open(configurer);
 
-        registrar.Register(c => new MongoDbPositionManager(database, collectionName));
+        registrar.Register(_ => new MongoDbPositionManager(database, collectionName));
     }
 }

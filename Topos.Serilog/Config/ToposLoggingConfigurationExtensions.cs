@@ -10,12 +10,12 @@ public static class ToposLoggingConfigurationExtensions
     public static void UseSerilog(this StandardConfigurer<ILoggerFactory> configurer)
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
-        StandardConfigurer.Open(configurer).Register(c => new SerilogLoggerFactory());
+        StandardConfigurer.Open(configurer).Register(_ => new SerilogLoggerFactory());
     }
 
     public static void UseSerilog(this StandardConfigurer<ILoggerFactory> configurer, SerilogLogger logger)
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
-        StandardConfigurer.Open(configurer).Register(c => new SerilogLoggerFactory(logger));
+        StandardConfigurer.Open(configurer).Register(_ => new SerilogLoggerFactory(logger));
     }
 }

@@ -10,7 +10,7 @@ public static class PostgreSqlTestConfig
 
         connection.Open();
 
-        var clean = "DROP TABLE IF EXISTS topos.position_manager; DROP SCHEMA IF EXISTS topos;";
+        const string clean = "DROP TABLE IF EXISTS topos.position_manager; DROP SCHEMA IF EXISTS topos;";
 
         using var cmd = new NpgsqlCommand(clean, connection);
 
