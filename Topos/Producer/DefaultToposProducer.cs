@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Topos.Extensions;
 using Topos.Logging;
@@ -27,7 +28,7 @@ public class DefaultToposProducer : IToposProducer
         _producerImplementation = producerImplementation ?? throw new ArgumentNullException(nameof(producerImplementation));
     }
 
-    public async Task Send(string topic, ToposMessage message, string partitionKey = null)
+    public async Task Send(string topic, ToposMessage message, string partitionKey = null, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (message == null) throw new ArgumentNullException(nameof(message));
@@ -36,17 +37,17 @@ public class DefaultToposProducer : IToposProducer
 
         _logger.Debug("Sending message with ID {messageId} to topic {topic}", transportMessage.GetMessageId(), topic);
 
-        await _producerImplementation.Send(topic, partitionKey, transportMessage);
+        await _producerImplementation.Send(topic, partitionKey, transportMessage, cancellationToken);
     }
 
-    public async Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null)
+    public async Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (messages == null) throw new ArgumentNullException(nameof(messages));
 
         var transportMessages = messages.Select(GetTransportMessage);
 
-        await _producerImplementation.SendMany(topic, partitionKey, transportMessages);
+        await _producerImplementation.SendMany(topic, partitionKey, transportMessages, cancellationToken);
     }
 
     TransportMessage GetTransportMessage(ToposMessage message)

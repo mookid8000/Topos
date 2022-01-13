@@ -37,16 +37,16 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
         _logger = loggerFactory.GetLogger(GetType());
     }
 
-    public Task Send(string topic, string partitionKey, TransportMessage transportMessage)
+    public Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
     {
-        var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage });
+        var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage }, cancellationToken);
 
         return EnqueueWriteTask(writeTask);
     }
 
-    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
-        var writeTask = new WriteTask(topic, partitionKey, transportMessages);
+        var writeTask = new WriteTask(topic, partitionKey, transportMessages, cancellationToken);
 
         return EnqueueWriteTask(writeTask);
     }
@@ -188,11 +188,12 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
         public string PartitionKey { get; }
         public IEnumerable<TransportMessage> TransportMessages { get; }
 
-        public WriteTask(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+        public WriteTask(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken)
         {
             Topic = topic;
             PartitionKey = partitionKey;
             TransportMessages = transportMessages;
+            cancellationToken.Register(() => _taskCompletionSource.TrySetCanceled(cancellationToken));
         }
 
         public Task Task => _taskCompletionSource.Task;

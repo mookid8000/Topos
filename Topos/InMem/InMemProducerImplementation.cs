@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Topos.Serialization;
 #pragma warning disable 1998
@@ -12,9 +13,9 @@ class InMemProducerImplementation : IProducerImplementation
 
     public InMemProducerImplementation(InMemEventBroker eventBroker) => _eventBroker = eventBroker ?? throw new ArgumentNullException(nameof(eventBroker));
 
-    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage) => _eventBroker.Send(topic, transportMessage);
+    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default) => _eventBroker.Send(topic, transportMessage);
 
-    public async Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+    public async Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
         foreach (var transportMessage in transportMessages)
         {

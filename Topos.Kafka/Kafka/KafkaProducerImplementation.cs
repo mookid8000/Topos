@@ -67,17 +67,17 @@ public class KafkaProducerImplementation : IProducerImplementation
 
     public IAdminClient GetAdminClient() => _adminClient.Value;
 
-    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
+    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
 
         var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
 
-        await _producer.ProduceAsync(topic, kafkaMessage);
+        await _producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
     }
 
-    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages)
+    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (transportMessages == null) throw new ArgumentNullException(nameof(transportMessages));
@@ -90,14 +90,16 @@ public class KafkaProducerImplementation : IProducerImplementation
             {
                 foreach (var batch in transportMessages.Batch(_kafkaOutgoingQueueMaxMessages))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     foreach (var transportMessage in batch)
                     {
                         var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
-                        
+
                         _producer.Produce(topic, kafkaMessage);
                     }
 
-                    _producer.Flush();
+                    _producer.Flush(cancellationToken);
                 }
 
                 Task.Run(() => taskCompletionSource.SetResult(null));
@@ -164,7 +166,7 @@ public class KafkaProducerImplementation : IProducerImplementation
         try
         {
             _logger.Info("Disposing Kafka producer");
-            
+
             _producer.Dispose();
         }
         finally
