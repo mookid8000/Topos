@@ -26,61 +26,61 @@ if exist "%deploydir%" (
 
 pushd %root%
 
-dotnet restore
+dotnet restore --interactive
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.Serilog" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.Serilog" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.Kafka" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.Kafka" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.Faster" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.Faster" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.MongoDb" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.MongoDb" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.AzureBlobs" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.AzureBlobs" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.NewtonsoftJson" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.NewtonsoftJson" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.SystemTextJson" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.SystemTextJson" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet pack "%root%/Topos.PostgreSql" -c Release -o "%deploydir%" /p:PackageVersion=%version%
+dotnet pack "%root%/Topos.PostgreSql" -c Release -o "%deploydir%" -p:PackageVersion=%version% --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail

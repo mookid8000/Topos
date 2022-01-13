@@ -26,61 +26,61 @@ set Version=%version%
 
 pushd %root%
 
-dotnet restore
+dotnet restore --interactive
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos" -c Release
+dotnet build "%root%\Topos" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.Serilog" -c Release
+dotnet build "%root%\Topos.Serilog" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.Kafka" -c Release
+dotnet build "%root%\Topos.Kafka" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.Faster" -c Release
+dotnet build "%root%\Topos.Faster" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.MongoDb" -c Release
+dotnet build "%root%\Topos.MongoDb" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.AzureBlobs" -c Release
+dotnet build "%root%\Topos.AzureBlobs" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.NewtonsoftJson" -c Release
+dotnet build "%root%\Topos.NewtonsoftJson" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.SystemTextJson" -c Release
+dotnet build "%root%\Topos.SystemTextJson" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
 )
 
-dotnet build "%root%\Topos.PostgreSql" -c Release
+dotnet build "%root%\Topos.PostgreSql" -c Release --no-restore
 if %ERRORLEVEL% neq 0 (
 	popd
  	goto exit_fail
