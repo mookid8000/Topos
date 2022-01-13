@@ -19,7 +19,7 @@ public class KafkaProducerImplementation : IProducerImplementation
 
     readonly IProducer<string, byte[]> _producer;
     readonly int _kafkaOutgoingQueueMaxMessages;
-    readonly ProducerConfig _config;
+    readonly Lazy<IAdminClient> _adminClient;
     readonly ILogger _logger;
 
     bool _disposed;
@@ -40,30 +40,32 @@ public class KafkaProducerImplementation : IProducerImplementation
             config = configurationCustomizer(config);
         }
 
-        _kafkaOutgoingQueueMaxMessages = config.QueueBufferingMaxMessages ?? 100000; 
+        _kafkaOutgoingQueueMaxMessages = config.QueueBufferingMaxMessages ?? 100000;
 
         _producer = BuildProducer(config);
 
         _logger.Info("Kafka producer initialized with {address}", config.BootstrapServers);
 
-        _config = config;
+        _adminClient = new(() =>
+        {
+            var configuration = new List<KeyValuePair<string, string>>
+            {
+                new("bootstrap.servers", config.BootstrapServers),
+            };
+
+            if (!string.IsNullOrWhiteSpace(config.SaslUsername))
+            {
+                configuration.Add(new KeyValuePair<string, string>("sasl.username", config.SaslUsername));
+                configuration.Add(new KeyValuePair<string, string>("sasl.password", config.SaslPassword));
+            }
+
+            _logger.Info("Initializing admin client with {address}", config.BootstrapServers);
+
+            return new AdminClientBuilder(configuration).Build();
+        });
     }
 
-    public IAdminClient GetAdminClient()
-    {
-        var configuration = new List<KeyValuePair<string, string>>
-        {
-            new("bootstrap.servers", _config.BootstrapServers),
-        };
-
-        if (!string.IsNullOrWhiteSpace(_config.SaslUsername))
-        {
-            configuration.Add(new KeyValuePair<string, string>("sasl.username", _config.SaslUsername));
-            configuration.Add(new KeyValuePair<string, string>("sasl.password", _config.SaslPassword));
-        }
-
-        return new AdminClientBuilder(configuration).Build();
-    }
+    public IAdminClient GetAdminClient() => _adminClient.Value;
 
     public async Task Send(string topic, string partitionKey, TransportMessage transportMessage)
     {
@@ -91,6 +93,7 @@ public class KafkaProducerImplementation : IProducerImplementation
                     foreach (var transportMessage in batch)
                     {
                         var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
+                        
                         _producer.Produce(topic, kafkaMessage);
                     }
 
@@ -161,7 +164,7 @@ public class KafkaProducerImplementation : IProducerImplementation
         try
         {
             _logger.Info("Disposing Kafka producer");
-
+            
             _producer.Dispose();
         }
         finally
