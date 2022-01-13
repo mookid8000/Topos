@@ -150,6 +150,7 @@ public class KafkaProducerImplementation : IProducerImplementation
             Headers = headers,
             Value = body
         };
+
         return kafkaMessage;
     }
 

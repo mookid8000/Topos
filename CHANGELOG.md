@@ -192,6 +192,10 @@
 ## 0.1.1
 * Use Nito.AsyncEx instead of `SemaphoreSlim` in places
 
+## 0.1.2
+* Update Microsoft.FASTER.Core to 1.9.10
+* Update npgsql to 6.0.2
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
