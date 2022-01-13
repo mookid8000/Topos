@@ -5,7 +5,7 @@ namespace Topos.Tests.Contracts;
 
 public abstract class DisposableFactory : IDisposable
 {
-    readonly ConcurrentStack<IDisposable> _disposables = new ConcurrentStack<IDisposable>();
+    readonly ConcurrentStack<IDisposable> _disposables = new();
 
     public TDisposable Using<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
     {

@@ -7,7 +7,7 @@ namespace Topos.Tests.InMem;
 
 public class InMemBrokerFactory : IBrokerFactory
 {
-    readonly InMemEventBroker _broker = new InMemEventBroker();
+    readonly InMemEventBroker _broker = new();
 
     int _topicCounter;
 

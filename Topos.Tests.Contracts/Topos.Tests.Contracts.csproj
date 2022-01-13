@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Serialization\" />
+  </ItemGroup>
+
 </Project>
