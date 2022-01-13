@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Serilog.Events;
 using Topos.Config;
 using Topos.Producer;
+
 #pragma warning disable 1998
 
 namespace Topos.Kafka.Tests;
@@ -22,8 +22,6 @@ public class LittlePerformanceTest : KafkaFixtureBase
     [TestCase(1000000, 90)]
     public async Task TakeTime(int eventCount, int consumeTimeoutSeconds)
     {
-        SetLogLevelTo(LogEventLevel.Information);
-
         var topic = GetNewTopic();
         var events = Enumerable.Range(0, eventCount).Select(n => $"THIS STRING MESSAGE IS EVENT NUMBER {n}");
 

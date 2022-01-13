@@ -97,11 +97,11 @@ public class KafkaProducerImplementation : IProducerImplementation
                     _producer.Flush();
                 }
 
-                taskCompletionSource.SetResult(null);
+                Task.Run(() => taskCompletionSource.SetResult(null));
             }
             catch (Exception exception)
             {
-                taskCompletionSource.SetException(exception);
+                Task.Run(() => taskCompletionSource.SetException(exception));
             }
         });
 

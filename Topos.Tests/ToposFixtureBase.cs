@@ -29,13 +29,20 @@ public abstract class ToposFixtureBase : FixtureBase
             .Select(n => Path.Combine($@"C:\logs\topos-tests\logs-{n}.txt"))
             .First(filePath => !File.Exists(filePath));
 
-    static LoggingLevelSwitch LogLevelSwitch { get; } = new LoggingLevelSwitch(LogEventLevel.Verbose);
+    static LoggingLevelSwitch LogLevelSwitch { get; } = new(LogEventLevel.Verbose);
 
     protected void SetLogLevelTo(LogEventLevel level)
     {
         LogLevelSwitch.MinimumLevel = level;
 
         Using(new DisposableCallback(() => LogLevelSwitch.MinimumLevel = LogEventLevel.Verbose));
+    }
+
+    protected override void SetUp()
+    {
+        base.SetUp();
+
+        LogLevelSwitch.MinimumLevel = LogEventLevel.Information;
     }
 
     protected ILogger Logger => Log.ForContext("SourceContext", GetType());

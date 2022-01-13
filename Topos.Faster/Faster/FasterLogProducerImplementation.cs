@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Nito.AsyncEx;
 using Topos.Consumer;
 using Topos.Extensions;
@@ -53,9 +54,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     public void Initialize()
     {
         if (_writer != null) throw new InvalidOperationException("Attempted to initialize FasterLogProducerImplementation, but it has been initialized already!");
-
         _logger.Info("Initializing FasterLog producer");
-
         _writer = Task.Run(WriterTask);
     }
 
@@ -78,7 +77,9 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
             {
                 await _queueItemsSemaphore.WaitAsync(cancellationToken);
 
-                var tasks = DequeueNext(100);
+                var tasks = DequeueNext(maxCount: 100);
+
+                _logger.Debug("Got {count} tasks", tasks.Count);
 
                 if (!tasks.Any()) continue;
 
@@ -99,15 +100,14 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 
     async Task Write(IEnumerable<WriteTask> tasks, CancellationToken cancellationToken)
     {
-        await Task.WhenAll(
-            tasks
-                .GroupBy(t => t.Topic)
-                .Select(async group => await Task.Run(async () => await Write(
-                    topic: group.Key,
-                    tasks: group.ToList(),
-                    cancellationToken: cancellationToken
-                ), cancellationToken))
-        );
+        var topicGroups = tasks.GroupBy(t => t.Topic);
+
+        async Task WriteToTopic(IGrouping<string, WriteTask> group)
+        {
+            await Write(topic: group.Key, tasks: group.ToList(), cancellationToken: cancellationToken);
+        }
+
+        await Task.WhenAll(topicGroups.Select(WriteToTopic));
     }
 
     async Task Write(string topic, IReadOnlyList<WriteTask> tasks, CancellationToken cancellationToken)
@@ -152,7 +152,6 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
             if (_writer == null) return;
 
             _logger.Info("Disposing FasterLog producer");
-
             _cancellationTokenSource.Cancel();
 
             var timeout = TimeSpan.FromSeconds(4);
@@ -171,7 +170,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 
     IReadOnlyList<WriteTask> DequeueNext(int maxCount)
     {
-        var list = new List<WriteTask>(maxCount);
+        var list = new List<WriteTask>(capacity: Math.Min(_writeTasks.Count, maxCount));
 
         while (_writeTasks.TryDequeue(out var task))
         {
@@ -198,8 +197,8 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 
         public Task Task => _taskCompletionSource.Task;
 
-        public void Succeed() => _taskCompletionSource.SetResult(null);
+        public void Succeed() => Task.Run(() => _taskCompletionSource.SetResult(null));
 
-        public void Fail(Exception exception) => _taskCompletionSource.SetException(exception);
+        public void Fail(Exception exception) => Task.Run(() => _taskCompletionSource.SetException(exception));
     }
 }
