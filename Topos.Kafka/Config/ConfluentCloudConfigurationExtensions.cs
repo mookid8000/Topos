@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+// ReSharper disable UnusedMember.Global
 
 namespace Topos.Config;
 
@@ -22,6 +23,8 @@ public static class ConfluentCloudConfigurationExtensions
             config.SaslMechanism = SaslMechanism.Plain;
             config.EnableSslCertificateVerification = false;
             config.SocketKeepaliveEnable = true;
+            config.LogConnectionClose = false;
+            config.ReconnectBackoffMaxMs = 3333;
 
             return config;
         });
@@ -44,6 +47,8 @@ public static class ConfluentCloudConfigurationExtensions
             config.SaslMechanism = SaslMechanism.Plain;
             config.EnableSslCertificateVerification = false;
             config.SocketKeepaliveEnable = true;
+            config.LogConnectionClose = false;
+            config.ReconnectBackoffMaxMs = 3333;
 
             return config;
         });

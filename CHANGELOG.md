@@ -196,6 +196,9 @@
 * Update Microsoft.FASTER.Core to 1.9.10
 * Update npgsql to 6.0.2
 
+## 0.1.3
+* Stop logging that silly Local_AllBrokersDown all the time and narrow the waiting time before trying to reconnect
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

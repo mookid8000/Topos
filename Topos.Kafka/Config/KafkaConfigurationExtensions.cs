@@ -61,15 +61,14 @@ public static class KafkaConfigurationExtensions
         return builder;
     }
 
-    static IProducerImplementation RegisterProducerImplementation(IEnumerable<string> bootstrapServers, IResolutionContext c,
-        KafkaProducerConfigurationBuilder builder)
+    static IProducerImplementation RegisterProducerImplementation(IEnumerable<string> bootstrapServers, IResolutionContext c, KafkaProducerConfigurationBuilder builder)
     {
         var loggerFactory = c.Get<ILoggerFactory>();
 
         return new KafkaProducerImplementation(
             loggerFactory: loggerFactory,
             address: string.Join(";", bootstrapServers),
-            configurationCustomizer: config => builder.Apply(config)
+            configurationCustomizer: builder.Apply
         );
     }
 }

@@ -62,6 +62,7 @@ public class KafkaCloudTest : FixtureBase
                 foreach (var evt in events)
                 {
                     receivedMessages.Enqueue(evt);
+                    Console.WriteLine($"Got event {evt.Body}");
                 }
             })
             .Create();
