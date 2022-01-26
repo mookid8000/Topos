@@ -44,7 +44,7 @@ Check this out - here we set up a corresponding consumer that just prints out th
 var consumer = Configure
     .Consumer("default-group", c => c.UseKafka("kafkahost01:9092", "kafkahost02:9092"))
     .Serialization(s => s.UseNewtonsoftJson())
-    .Topics(t => t.Subscribe("someevents")
+    .Topics(t => t.Subscribe("someevents"))
     .Positions(p => p.StoreInMongoDb("mongodb://mongohost01/some_database", "Positions"))
     .Handle(async (messages, context, token) =>
     {
