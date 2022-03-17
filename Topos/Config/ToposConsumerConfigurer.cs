@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Topos.Consumer;
 using Topos.Internals;
 using Topos.Logging;
-using Topos.Producer;
 using Topos.Routing;
 using Topos.Serialization;
 // ReSharper disable ArgumentsStyleStringLiteral

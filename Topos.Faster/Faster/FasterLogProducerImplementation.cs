@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Nito.AsyncEx;
 using Topos.Consumer;
 using Topos.Extensions;
@@ -183,6 +182,8 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     class WriteTask
     {
         readonly TaskCompletionSource<object> _taskCompletionSource = new();
+        
+        CancellationTokenRegistration _cancellationRegistration;
 
         public string Topic { get; }
         public string PartitionKey { get; }
@@ -193,13 +194,21 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
             Topic = topic;
             PartitionKey = partitionKey;
             TransportMessages = transportMessages;
-            cancellationToken.Register(() => _taskCompletionSource.TrySetCanceled(cancellationToken));
+            _cancellationRegistration = cancellationToken.Register(() => _taskCompletionSource.TrySetCanceled(cancellationToken));
         }
 
         public Task Task => _taskCompletionSource.Task;
 
-        public void Succeed() => Task.Run(() => _taskCompletionSource.SetResult(null));
+        public void Succeed() => Task.Run(() =>
+        {
+            _taskCompletionSource.SetResult(null);
+            _cancellationRegistration.Dispose();
+        });
 
-        public void Fail(Exception exception) => Task.Run(() => _taskCompletionSource.SetException(exception));
+        public void Fail(Exception exception) => Task.Run(() =>
+        {
+            _taskCompletionSource.SetException(exception);
+            _cancellationRegistration.Dispose();
+        });
     }
 }

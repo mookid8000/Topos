@@ -5,15 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="nunit" Version="3.13.2" />
-    <PackageReference Include="nunit3testadapter" Version="4.2.0">
+    <PackageReference Include="nunit3testadapter" Version="4.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="serilog.sinks.console" Version="4.0.1" />
     <PackageReference Include="serilog.sinks.file" Version="5.0.0" />
-    <PackageReference Include="testy" Version="0.4.0" />
+    <PackageReference Include="testy" Version="0.7.0" />
   </ItemGroup>
 
   <ItemGroup>

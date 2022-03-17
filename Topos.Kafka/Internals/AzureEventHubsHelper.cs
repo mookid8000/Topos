@@ -18,7 +18,7 @@ class AzureEventHubsHelper
             var endpoint = parser.GetValue("Endpoint");
             var host = new Uri(endpoint).Host;
 
-            applyInfo(new EventHubsConnectionInfo(bootstrapServers: $"{host}:9093", saslUsername: "$ConnectionString", saslPassword: bootstrapServers));
+            applyInfo(new EventHubsConnectionInfo(BootstrapServers: $"{host}:9093", SaslUsername: "$ConnectionString", SaslPassword: bootstrapServers));
         }
         catch (Exception)
         {
@@ -37,17 +37,5 @@ class AzureEventHubsHelper
                && parser.HasElement("SharedAccessKey");
     }
 
-    public class EventHubsConnectionInfo
-    {
-        public string BootstrapServers { get; }
-        public string SaslUsername { get; }
-        public string SaslPassword { get; }
-
-        public EventHubsConnectionInfo(string bootstrapServers, string saslUsername, string saslPassword)
-        {
-            BootstrapServers = bootstrapServers;
-            SaslUsername = saslUsername;
-            SaslPassword = saslPassword;
-        }
-    }
+    public record EventHubsConnectionInfo(string BootstrapServers, string SaslUsername, string SaslPassword);
 }

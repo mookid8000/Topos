@@ -6,7 +6,6 @@ using NUnit.Framework;
 using Testy.Extensions;
 using Topos.Config;
 using Topos.Producer;
-using Topos.Tests.Contracts.Extensions;
 
 #pragma warning disable 1998
 

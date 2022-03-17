@@ -15,6 +15,8 @@ public class FasterProducerConfigurationBuilder
     /// </summary>
     public FasterProducerConfigurationBuilder SetMaxAge(string topic, TimeSpan maxAge)
     {
+        if (topic == null) throw new ArgumentNullException(nameof(topic));
+
         _maxAges[topic] = maxAge;
         return this;
     }

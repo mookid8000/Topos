@@ -199,6 +199,11 @@
 ## 0.1.3
 * Stop logging that silly Local_AllBrokersDown all the time and narrow the waiting time before trying to reconnect
 
+## 0.1.4
+* Update Microsoft.FASTER.Core to 1.9.16
+* Update MongoDB.Driver to 2.15.0
+* Update other packages too
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
