@@ -204,6 +204,9 @@
 * Update MongoDB.Driver to 2.15.0
 * Update other packages too
 
+## 0.2.0
+* Update FASTER to 2.0.1
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
