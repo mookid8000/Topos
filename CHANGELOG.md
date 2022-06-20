@@ -207,6 +207,10 @@
 ## 0.2.0
 * Update FASTER to 2.0.1
 
+## 0.3.0
+* Update FASTER to 2.0.10
+* Update Confluent.Kafka to 1.9.0
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
