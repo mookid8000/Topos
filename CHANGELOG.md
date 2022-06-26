@@ -211,6 +211,11 @@
 * Update FASTER to 2.0.10
 * Update Confluent.Kafka to 1.9.0
 
+## 0.4.0
+* Update FASTER to 2.0.12
+* Update MongoDB driver to 2.16.1
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
