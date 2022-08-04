@@ -219,6 +219,7 @@
 * Try full reconnect when Kafka partitions are revoked
 * Update Confluent.Kafka to 1.9.2
 * Update FASTER to 2.0.14
+* Update Npgsql to 6.0.6
 * Port Topos.AzureBlobs to azure.storage.blobs instead of the deprecated Microsoft.Azure.Blob nuggie
 * Update other packages too
 
