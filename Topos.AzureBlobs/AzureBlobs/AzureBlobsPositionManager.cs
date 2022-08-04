@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
+using Azure;
+using Azure.Storage.Blobs;
 using Topos.Consumer;
 
 namespace Topos.AzureBlobs;
@@ -15,21 +15,20 @@ public class AzureBlobsPositionManager : IPositionManager
 {
     const int HttpStatusNotFound = 404;
     readonly ConcurrentDictionary<string, string> _legalBlobNames = new();
-    readonly Lazy<Func<Task<CloudBlobContainer>>> _getContainerReference;
-    readonly CloudBlobClient _client;
+    readonly Lazy<Func<Task<BlobContainerClient>>> _getContainerReference;
     readonly string _containerName;
 
-    public AzureBlobsPositionManager(CloudStorageAccount storageAccount, string containerName)
+    public AzureBlobsPositionManager(string connectionString, string containerName)
     {
-        if (storageAccount == null) throw new ArgumentNullException(nameof(storageAccount));
+        if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
         _containerName = containerName?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(containerName));
-        _client = storageAccount.CreateCloudBlobClient();
 
-        _getContainerReference = new Lazy<Func<Task<CloudBlobContainer>>>(() => async () =>
+        _getContainerReference = new Lazy<Func<Task<BlobContainerClient>>>(() => async () =>
         {
-            var container = _client.GetContainerReference(_containerName);
-            await container.CreateIfNotExistsAsync();
-            return container;
+            var client = new BlobServiceClient(connectionString);
+            var blobContainerClient = client.GetBlobContainerClient(containerName);
+            await blobContainerClient.CreateIfNotExistsAsync();
+            return blobContainerClient;
         });
     }
 
@@ -42,12 +41,10 @@ public class AzureBlobsPositionManager : IPositionManager
         try
         {
             var container = await _getContainerReference.Value();
-            var blob = container.GetBlockBlobReference(blobName);
+            var blob = container.GetBlobClient(blobName);
 
-            using var destination = await blob.OpenWriteAsync();
-                
+            using var destination = await blob.OpenWriteAsync(overwrite: true);
             using var writer = new StreamWriter(destination, Encoding.UTF8);
-                
             await writer.WriteAsync(position.Offset.ToString());
         }
         catch (Exception exception)
@@ -62,13 +59,11 @@ public class AzureBlobsPositionManager : IPositionManager
 
         try
         {
-            var blob = await _client.GetContainerReference(_containerName)
-                .GetBlobReferenceFromServerAsync(blobName);
+            var container = await _getContainerReference.Value();
+            var blob = container.GetBlobClient(blobName);
 
             using var source = await blob.OpenReadAsync();
-                
             using var reader = new StreamReader(source, Encoding.UTF8);
-                
             var text = await reader.ReadToEndAsync();
 
             if (string.IsNullOrWhiteSpace(text)) return Position.Default(topic, partition);
@@ -85,7 +80,7 @@ could not be parsed into a long!");
 
             return new Position(topic, partition, position);
         }
-        catch (StorageException storageException) when (storageException.RequestInformation.HttpStatusCode == HttpStatusNotFound)
+        catch (RequestFailedException exception) when (exception.Status == HttpStatusNotFound)
         {
             return Position.Default(topic, partition);
         }

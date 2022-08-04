@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using NUnit.Framework;
 using Topos.Consumer;
 using Topos.Tests.Contracts.Factories;
@@ -22,16 +22,16 @@ public class AzureBlobsPositionManagerTest : PositionsManagerTest<AzureBlobsPosi
         {
             var containerName = Guid.NewGuid().ToString("N");
             _containersToRemove.Add(containerName);
-            return new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, containerName);
+            return new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, containerName);
         }
 
         public void Dispose()
         {
-            var client = AzureBlobConfig.StorageAccount.CreateCloudBlobClient();
+            var client = new BlobServiceClient(AzureBlobConfig.ConnectionString);
 
             Task.WaitAll(
                 _containersToRemove
-                    .Select(containerName => client.GetContainerReference(containerName).DeleteIfExistsAsync())
+                    .Select(containerName => client.GetBlobContainerClient(containerName).DeleteIfExistsAsync())
                     .ToArray()
             );
         }

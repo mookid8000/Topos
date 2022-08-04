@@ -10,7 +10,7 @@ public class TestAzureBlobsPositionManager
     [Test]
     public async Task GetsDefaultWhenNoPositionExists_ContainerDoesNotExist()
     {
-        var manager = new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, "does-not-exist");
+        var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "does-not-exist");
 
         Assert.That(await manager.Get("whatever", 1), Is.EqualTo(Position.Default("whatever", 1)));
     }
@@ -18,7 +18,7 @@ public class TestAzureBlobsPositionManager
     [Test]
     public async Task CanRoundtripPosition()
     {
-        var manager = new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, "positions");
+        var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "positions");
 
         await manager.Set(new Position("my-topic", 3, 500));
 
@@ -33,7 +33,7 @@ public class TestAzureBlobsPositionManager
     [Test]
     public async Task WorksWithTheseParticularNames()
     {
-        var manager = new AzureBlobsPositionManager(AzureBlobConfig.StorageAccount, "backuppositions");
+        var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "backuppositions");
 
         await manager.Set(new Position("topic70", 3, 500));
 

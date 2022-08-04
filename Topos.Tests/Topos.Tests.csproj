@@ -13,7 +13,7 @@
     </PackageReference>
     <PackageReference Include="serilog.sinks.console" Version="4.0.1" />
     <PackageReference Include="serilog.sinks.file" Version="5.0.0" />
-    <PackageReference Include="testy" Version="0.7.0" />
+    <PackageReference Include="testy" Version="0.8.0" />
   </ItemGroup>
 
   <ItemGroup>
