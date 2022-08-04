@@ -15,6 +15,7 @@ using static Topos.Internals.Callbacks;
 // ReSharper disable ArgumentsStyleNamedExpression
 // ReSharper disable ArgumentsStyleOther
 // ReSharper disable EmptyGeneralCatchClause
+// ReSharper disable AccessToDisposedClosure
 
 namespace Topos.Kafka;
 
@@ -94,7 +95,7 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
         }
     }
 
-    void InnerRun(CancellationToken cancellationToken)
+    void InnerRun(CancellationToken shutdownCancellationToken)
     {
         var consumerConfig = new ConsumerConfig
         {
@@ -116,12 +117,26 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
             consumerConfig = _configurationCustomizer(consumerConfig);
         }
 
+        using var consumerInstanceCancellationTokenSource = new CancellationTokenSource();
+
         using var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
             .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
             .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
             .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
-            .SetPartitionsRevokedHandler((_, partitions) => PartitionsRevoked(_logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context))
+            .SetPartitionsRevokedHandler((_, partitions) =>
+            {
+                PartitionsRevoked(_logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context);
+
+                // force full reconnect after revocation
+                consumerInstanceCancellationTokenSource.Cancel();
+            })
             .Build();
+
+        var consumerInstanceCancellationToken = consumerInstanceCancellationTokenSource.Token;
+
+        using var consumeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, consumerInstanceCancellationToken);
+
+        var cancellationToken = consumeCancellationTokenSource.Token;
 
         var topicsToSubscribeTo = new HashSet<string>(_topics);
 

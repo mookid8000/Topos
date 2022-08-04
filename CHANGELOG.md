@@ -215,6 +215,8 @@
 * Update FASTER to 2.0.12
 * Update MongoDB driver to 2.16.1
 
+## 0.5.0
+* Try full reconnect when Kafka partitions are revoked
 
 ---
 
