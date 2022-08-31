@@ -54,7 +54,8 @@ public static class KafkaConfigurationExtensions
                     configurationCustomizer: config => builder.Apply(config),
                     partitionsAssignedHandler: partitionsAssignedHandler,
                     partitionsRevokedHandler: partitionsRevokedHandler,
-                    startPosition: startPosition
+                    startPosition: startPosition,
+                    chilldownDelayAfterRevocation: builder.ChilldownOnRevocationDelay
                 );
             });
 

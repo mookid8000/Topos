@@ -21,7 +21,7 @@ public class KafkaConsumerConfigurationBuilder
     public static void AddCustomizer(KafkaConsumerConfigurationBuilder builder, Func<ConsumerConfig, ConsumerConfig> customizer) => builder._customizers.Add(customizer);
 
     readonly List<Func<ConsumerConfig, ConsumerConfig>> _customizers = new();
-        
+
     /// <summary>
     /// Registers the given <paramref name="handler"/> to be invoked when a topic/partition assignment occurs
     /// </summary>
@@ -39,6 +39,17 @@ public class KafkaConsumerConfigurationBuilder
         OnPartitionsRevokedEvent += handler ?? throw new ArgumentNullException(nameof(handler));
         return this;
     }
+
+    /// <summary>
+    /// Sets the delay the consumer implementation will wait before re-initializing, after having its patitions revoked
+    /// </summary>
+    public KafkaConsumerConfigurationBuilder SetChilldownOnRevocationDelay(TimeSpan delay)
+    {
+        ChilldownOnRevocationDelay = delay;
+        return this;
+    }
+
+    internal TimeSpan ChilldownOnRevocationDelay { get; private set; }
 
     internal ConsumerConfig Apply(ConsumerConfig config)
     {

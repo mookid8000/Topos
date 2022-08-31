@@ -25,6 +25,7 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
     readonly Func<ConsumerContext, IEnumerable<TopicPartition>, Task> _partitionsRevokedHandler;
     readonly Func<ConsumerConfig, ConsumerConfig> _configurationCustomizer;
     readonly CancellationTokenSource _cancellationTokenSource = new();
+    readonly TimeSpan _chilldownDelayAfterRevocation;
     readonly IConsumerDispatcher _consumerDispatcher;
     readonly IPositionManager _positionManager;
     readonly StartFromPosition _startPosition;
@@ -37,14 +38,18 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
 
     bool _disposed;
 
-    public KafkaConsumerImplementation(ILoggerFactory loggerFactory, string address, IEnumerable<string> topics,
+    public KafkaConsumerImplementation(
+        ILoggerFactory loggerFactory,
+        string address,
+        IEnumerable<string> topics,
         string group,
         IConsumerDispatcher consumerDispatcher, IPositionManager positionManager,
         ConsumerContext context,
         Func<ConsumerConfig, ConsumerConfig> configurationCustomizer,
         Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsAssignedHandler,
         Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
-        StartFromPosition startPosition)
+        StartFromPosition startPosition,
+        TimeSpan chilldownDelayAfterRevocation)
     {
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
         if (topics == null) throw new ArgumentNullException(nameof(topics));
@@ -59,6 +64,7 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
         _partitionsAssignedHandler = partitionsAssignedHandler;
         _partitionsRevokedHandler = partitionsRevokedHandler;
         _startPosition = startPosition;
+        _chilldownDelayAfterRevocation = chilldownDelayAfterRevocation;
         _worker = new Thread(Run) { IsBackground = true };
     }
 
@@ -85,8 +91,8 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
                 // if we exit, and we're not shutting down, we just got a revocation, so we chill a little before re-initializing
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    _logger.Info("Got revoked, but we're not shutting down - will pause for 10 s before re-initializing");
-                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).WaitSafe(cancellationToken: cancellationToken);
+                    _logger.Info("Got revoked, but we're not shutting down - will pause {delay} before re-initializing", _chilldownDelayAfterRevocation);
+                    Task.Delay(_chilldownDelayAfterRevocation, cancellationToken).WaitSafe(cancellationToken: cancellationToken);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

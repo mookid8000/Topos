@@ -230,6 +230,9 @@
 * Update FASTER to 2.0.16
 * Update Azure Blobs to 12.13.1
 
+## 0.8.0
+* Make pause before re-initializing Kafka consumer due to revocation configurable
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
