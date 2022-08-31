@@ -223,6 +223,9 @@
 * Port Topos.AzureBlobs to azure.storage.blobs instead of the deprecated Microsoft.Azure.Blob nuggie
 * Update other packages too
 
+## 0.6.0
+* Insert pause before re-initializing Kafka consumer due to revocation
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

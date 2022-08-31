@@ -81,6 +81,13 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
             try
             {
                 InnerRun(cancellationToken);
+
+                // if we exit, and we're not shutting down, we just got a revocation, so we chill a little before re-initializing
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    _logger.Info("Got revoked, but we're not shutting down - will pause for 10 s before re-initializing");
+                    Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).WaitSafe(cancellationToken: cancellationToken);
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
