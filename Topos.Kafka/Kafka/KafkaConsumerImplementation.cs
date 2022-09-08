@@ -135,10 +135,10 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
         using var consumer = new ConsumerBuilder<string, byte[]>(consumerConfig)
             .SetLogHandler((cns, message) => LogHandler(_logger, cns, message))
             .SetErrorHandler((cns, error) => ErrorHandler(_logger, cns, error))
-            .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
+            .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_group, _logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
             .SetPartitionsRevokedHandler((_, partitions) =>
             {
-                PartitionsRevoked(_logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context);
+                PartitionsRevoked(_group, _logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context);
 
                 // force full reconnect after revocation
                 consumerInstanceCancellationTokenSource.Cancel();

@@ -9,8 +9,8 @@ namespace Topos.Tests.Contracts.Stubs;
 
 class ListLoggerFactory : ILoggerFactory, IEnumerable<ListLoggerFactory.LogLine>
 {
-    readonly ConcurrentQueue<LogLine> _lines = new ConcurrentQueue<LogLine>();
-    readonly StringRenderer _stringRenderer = new StringRenderer();
+    readonly ConcurrentQueue<LogLine> _lines = new();
+    readonly StringRenderer _stringRenderer = new();
     readonly bool _outputToConsole;
 
     public ListLoggerFactory(bool outputToConsole = false)
@@ -37,18 +37,36 @@ class ListLoggerFactory : ILoggerFactory, IEnumerable<ListLoggerFactory.LogLine>
             _outputToConsole = outputToConsole;
         }
 
-        public void Debug(string message, params object[] args) => Append(LogLevel.Debug, message, args);
+        public void Debug(string message) => Append(LogLevel.Debug, message, Array.Empty<object>());
+        public void Debug(string message, object arg1) => Append(LogLevel.Debug, message, new[] { arg1 });
+        public void Debug(string message, object arg1, object arg2) => Append(LogLevel.Debug, message, new[] { arg1, arg2 });
+        public void Debug(string message, object arg1, object arg2, object arg3) => Append(LogLevel.Debug, message, new[] { arg1, arg2, arg3 });
+        
+        public void Info(string message) => Append(LogLevel.Info, message, Array.Empty<object>());
+        public void Info(string message, object arg1) => Append(LogLevel.Info, message, new[] { arg1 });
+        public void Info(string message, object arg1, object arg2) => Append(LogLevel.Info, message, new[] { arg1, arg2 });
+        public void Info(string message, object arg1, object arg2, object arg3) => Append(LogLevel.Info, message, new[] { arg1, arg2, arg3 });
 
-        public void Info(string message, params object[] args) => Append(LogLevel.Info, message, args);
+        public void Warn(string message) => Append(LogLevel.Warn, message, Array.Empty<object>());
+        public void Warn(string message, object arg1) => Append(LogLevel.Warn, message, new[] { arg1 });
+        public void Warn(string message, object arg1, object arg2) => Append(LogLevel.Warn, message, new[] { arg1, arg2 });
+        public void Warn(string message, object arg1, object arg2, object arg3) => Append(LogLevel.Warn, message, new[] { arg1, arg2, arg3 });
 
-        public void Warn(string message, params object[] args) => Append(LogLevel.Warn, message, args);
+        public void Warn(Exception exception, string message) => Append(LogLevel.Warn, message, Array.Empty<object>(), exception);
+        public void Warn(Exception exception, string message, object arg1) => Append(LogLevel.Warn, message, new[] { arg1 }, exception);
+        public void Warn(Exception exception, string message, object arg1, object arg2) => Append(LogLevel.Warn, message, new[] { arg1, arg2 }, exception);
+        public void Warn(Exception exception, string message, object arg1, object arg2, object arg3) => Append(LogLevel.Warn, message, new[] { arg1, arg2, arg3 }, exception);
 
-        public void Warn(Exception exception, string message, params object[] args) => Append(LogLevel.Warn, message, args, exception);
+        public void Error(string message) => Append(LogLevel.Error, message, Array.Empty<object>());
+        public void Error(string message, object arg1) => Append(LogLevel.Error, message, new[] { arg1 });
+        public void Error(string message, object arg1, object arg2) => Append(LogLevel.Error, message, new[] { arg1, arg2 });
+        public void Error(string message, object arg1, object arg2, object arg3) => Append(LogLevel.Error, message, new[] { arg1, arg2, arg3 });
 
-        public void Error(string message, params object[] args) => Append(LogLevel.Error, message, args);
-
-        public void Error(Exception exception, string message, params object[] args) => Append(LogLevel.Error, message, args, exception);
-
+        public void Error(Exception exception, string message) => Append(LogLevel.Error, message, Array.Empty<object>(), exception);
+        public void Error(Exception exception, string message, object arg1) => Append(LogLevel.Error, message, new[] { arg1 }, exception);
+        public void Error(Exception exception, string message, object arg1, object arg2) => Append(LogLevel.Error, message, new[] { arg1, arg2 }, exception);
+        public void Error(Exception exception, string message, object arg1, object arg2, object arg3) => Append(LogLevel.Error, message, new[] { arg1, arg2, arg3 }, exception);
+        
         void Append(LogLevel level, string message, object[] args, Exception exception = null)
         {
             var time = DateTimeOffset.Now;
@@ -88,7 +106,7 @@ class ListLoggerFactory : ILoggerFactory, IEnumerable<ListLoggerFactory.LogLine>
         public override string ToString() => Exception == null
 
             ? $"{Time:HH:mm:ss}|{Level}|{Context.Name}|{Text}"
-            
+
             : $@"{Time:HH:mm:ss}|{Level}|{Context.Name}|{Text}
 {Exception}";
     }

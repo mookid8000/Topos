@@ -233,6 +233,10 @@
 ## 0.8.0
 * Make pause before re-initializing Kafka consumer due to revocation configurable
 
+## 0.9.0
+* Log Kafka consumer group name on assignment/revocation
+* Change logging API to avoid allocations
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

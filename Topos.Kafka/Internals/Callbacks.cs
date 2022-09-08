@@ -34,6 +34,7 @@ static class Callbacks
     }
 
     public static IEnumerable<TopicPartitionOffset> PartitionsAssigned(
+        string consumerGroup,
         ILogger logger,
         IReadOnlyList<TopicPartition> partitions,
         IPositionManager positionManager,
@@ -48,7 +49,7 @@ static class Callbacks
             .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
             .ToList();
 
-        logger.Info("Assignment: {@partitions}", partitionsByTopic);
+        logger.Info("Assignment for group {consumerGroup}: {@partitions}", consumerGroup, partitionsByTopic);
 
         if (partitionsAssignedHandler != null)
         {
@@ -78,7 +79,9 @@ static class Callbacks
         });
     }
 
-    public static void PartitionsRevoked(ILogger logger,
+    public static void PartitionsRevoked(
+        string consumerGroup,
+        ILogger logger,
         IReadOnlyList<TopicPartitionOffset> partitions,
         IConsumerDispatcher consumerDispatcher,
         Func<ConsumerContext, IEnumerable<TopicPartition>, Task> partitionsRevokedHandler,
@@ -93,7 +96,7 @@ static class Callbacks
                 .Select(g => new { Topic = g.Key, Partitions = g.Select(p => p.Partition.Value) })
                 .ToList();
 
-            logger.Info("Revocation: {@partitions}", partitionsByTopic);
+            logger.Info("Revocation for group {consumerGroup}: {@partitions}", consumerGroup, partitionsByTopic);
 
             if (partitionsRevokedHandler != null)
             {
