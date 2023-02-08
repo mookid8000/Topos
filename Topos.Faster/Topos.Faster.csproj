@@ -10,9 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.FASTER.Core" Version="2.0.16" />
+    <PackageReference Include="Microsoft.FASTER.Core" Version="2.3.5" />
+    <PackageReference Include="Microsoft.FASTER.Devices.AzureStorage" Version="2.3.5" />
     <PackageReference Include="nito.asyncex" Version="5.1.2" />
-    <PackageReference Include="protobuf-net" Version="3.1.17" />
+    <PackageReference Include="protobuf-net" Version="3.1.33" />
   </ItemGroup>
 
   <ItemGroup>

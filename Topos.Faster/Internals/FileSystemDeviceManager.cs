@@ -10,14 +10,14 @@ using Topos.Logging;
 
 namespace Topos.Internals;
 
-class DefaultDeviceManager : IInitializable, IDisposable, IDeviceManager
+class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 {
     readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new();
     readonly Disposables _disposables = new();
     readonly string _directoryPath;
     readonly ILogger _logger;
 
-    public DefaultDeviceManager(ILoggerFactory loggerFactory, string directoryPath)
+    public FileSystemDeviceManager(ILoggerFactory loggerFactory, string directoryPath)
     {
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
         _directoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));

@@ -32,7 +32,7 @@ public static class FasterLogConfigurationExtensions
                 logEntrySerializer: c.Get<ILogEntrySerializer>(),
                 eventExpirationHelper: c.Get<EventExpirationHelper>()
             ))
-            .Other<IDeviceManager>().Register(c => new DefaultDeviceManager(
+            .Other<IDeviceManager>().Register(c => new FileSystemDeviceManager(
                 loggerFactory: c.Get<ILoggerFactory>(),
                 directoryPath: directoryPath
             ))
@@ -65,7 +65,7 @@ public static class FasterLogConfigurationExtensions
                 consumerDispatcher: c.Get<IConsumerDispatcher>(),
                 positionManager: c.Get<IPositionManager>()
             ))
-            .Other<IDeviceManager>().Register(c => new DefaultDeviceManager(
+            .Other<IDeviceManager>().Register(c => new FileSystemDeviceManager(
                 loggerFactory: c.Get<ILoggerFactory>(),
                 directoryPath: directoryPath
             ))

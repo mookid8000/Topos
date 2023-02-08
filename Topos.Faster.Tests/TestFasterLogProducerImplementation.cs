@@ -23,7 +23,7 @@ public class TestFasterLogProducerImplementation : FixtureBase
 
         var loggerFactory = new ConsoleLoggerFactory(LogLevel.Debug);
 
-        using (var deviceManager = new DefaultDeviceManager(loggerFactory, NewTempDirectory()))
+        using (var deviceManager = new FileSystemDeviceManager(loggerFactory, NewTempDirectory()))
         {
             var serializer = new ProtobufLogEntrySerializer();
             
@@ -33,8 +33,14 @@ public class TestFasterLogProducerImplementation : FixtureBase
             producerImplementation.Initialize();
 
             var headers = new Dictionary<string, string>();
-            await producerImplementation.Send("test", "test",
-                new TransportMessage(headers, new byte[] { 1, 2, 3 }));
+            var body = new byte[] { 1, 2, 3 };
+            var transportMessage = new TransportMessage(headers, body);
+
+            await producerImplementation.Send(
+                topic: "test",
+                partitionKey: "test",
+                transportMessage: transportMessage
+            );
         }
 
         Assert.That(stopwatch.Elapsed, Is.LessThan(TimeSpan.FromSeconds(1)));
