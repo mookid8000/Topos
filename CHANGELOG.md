@@ -237,6 +237,9 @@
 * Log Kafka consumer group name on assignment/revocation
 * Change logging API to avoid allocations
 
+## 0.10.0
+* Add Azure storage-based device to FASTER-based evend store, enabling the use of Azure page blobs as an in-process event store
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

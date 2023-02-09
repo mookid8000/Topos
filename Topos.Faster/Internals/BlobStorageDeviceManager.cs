@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.IO;
 using FASTER.core;
+using FASTER.devices;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using Topos.Consumer;
@@ -14,42 +14,58 @@ namespace Topos.Internals;
 
 class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 {
-    readonly CloudStorageAccount _cloudStorageAccount;
     readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new();
     readonly Disposables _disposables = new();
+    readonly string _connectionString;
+    readonly string _containerName;
+    readonly string _directoryName;
     readonly ILogger _logger;
 
-    public BlobStorageDeviceManager(ILoggerFactory loggerFactory, CloudStorageAccount cloudStorageAccount)
+    public BlobStorageDeviceManager(ILoggerFactory loggerFactory, string connectionString, string containerName, string directoryName)
     {
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
-        _cloudStorageAccount = cloudStorageAccount ?? throw new ArgumentNullException(nameof(cloudStorageAccount));
+        _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        _containerName = containerName ?? throw new ArgumentNullException(nameof(containerName));
+        _directoryName = directoryName ?? throw new ArgumentNullException(nameof(directoryName));
+
+        if (!CloudStorageAccount.TryParse(_connectionString, out _))
+        {
+            throw new ArgumentException(
+                $"The connection string '{connectionString}' does not look like a valid Azure storage connection string");
+        }
+
         _logger = loggerFactory.GetLogger(GetType());
     }
 
     public void Initialize()
     {
-        //_logger.Info("Initializing device manager with directory {directoryPath}", _directoryPath);
-
-        //EnsureDirectoryExists(_directoryPath);
+        _logger.Info("Initializing device manager with container {contaionerName} and directory {directoryName}",
+            _containerName, _directoryName);
     }
 
     public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(topic))).Value;
 
     FasterLog InitializeLog(string topic)
     {
-        //new FASTER.devices.AzureStorageDevice(_cloudStorageAccount.CreateCloudBlobClient().)
-        var directoryPath = "";
-        var deviceKey = $"Type=Device;Directory={directoryPath};Topic={topic}";
-        var logKey = $"Type=Log;Directory={directoryPath};Topic={topic}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
-            var logDirectory = Path.Combine(directoryPath, topic);
+            if (CloudStorageAccount.Parse(_connectionString)
+                .CreateCloudBlobClient()
+                .GetContainerReference(_containerName)
+                .CreateIfNotExists())
+            {
+                _logger.Info("Successfully created blob container {containerName}", _containerName);
+            }
 
-            EnsureDirectoryExists(logDirectory);
-
-            var filePath = Path.Combine(logDirectory, $"{topic}.log");
-            return Devices.CreateLogDevice(filePath);
+            return new AzureStorageDevice(
+                connectionString: _connectionString,
+                containerName: _containerName,
+                directoryName: _directoryName,
+                blobName: SanitizeTopicName(topic)
+            );
         });
 
         _disposables.Add(pooledDevice);
@@ -72,24 +88,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         return pooledLog.Instance;
     }
 
-    void EnsureDirectoryExists(string directoryPath)
-    {
-        if (Directory.Exists(directoryPath)) return;
-
-        try
-        {
-            _logger.Debug("Creating directory {directoryPath}", directoryPath);
-
-            Directory.CreateDirectory(directoryPath);
-        }
-        catch
-        {
-            if (!Directory.Exists(directoryPath))
-            {
-                throw;
-            }
-        }
-    }
+    static string SanitizeTopicName(string topic) => topic;
 
     public void Dispose() => _disposables.Dispose();
 }

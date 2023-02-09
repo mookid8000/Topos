@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Testy;
-using Testy.Files;
 using Topos.Config;
+using Topos.Faster.Tests.Factories;
 using Topos.Internals;
 using Topos.Producer;
 // ReSharper disable UnusedParameter.Local
@@ -15,14 +15,23 @@ using Topos.Producer;
 namespace Topos.Faster.Tests;
 
 [TestFixture]
-public class VerifyCompaction : FixtureBase
+public class VerifyCompaction_AzureStorage : FixtureBase
 {
+    string _containerName;
+
+    protected override void SetUp()
+    {
+        base.SetUp();
+
+        _containerName = Guid.NewGuid().ToString("N");
+
+        Using(new StorageContainerDeleter(_containerName));
+    }
+
     [Test]
     public async Task CanDoIt()
     {
-        var testDirectory = NewTempDirectory();
-
-        using var producer = CreateProducer(testDirectory);
+        using var producer = CreateProducer();
 
         await producer.SendMany("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"1-{n}", DateTimeOffset.Now))));
         await Task.Delay(TimeSpan.FromSeconds(3));
@@ -30,7 +39,7 @@ public class VerifyCompaction : FixtureBase
         await producer.SendMany("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"2-{n}", DateTimeOffset.Now))));
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        using var consumer1 = StartConsumer(testDirectory, message =>
+        using var consumer1 = StartConsumer(message =>
         {
             //Console.WriteLine($"Got event {message.Label}: {message.Time}")
         });
@@ -41,7 +50,7 @@ public class VerifyCompaction : FixtureBase
 
         await Task.Delay(TimeSpan.FromSeconds(60));
 
-        using var consumer2 = StartConsumer(testDirectory, message =>
+        using var consumer2 = StartConsumer(message =>
         {
             //Console.WriteLine($"Got event {message.Label}: {message.Time}");
         });
@@ -61,17 +70,35 @@ public class VerifyCompaction : FixtureBase
         public DateTimeOffset Time { get; }
     }
 
-    static IToposProducer CreateProducer(TemporaryTestDirectory temporaryTestDirectory)
+    IToposProducer CreateProducer()
     {
         return Configure
             .Producer(p =>
             {
-                p.UseFileSystem(temporaryTestDirectory).SetMaxAge("test-topic", TimeSpan.FromSeconds(5));
+                p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster")
+                    .SetMaxAge("test-topic", TimeSpan.FromSeconds(5));
 
                 ChangeCompactionIntervalTo(p, TimeSpan.FromSeconds(1));
             })
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
+    }
+
+    IDisposable StartConsumer(Action<Timestamp> handle)
+    {
+        return Configure
+            .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))
+            .Serialization(s => s.UseNewtonsoftJson())
+            .Topics(t => t.Subscribe("test-topic"))
+            .Positions(p => p.StoreInMemory())
+            .Handle(async (messages, context, token) =>
+            {
+                foreach (var message in messages.Select(m => m.Body).OfType<Timestamp>())
+                {
+                    handle(message);
+                }
+            })
+            .Start();
     }
 
     static void ChangeCompactionIntervalTo(StandardConfigurer<IProducerImplementation> p, TimeSpan interval)
@@ -84,22 +111,5 @@ public class VerifyCompaction : FixtureBase
                 helper.CompactionInterval = interval;
                 return helper;
             });
-    }
-
-    static IDisposable StartConsumer(TemporaryTestDirectory testDirectory, Action<Timestamp> handle)
-    {
-        return Configure
-            .Consumer("whatever", c => c.UseFileSystem(testDirectory))
-            .Serialization(s => s.UseNewtonsoftJson())
-            .Topics(t => t.Subscribe("test-topic"))
-            .Positions(p => p.StoreInMemory())
-            .Handle(async (messages, context, token) =>
-            {
-                foreach (var message in messages.Select(m => m.Body).OfType<Timestamp>())
-                {
-                    handle(message);
-                }
-            })
-            .Start();
     }
 }
