@@ -1,13 +1,12 @@
 ﻿using System;
 using NUnit.Framework;
 using Testy;
-using Testy.Files;
-using Topos.Internals;
-using Topos.Logging.Console;
+using Topos.Faster.Tests.Factories;
 
 namespace Topos.Faster.Tests;
 
 [TestFixture(typeof(FileSystemDeviceManagerFactory))]
+[TestFixture(typeof(BlobStorageDeviceManagerFactory))]
 public class TestDeviceManager<TDeviceManagerFactory> : FixtureBase where TDeviceManagerFactory : IDeviceManagerFactory, new()
 {
     private IDeviceManager _deviceManager;
@@ -41,19 +40,4 @@ public class TestDeviceManager<TDeviceManagerFactory> : FixtureBase where TDevic
 
         Assert.That(log1_1, Is.EqualTo(log1_2));
     }
-
-}
-
-public class FileSystemDeviceManagerFactory : IDeviceManagerFactory
-{
-    readonly TemporaryTestDirectory _testDirectory = new();
-
-    public IDeviceManager Create() => new FileSystemDeviceManager(new ConsoleLoggerFactory(LogLevel.Debug), _testDirectory);
-
-    public void Dispose() => _testDirectory.Dispose();
-}
-
-public interface IDeviceManagerFactory : IDisposable
-{
-    IDeviceManager Create();
 }
