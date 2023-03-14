@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Testy;
-using Testy.Files;
 using Topos.Config;
 using Topos.Faster.Tests.Factories;
 using Topos.Producer;
@@ -30,10 +29,10 @@ public class SimpleTest_AzureStorage : FixtureBase
         using var gotTheEvent = new ManualResetEvent(initialState: false);
         var testDirectory = NewTempDirectory();
 
-        using var producer = CreateProducer(testDirectory);
+        using var producer = CreateProducer();
         await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
 
-        using var consumer = StartConsumer(testDirectory, gotTheEvent);
+        using var consumer = StartConsumer(gotTheEvent);
 
         gotTheEvent.WaitOrDie(errorMessage: "Did not get the expected events callback");
     }
@@ -44,15 +43,15 @@ public class SimpleTest_AzureStorage : FixtureBase
         using var gotTheEvent = new ManualResetEvent(initialState: false);
         var testDirectory = NewTempDirectory();
 
-        using var consumer = StartConsumer(testDirectory, gotTheEvent);
+        using var consumer = StartConsumer(gotTheEvent);
 
-        using var producer = CreateProducer(testDirectory);
+        using var producer = CreateProducer();
         await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
 
         gotTheEvent.WaitOrDie(errorMessage: "Did not get the expected events callback");
     }
 
-    IToposProducer CreateProducer(TemporaryTestDirectory temporaryTestDirectory)
+    IToposProducer CreateProducer()
     {
         return Configure
             .Producer(p => p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))
@@ -60,7 +59,7 @@ public class SimpleTest_AzureStorage : FixtureBase
             .Create();
     }
 
-    IDisposable StartConsumer(TemporaryTestDirectory testDirectory, ManualResetEvent gotTheEvent)
+    IDisposable StartConsumer(ManualResetEvent gotTheEvent)
     {
         return Configure
             .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))

@@ -6,9 +6,9 @@ using Topos.Tests.Contracts.Broker;
 namespace Topos.Faster.Tests.Contracts;
 
 [TestFixture]
-public class FileSystemBasicProducerConsumerTest : BasicProducerConsumerTest<FasterLogFileSystemBrokerFactory>
+public class AzureStorageBasicProducerConsumerTest : BasicProducerConsumerTest<FasterLogAzureStorageBrokerFactory>
 {
-    public FileSystemBasicProducerConsumerTest()
+    public AzureStorageBasicProducerConsumerTest()
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
