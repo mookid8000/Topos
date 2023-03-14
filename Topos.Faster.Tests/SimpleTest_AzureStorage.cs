@@ -14,7 +14,7 @@ namespace Topos.Faster.Tests;
 [TestFixture]
 public class SimpleTest_AzureStorage : FixtureBase
 {
-    private string _containerName;
+    string _containerName;
 
     protected override void SetUp()
     {

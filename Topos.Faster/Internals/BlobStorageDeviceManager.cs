@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using FASTER.core;
 using FASTER.devices;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
 using Topos.Consumer;
 using Topos.Faster;
 using Topos.Helpers;
@@ -28,10 +26,9 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         _containerName = containerName ?? throw new ArgumentNullException(nameof(containerName));
         _directoryName = directoryName ?? throw new ArgumentNullException(nameof(directoryName));
 
-        if (!CloudStorageAccount.TryParse(_connectionString, out _))
+        if (!AzureBlobsHelper.IsValidConnectionString(_connectionString))
         {
-            throw new ArgumentException(
-                $"The connection string '{connectionString}' does not look like a valid Azure storage connection string");
+            throw new ArgumentException($"The connection string '{connectionString}' does not look like a valid Azure storage connection string");
         }
 
         _logger = loggerFactory.GetLogger(GetType());
@@ -52,10 +49,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
-            if (CloudStorageAccount.Parse(_connectionString)
-                .CreateCloudBlobClient()
-                .GetContainerReference(_containerName)
-                .CreateIfNotExists())
+            if (new AzureBlobsHelper(_connectionString).CreateContainerIfNotExists(_containerName))
             {
                 _logger.Info("Successfully created blob container {containerName}", _containerName);
             }

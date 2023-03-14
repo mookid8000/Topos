@@ -9,7 +9,7 @@ namespace Topos.Faster.Tests;
 [TestFixture(typeof(BlobStorageDeviceManagerFactory))]
 public class TestDeviceManager<TDeviceManagerFactory> : FixtureBase where TDeviceManagerFactory : IDeviceManagerFactory, new()
 {
-    private IDeviceManager _deviceManager;
+    IDeviceManager _deviceManager;
 
     protected override void SetUp()
     {

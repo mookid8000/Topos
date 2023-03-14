@@ -240,6 +240,9 @@
 ## 0.10.0
 * Add Azure storage-based device to FASTER-based evend store, enabling the use of Azure page blobs as an in-process event store
 
+## 0.11.0
+* Update lots of dependencies
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

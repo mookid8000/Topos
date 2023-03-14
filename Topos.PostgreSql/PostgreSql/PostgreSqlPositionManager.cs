@@ -124,7 +124,7 @@ public class PostgreSqlPositionManager : IPositionManager
         await transaction.CommitAsync();
     }
 
-    private async Task<bool> SchemaExist()
+    async Task<bool> SchemaExist()
     {
         var schemaExistsQuery =
             "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'topos'";
