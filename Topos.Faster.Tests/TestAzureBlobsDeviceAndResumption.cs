@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using NUnit.Framework;
 using Testy;
 using Testy.Extensions;
@@ -9,6 +10,7 @@ using Topos.Config;
 using Topos.Consumer;
 using Topos.Faster.Tests.Factories;
 using Topos.InMem;
+using Topos.Logging.Console;
 
 #pragma warning disable CS1998
 
@@ -33,24 +35,31 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
     [TestCase(10)]
     [TestCase(30)]
     [TestCase(100)]
+    [TestCase(1000)]
+    [TestCase(10091)]
     public async Task CanResumeAfterRestarting(int numberOfRestarts)
     {
+        var connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
+
         var positions = new InMemPositionsStorage();
+        var logLevel = numberOfRestarts < 10 ? LogLevel.Debug : LogLevel.Info;
 
         using var producer = Configure
-            .Producer(s => s.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "directory"))
+            .Producer(s => s.UseAzureStorage(connectionString, _containerName, "directory"))
+            .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
 
         var receivedMessages = new ConcurrentQueue<string>();
 
         IDisposable StartConsumer() => Configure
-            .Consumer("default", s => s.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "directory"))
+            .Consumer("default", s => s.UseAzureStorage(connectionString, _containerName, "directory"))
+            .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Positions(p =>
             {
                 p.StoreInMemory(positions);
-                
+
                 StandardConfigurer.Open(p)
                     .Decorate(c => new ConsoleLoggingPositionsManagerDecorator(c.Get<IPositionManager>()));
             })
