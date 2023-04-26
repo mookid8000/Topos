@@ -243,6 +243,9 @@
 ## 0.11.0
 * Update lots of dependencies
 
+## 0.12.0
+* Update lots of dependencies
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
