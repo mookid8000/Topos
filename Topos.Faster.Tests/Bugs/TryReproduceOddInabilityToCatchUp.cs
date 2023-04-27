@@ -34,10 +34,27 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
         Using(new StorageContainerDeleter(_containerName));
 
         _connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
+        
         _directoryName = "events";
         _logLevel = LogLevel.Debug;
 
         _positionsStorage = new InMemPositionsStorage();
+    }
+
+    [Test]
+    public async Task JustStartTheOne_Producer()
+    {
+        using var producer = CreateProducer();
+
+        await producer.Send(topic: "topic2", new("hej"));
+
+    }
+
+    [Test]
+    public async Task JustStartTheOne_Consumer()
+    {
+        using var consumer = CreateConsumer(handleStrings: _ => { });
+
     }
 
     [TestCase(10)]

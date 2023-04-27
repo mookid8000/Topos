@@ -14,25 +14,27 @@ class MicrosoftLoggerAdapter : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
+        var message = formatter(state, exception);
+
         switch (logLevel)
         {
             case LogLevel.None:
             case LogLevel.Trace:
             case LogLevel.Debug:
-                _logger.Debug(formatter(state, exception));
+                _logger.Debug(message);
                 break;
             
             case LogLevel.Information:
-                _logger.Info(formatter(state, exception));
+                _logger.Info(message);
                 break;
             
             case LogLevel.Warning:
-                _logger.Warn(formatter(state, exception));
+                _logger.Warn(message);
                 break;
             
             case LogLevel.Error:
             case LogLevel.Critical:
-                _logger.Error(formatter(state, exception));
+                _logger.Error(message);
                 break;
 
             default:

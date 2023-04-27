@@ -47,7 +47,8 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
             EnsureDirectoryExists(logDirectory);
 
             var filePath = Path.Combine(logDirectory, $"{topic}.log");
-            return Devices.CreateLogDevice(filePath);
+            
+            return Devices.CreateLogDevice(filePath, recoverDevice: true);
         });
 
         _disposables.Add(pooledDevice);
@@ -64,7 +65,7 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
             };
 
-            return new FasterLog(settings);
+            return new FasterLog(settings, logger: new MicrosoftLoggerAdapter(_logger));
         });
 
         _disposables.Add(pooledLog);
