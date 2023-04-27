@@ -35,9 +35,10 @@ public class ReproduceAzureDeviceFnidder : FixtureBase
     {
         Logger.LogInformation("Initializing device");
 
+        var connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
+
         using var device = new AzureStorageDevice(
-            connectionString: "UseDevelopmentStorage=true",
-            //connectionString: "<real-connection-string>",
+            connectionString: connectionString,
             containerName: _containerName,
             directoryName: "events",
             blobName: "data",
@@ -46,9 +47,15 @@ public class ReproduceAzureDeviceFnidder : FixtureBase
 
         Logger.LogInformation("Creating FASTER log");
 
+        var deviceFactory = new AzureStorageNamedDeviceFactory(connectionString, logger: Logger);
+        var namingScheme = new DefaultCheckpointNamingScheme(baseName: _containerName);
+        
+        using var checkpointManager = new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme);
+
         var settings = new FasterLogSettings
         {
             LogDevice = device,
+            LogCommitManager = checkpointManager,
             PageSize = Utility.ParseSize("8 MB")
         };
 
@@ -60,6 +67,6 @@ public class ReproduceAzureDeviceFnidder : FixtureBase
 
         Logger.LogInformation("Committing");
 
-        await log.CommitAsync(CancelAfter(TimeSpan.FromSeconds(10)));
+        await log.CommitAsync(CancelAfter(TimeSpan.FromSeconds(5)));
     }
 }
