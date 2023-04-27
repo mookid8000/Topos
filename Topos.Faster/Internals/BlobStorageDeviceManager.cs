@@ -40,12 +40,12 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             _containerName, _directoryName);
     }
 
-    public FasterLog GetLog(string topic, bool @readonly = false) => _logs.GetOrAdd($"topic={topic};readonly={@readonly}", _ => new Lazy<FasterLog>(() => InitializeLog(topic, @readonly))).Value;
+    public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(topic))).Value;
 
-    FasterLog InitializeLog(string topic, bool @readonly)
+    FasterLog InitializeLog(string topic)
     {
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic};ReadOnly={@readonly}";
-        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic};ReadOnly={@readonly}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
@@ -61,7 +61,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
                 containerName: _containerName,
                 directoryName: _directoryName,
                 blobName: SanitizeTopicName(topic),
-                logger: new MicrosoftLoggerAdapter(_logger)
+                logger: new MicrosoftLoggerAdapter(_logger),
+                underLease: true
             );
         });
 
@@ -73,14 +74,13 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         {
             _logger.Debug("Initializing singleton log instance with key {key}", logKey);
 
-            var log = new FasterLog(new FasterLogSettings
+            var settings = new FasterLogSettings
             {
-                ReadOnlyMode = @readonly,
                 LogDevice = device,
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
-            });
+            };
 
-            return log;
+            return new FasterLog(settings);
         });
 
         _disposables.Add(pooledLog);

@@ -255,6 +255,9 @@
 ## 0.15.0
 * Try experimental read-only flag on Azure log device
 
+## 0.16.0
+* Remove read-only flag again
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

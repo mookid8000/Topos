@@ -73,7 +73,7 @@ class EventExpirationHelper : IDisposable
 
                 await log.WaitForCommitAsync(token: token);
 
-                _logger.Debug("Successfully truncated the log from {beginAddress} to {untilAddress}", 
+                _logger.Debug("Successfully truncated the log from {beginAddress} to {untilAddress}",
                     beginAddress, truncateUntilAddress);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)

@@ -31,7 +31,7 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
         EnsureDirectoryExists(_directoryPath);
     }
 
-    public FasterLog GetLog(string topic, bool @readonly = false) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(_directoryPath, topic))).Value;
+    public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(_directoryPath, topic))).Value;
 
     FasterLog InitializeLog(string directoryPath, string topic)
     {
@@ -58,13 +58,13 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
         {
             _logger.Debug("Initializing singleton log instance with key {key}", logKey);
 
-            var log = new FasterLog(new FasterLogSettings
+            var settings = new FasterLogSettings
             {
                 LogDevice = device,
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
-            });
+            };
 
-            return log;
+            return new FasterLog(settings);
         });
 
         _disposables.Add(pooledLog);

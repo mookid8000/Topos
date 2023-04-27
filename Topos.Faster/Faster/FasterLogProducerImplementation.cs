@@ -79,7 +79,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 
                 var tasks = DequeueNext(maxCount: 100);
 
-                _logger.Debug("Got {count} tasks", tasks.Count);
+                _logger.Debug("Got {count} write tasks", tasks.Count);
 
                 if (!tasks.Any()) continue;
 
@@ -183,7 +183,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     class WriteTask
     {
         readonly TaskCompletionSource<object> _taskCompletionSource = new();
-        
+
         CancellationTokenRegistration _cancellationRegistration;
 
         public string Topic { get; }
