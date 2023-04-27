@@ -258,6 +258,9 @@
 ## 0.16.0
 * Remove read-only flag again
 
+## 0.17.0
+* Add logging adapter to more FASTER things
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
