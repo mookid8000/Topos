@@ -49,6 +49,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
+            _logger.Debug("Initializing singleton Azure Blobs device with key {key}", deviceKey);
+
             if (new AzureBlobsHelper(_connectionString).CreateContainerIfNotExists(_containerName))
             {
                 _logger.Info("Successfully created blob container {containerName}", _containerName);
@@ -68,6 +70,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var pooledLog = SingletonPool.GetInstance(logKey, () =>
         {
+            _logger.Debug("Initializing singleton log instance with key {key}", logKey);
+
             var log = new FasterLog(new FasterLogSettings
             {
                 LogDevice = device,
@@ -78,6 +82,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         });
 
         _disposables.Add(pooledLog);
+
+        _logger.Debug("Singleton pool contains the following keys: {keys}", SingletonPool.Keys);
 
         return pooledLog.Instance;
     }

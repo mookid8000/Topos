@@ -246,6 +246,9 @@
 ## 0.12.0
 * Update lots of dependencies
 
+## 0.13.0
+* Log some singleton management info
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

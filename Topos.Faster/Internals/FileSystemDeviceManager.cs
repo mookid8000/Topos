@@ -40,6 +40,8 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
+            _logger.Debug("Initializing singleton file system device with key {key}", deviceKey);
+
             var logDirectory = Path.Combine(directoryPath, topic);
 
             EnsureDirectoryExists(logDirectory);
@@ -54,6 +56,8 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var pooledLog = SingletonPool.GetInstance(logKey, () =>
         {
+            _logger.Debug("Initializing singleton log instance with key {key}", logKey);
+
             var log = new FasterLog(new FasterLogSettings
             {
                 LogDevice = device,
@@ -64,6 +68,8 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
         });
 
         _disposables.Add(pooledLog);
+
+        _logger.Debug("Singleton pool contains the following keys: {keys}", SingletonPool.Keys);
 
         return pooledLog.Instance;
     }

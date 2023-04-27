@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+
 // ReSharper disable ArgumentsStyleAnonymousFunction
 
 namespace Topos.Internals;
@@ -7,6 +10,8 @@ namespace Topos.Internals;
 public class SingletonPool
 {
     static readonly ConcurrentDictionary<string, PooledObject> _pool = new();
+
+    public static IReadOnlyList<string> Keys => _pool.Keys.ToList();
 
     public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
     {
@@ -65,7 +70,7 @@ public class SingletonPool
         public Lazy<IDisposable> LazyObject { get; private set; }
 
         public int ReferenceCount { get; }
-            
+
         public Func<IDisposable> OriginalFactory { get; }
 
         public PooledObject(Lazy<IDisposable> lazyObject, int referenceCount, Func<IDisposable> originalFactory)
@@ -76,7 +81,7 @@ public class SingletonPool
         }
 
         public PooledObject Increment() => new(LazyObject, ReferenceCount + 1, OriginalFactory);
-            
+
         public PooledObject Decrement() => new(LazyObject, ReferenceCount - 1, OriginalFactory);
 
         public void MaybeDispose()
