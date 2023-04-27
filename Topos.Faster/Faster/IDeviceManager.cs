@@ -10,5 +10,5 @@ public interface IDeviceManager
     /// <summary>
     /// Gets a log for the given topic
     /// </summary>
-    FasterLog GetLog(string topic);
+    FasterLog GetLog(string topic, bool @readonly = false);
 }

@@ -40,12 +40,12 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             _containerName, _directoryName);
     }
 
-    public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(topic))).Value;
+    public FasterLog GetLog(string topic, bool @readonly = false) => _logs.GetOrAdd($"topic={topic};readonly={@readonly}", _ => new Lazy<FasterLog>(() => InitializeLog(topic, @readonly))).Value;
 
-    FasterLog InitializeLog(string topic)
+    FasterLog InitializeLog(string topic, bool @readonly)
     {
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
-        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic};ReadOnly={@readonly}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic};ReadOnly={@readonly}";
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
@@ -60,7 +60,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
                 connectionString: _connectionString,
                 containerName: _containerName,
                 directoryName: _directoryName,
-                blobName: SanitizeTopicName(topic)
+                blobName: SanitizeTopicName(topic),
+                logger: new MicrosoftLoggerAdapter(_logger)
             );
         });
 
@@ -74,6 +75,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
             var log = new FasterLog(new FasterLogSettings
             {
+                ReadOnlyMode = @readonly,
                 LogDevice = device,
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
             });
