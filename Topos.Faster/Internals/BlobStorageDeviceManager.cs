@@ -45,7 +45,10 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
     FasterLog InitializeLog(string topic)
     {
         var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
         var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+
+        var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
@@ -61,7 +64,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
                 containerName: _containerName,
                 directoryName: _directoryName,
                 blobName: SanitizeTopicName(topic),
-                logger: new MicrosoftLoggerAdapter(_logger),
+                logger: loggerAdapter,
                 underLease: true
             );
         });
@@ -70,17 +73,32 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         var device = pooledDevice.Instance;
 
+        var pooledCheckpointManager = SingletonPool.GetInstance(managerKey, () =>
+        {
+            _logger.Debug("Initializing singleton Azure Blobs checkpoint manager with key {key}", managerKey);
+
+            var deviceFactory = new AzureStorageNamedDeviceFactory(_connectionString, logger: loggerAdapter);
+            var namingScheme = new DefaultCheckpointNamingScheme(baseName: _containerName);
+
+            return new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme);
+        });
+
+        _disposables.Add(pooledCheckpointManager);
+
+        var checkpointManager = pooledCheckpointManager.Instance;
+
         var pooledLog = SingletonPool.GetInstance(logKey, () =>
         {
             _logger.Debug("Initializing singleton log instance with key {key}", logKey);
 
             var settings = new FasterLogSettings
             {
+                LogCommitManager = checkpointManager,
                 LogDevice = device,
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
             };
 
-            return new FasterLog(settings, logger: new MicrosoftLoggerAdapter(_logger));
+            return new FasterLog(settings, logger: loggerAdapter);
         });
 
         _disposables.Add(pooledLog);

@@ -7,7 +7,7 @@ namespace Topos.Faster.Tests.Factories;
 
 public class BlobStorageDeviceManagerFactory : IDeviceManagerFactory
 {
-    public const string StorageConnectionString = "UseDevelopmentStorage=true;";
+    public const string StorageConnectionString = "UseDevelopmentStorage=true";
 
     readonly string _containerName = Guid.NewGuid().ToString("N");
 

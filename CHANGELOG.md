@@ -261,6 +261,9 @@
 ## 0.17.0
 * Add logging adapter to more FASTER things
 
+## 0.18.0
+* Finally FIX Azure blobs-based FASTER event broker implementation by adding a blobs-based checkpoint manager
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
