@@ -36,7 +36,8 @@ public class ReproduceAzureDeviceFnidder : FixtureBase
         Logger.LogInformation("Initializing device");
 
         using var device = new AzureStorageDevice(
-            connectionString: BlobStorageDeviceManagerFactory.StorageConnectionString,
+            connectionString: "UseDevelopmentStorage=true",
+            //connectionString: "<real-connection-string>",
             containerName: _containerName,
             directoryName: "events",
             blobName: "data",
