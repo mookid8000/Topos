@@ -36,7 +36,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
     public void Initialize()
     {
-        _logger.Info("Initializing device manager with container {contaionerName} and directory {directoryName}",
+        _logger.Info("Initializing device manager with container {containerName} and directory {directoryName}",
             _containerName, _directoryName);
     }
 
@@ -83,7 +83,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         _disposables.Add(pooledLog);
 
-        _logger.Debug("Singleton pool contains the following keys: {keys}", SingletonPool.Keys);
+        _logger.Debug("Singleton pool contains the following keys with refcount > 0: {keys}", SingletonPool.ActiveKeys);
 
         return pooledLog.Instance;
     }

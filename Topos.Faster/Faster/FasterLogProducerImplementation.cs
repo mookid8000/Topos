@@ -11,6 +11,7 @@ using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 // ReSharper disable ForCanBeConvertedToForeach
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 #pragma warning disable 1998
 
 namespace Topos.Faster;

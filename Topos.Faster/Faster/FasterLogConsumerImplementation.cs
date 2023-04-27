@@ -122,7 +122,7 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Error when trying to get resumt position for topic {topic} - waiting a while before trying again", topic);
+                _logger.Error(exception, "Error when trying to get resume position for topic {topic} - waiting a while before trying again", topic);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
@@ -152,6 +152,5 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
             _workers = null;
             _cancellationTokenSource?.Dispose();
         }
-
     }
 }

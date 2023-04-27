@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using NUnit.Framework;
 using Testy;
 using Testy.Extensions;
@@ -137,25 +136,5 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
         }
 
         Assert.That(receivedMessages, Is.EqualTo(Enumerable.Range(1, numberOfRestarts).Select(n => $"besked {n}")));
-    }
-
-    class ConsoleLoggingPositionsManagerDecorator : IPositionManager
-    {
-        readonly IPositionManager _positionManager;
-
-        public ConsoleLoggingPositionsManagerDecorator(IPositionManager positionManager) => _positionManager = positionManager ?? throw new ArgumentNullException(nameof(positionManager));
-
-        public async Task Set(Position position)
-        {
-            Console.WriteLine($"Setting position {position}");
-            await _positionManager.Set(position);
-        }
-
-        public async Task<Position> Get(string topic, int partition)
-        {
-            var position = await _positionManager.Get(topic, partition);
-            Console.WriteLine($"Got position {position}");
-            return position;
-        }
     }
 }

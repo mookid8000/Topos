@@ -69,7 +69,7 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         _disposables.Add(pooledLog);
 
-        _logger.Debug("Singleton pool contains the following keys: {keys}", SingletonPool.Keys);
+        _logger.Debug("Singleton pool contains the following keys with refcount > 0: {keys}", SingletonPool.ActiveKeys);
 
         return pooledLog.Instance;
     }

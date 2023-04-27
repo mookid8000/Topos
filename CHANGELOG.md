@@ -249,6 +249,9 @@
 ## 0.13.0
 * Log some singleton management info
 
+## 0.14.0
+* Fix minor things
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
