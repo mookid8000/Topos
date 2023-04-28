@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using Topos.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Topos.Internals;
 
