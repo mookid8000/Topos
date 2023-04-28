@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
+using Topos.Logging;
 
 namespace Topos.Internals;
 
@@ -14,7 +15,7 @@ class MicrosoftLoggerAdapter : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
-        var message = formatter(state, exception);
+        var message = $"FASTER {formatter(state, exception)}";
 
         switch (logLevel)
         {
