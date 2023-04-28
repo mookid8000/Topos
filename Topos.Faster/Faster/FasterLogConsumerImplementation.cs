@@ -13,6 +13,10 @@ namespace Topos.Faster;
 
 class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 {
+    public static byte[] DummyData = { 0xba, 0xda, 0x55 };
+
+    static readonly ByteArrayFasterEqualityComparer ByteArrayFasterEqualityComparer = new();
+
     readonly CancellationTokenSource _cancellationTokenSource = new();
     readonly ILogEntrySerializer _logEntrySerializer;
     readonly IConsumerDispatcher _consumerDispatcher;
@@ -52,7 +56,7 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
         {
             _logger.Debug("Starting FasterLog consumer task for topic {topic}", topic);
 
-            var log = _deviceManager.GetReader(topic);
+            var log = _deviceManager.GetReader(topic, cancellationToken);
             var resumePosition = await GetResumePosition(topic, cancellationToken);
             var readAddress = GetReadAddress(resumePosition, log);
 
@@ -66,18 +70,28 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
                     {
                         while (iterator.GetNext(out var bytes, out _, out _, out var nextAddress))
                         {
+                            if (ByteArrayFasterEqualityComparer.Equals(ref bytes, ref DummyData))
+                            {
+                                readAddress = nextAddress;
+                                continue;
+                            }
+
                             var transportMessage = _logEntrySerializer.Deserialize(bytes);
+                            
                             var receivedTransportMessage = new ReceivedTransportMessage(
-                                new Position(topic, 0, nextAddress), transportMessage.Headers,
-                                transportMessage.Body);
+                                position: new Position(topic, 0, nextAddress),
+                                headers: transportMessage.Headers,
+                                body: transportMessage.Body
+                            );
 
                             _consumerDispatcher.Dispatch(receivedTransportMessage);
-
                             readAddress = nextAddress;
                         }
 
                         await iterator.WaitAsync(cancellationToken);
                     }
+
+                    Console.WriteLine("OK I AM ON MY WAY OUT ALREADY");
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

@@ -1,4 +1,5 @@
-﻿using FASTER.core;
+﻿using System.Threading;
+using FASTER.core;
 
 namespace Topos.Faster;
 
@@ -10,10 +11,10 @@ public interface IDeviceManager
     /// <summary>
     /// Gets a WRITER log for the given topic
     /// </summary>
-    FasterLog GetWriter(string topic);
+    FasterLog GetWriter(string topic, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets a READER log for the given topic
     /// </summary>
-    FasterLog GetReader(string topic);
+    FasterLog GetReader(string topic, CancellationToken cancellationToken);
 }

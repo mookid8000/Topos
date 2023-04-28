@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using FASTER.core;
 using Topos.Consumer;
 using Topos.Faster;
@@ -29,9 +30,9 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
         EnsureDirectoryExists(_directoryPath);
     }
 
-    public FasterLog GetWriter(string topic) => InitializeLog(_directoryPath, topic);
-    
-    public FasterLog GetReader(string topic) => InitializeLog(_directoryPath, topic);
+    public FasterLog GetWriter(string topic, CancellationToken cancellationToken) => InitializeLog(_directoryPath, topic);
+
+    public FasterLog GetReader(string topic, CancellationToken cancellationToken) => InitializeLog(_directoryPath, topic);
 
     FasterLog InitializeLog(string directoryPath, string topic)
     {

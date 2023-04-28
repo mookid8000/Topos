@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Threading;
 using FASTER.core;
 using FASTER.devices;
 using Topos.Consumer;
@@ -12,7 +12,6 @@ namespace Topos.Internals;
 
 class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 {
-    readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new();
     readonly Disposables _disposables = new();
     readonly string _connectionString;
     readonly string _containerName;
@@ -37,13 +36,13 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         _logger.Info("Initializing Azure Blobs device manager for container {containerName}", _containerName);
     }
 
-    public FasterLog GetWriter(string rawTopic)
+    public FasterLog GetWriter(string rawTopic, CancellationToken cancellationToken)
     {
         var topic = SanitizeTopicName(rawTopic);
 
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
-        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
-        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
+        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
 
         var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
 
@@ -106,11 +105,15 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         return pooledLog.Instance;
     }
 
-    public FasterLog GetReader(string rawTopic)
+    public FasterLog GetReader(string rawTopic, CancellationToken cancellationToken)
     {
+        var writer = GetWriter(rawTopic, cancellationToken);
+        writer.Enqueue(FasterLogConsumerImplementation.DummyData);
+        writer.Commit(spinWait: true);
+
         var topic = SanitizeTopicName(rawTopic);
 
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={true}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
         var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={true}";
 
         var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
