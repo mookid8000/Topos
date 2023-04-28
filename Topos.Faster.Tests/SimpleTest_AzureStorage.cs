@@ -27,7 +27,6 @@ public class SimpleTest_AzureStorage : FixtureBase
     public async Task CanProduceSomeEvents_Produce_then_consume()
     {
         using var gotTheEvent = new ManualResetEvent(initialState: false);
-        var testDirectory = NewTempDirectory();
 
         using var producer = CreateProducer();
         await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
@@ -41,7 +40,6 @@ public class SimpleTest_AzureStorage : FixtureBase
     public async Task CanProduceSomeEvents_Consume_then_produce()
     {
         using var gotTheEvent = new ManualResetEvent(initialState: false);
-        var testDirectory = NewTempDirectory();
 
         using var consumer = StartConsumer(gotTheEvent);
 

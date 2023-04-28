@@ -62,7 +62,7 @@ class EventExpirationHelper : IDisposable
             {
                 await Task.Delay(CompactionInterval, token);
 
-                var log = _deviceManager.GetLog(topic);
+                var log = _deviceManager.GetWriter(topic);
                 var cutoff = (DateTimeOffset.Now - maxAge).Floor(TimeSpan.FromMinutes(1));
                 var beginAddress = log.BeginAddress;
 

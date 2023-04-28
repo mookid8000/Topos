@@ -50,10 +50,9 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 
         try
         {
-            var log = _deviceManager.GetLog(topic);
-
             _logger.Debug("Starting FasterLog consumer task for topic {topic}", topic);
 
+            var log = _deviceManager.GetReader(topic);
             var resumePosition = await GetResumePosition(topic, cancellationToken);
             var readAddress = GetReadAddress(resumePosition, log);
 
@@ -95,8 +94,10 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
         {
             // we're on out way out
         }
-
-        _logger.Debug("Stopped FasterLog consumer task for topic {topic}", topic);
+        finally
+        {
+            _logger.Debug("Stopped FasterLog consumer task for topic {topic}", topic);
+        }
     }
 
     static long GetReadAddress(Position resumePosition, FasterLog log)

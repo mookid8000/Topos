@@ -26,8 +26,8 @@ public class TestDeviceManager<TDeviceManagerFactory> : FixtureBase where TDevic
     [Test]
     public void CanCreateTwoLogsForTwoDifferentTopics()
     {
-        using var log1 = _deviceManager.GetLog("topic1");
-        using var log2 = _deviceManager.GetLog("topic2");
+        using var log1 = _deviceManager.GetWriter("topic1");
+        using var log2 = _deviceManager.GetWriter("topic2");
 
         Assert.That(log1, Is.Not.EqualTo(log2));
     }
@@ -35,8 +35,8 @@ public class TestDeviceManager<TDeviceManagerFactory> : FixtureBase where TDevic
     [Test]
     public void CanCreateTwoLogsForSameTopic()
     {
-        using var log1_1 = _deviceManager.GetLog("topic1");
-        using var log1_2 = _deviceManager.GetLog("topic1");
+        using var log1_1 = _deviceManager.GetWriter("topic1");
+        using var log1_2 = _deviceManager.GetWriter("topic1");
 
         Assert.That(log1_1, Is.EqualTo(log1_2));
     }

@@ -8,7 +8,12 @@ namespace Topos.Faster;
 public interface IDeviceManager
 {
     /// <summary>
-    /// Gets a log for the given topic
+    /// Gets a WRITER log for the given topic
     /// </summary>
-    FasterLog GetLog(string topic);
+    FasterLog GetWriter(string topic);
+
+    /// <summary>
+    /// Gets a READER log for the given topic
+    /// </summary>
+    FasterLog GetReader(string topic);
 }

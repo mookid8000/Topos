@@ -9,11 +9,11 @@ namespace Topos.Internals;
 
 class SingletonPool
 {
+    public record SingletonInfo(string Key, int ReferenceCount);
+
     static readonly ConcurrentDictionary<string, PooledObject> _pool = new();
 
-    public static IReadOnlyList<string> Keys => _pool.Keys.ToList();
-
-    public static IReadOnlyList<string> ActiveKeys => _pool.Where(kvp => kvp.Value.ReferenceCount > 0).Select(kvp => kvp.Key).ToList();
+    public static IReadOnlyList<SingletonInfo> ActiveObjects => _pool.Select(kvp => new SingletonInfo(kvp.Key, kvp.Value.ReferenceCount)).ToList();
 
     public static Singleton<TInstance> GetInstance<TInstance>(string key, Func<TInstance> factory) where TInstance : IDisposable
     {

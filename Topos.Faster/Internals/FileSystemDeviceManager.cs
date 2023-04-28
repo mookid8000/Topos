@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using FASTER.core;
 using Topos.Consumer;
@@ -12,7 +11,6 @@ namespace Topos.Internals;
 
 class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 {
-    readonly ConcurrentDictionary<string, Lazy<FasterLog>> _logs = new();
     readonly Disposables _disposables = new();
     readonly string _directoryPath;
     readonly ILogger _logger;
@@ -31,7 +29,9 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
         EnsureDirectoryExists(_directoryPath);
     }
 
-    public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(_directoryPath, topic))).Value;
+    public FasterLog GetWriter(string topic) => InitializeLog(_directoryPath, topic);
+    
+    public FasterLog GetReader(string topic) => InitializeLog(_directoryPath, topic);
 
     FasterLog InitializeLog(string directoryPath, string topic)
     {
@@ -47,7 +47,7 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
             EnsureDirectoryExists(logDirectory);
 
             var filePath = Path.Combine(logDirectory, $"{topic}.log");
-            
+
             return Devices.CreateLogDevice(filePath, recoverDevice: true);
         });
 
@@ -70,7 +70,7 @@ class FileSystemDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         _disposables.Add(pooledLog);
 
-        _logger.Debug("Singleton pool contains the following keys with refcount > 0: {keys}", SingletonPool.ActiveKeys);
+        _logger.Debug("Singleton pool contains the following objs: {@objs}", SingletonPool.ActiveObjects);
 
         return pooledLog.Instance;
     }

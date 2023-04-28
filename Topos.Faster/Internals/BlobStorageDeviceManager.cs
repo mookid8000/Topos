@@ -37,16 +37,15 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
         _logger.Info("Initializing Azure Blobs device manager for container {containerName}", _containerName);
     }
 
-    public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(topic))).Value;
-
-    FasterLog InitializeLog(string topic)
+    public FasterLog GetWriter(string rawTopic)
     {
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
-        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
-        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
+        var topic = SanitizeTopicName(rawTopic);
+
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
+        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={false}";
 
         var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
-        var directoryName = SanitizeTopicName(topic);
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
@@ -60,7 +59,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             return new AzureStorageDevice(
                 connectionString: _connectionString,
                 containerName: _containerName,
-                directoryName: directoryName,
+                directoryName: topic,
                 blobName: "data",
                 logger: loggerAdapter,
                 underLease: true
@@ -76,7 +75,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             _logger.Debug("Initializing singleton Azure Blobs checkpoint manager with key {key}", managerKey);
 
             var deviceFactory = new AzureStorageNamedDeviceFactory(_connectionString, logger: loggerAdapter);
-            var namingScheme = new DefaultCheckpointNamingScheme(baseName: $"{_containerName}/{directoryName}");
+            var namingScheme = new DefaultCheckpointNamingScheme(baseName: $"{_containerName}/{topic}");
 
             return new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme, logger: loggerAdapter);
         });
@@ -91,6 +90,7 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
             var settings = new FasterLogSettings
             {
+                ReadOnlyMode = false,
                 LogCommitManager = checkpointManager,
                 LogDevice = device,
                 PageSizeBits = 23   //< page size is 2^23 = 8 MB
@@ -101,7 +101,60 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         _disposables.Add(pooledLog);
 
-        _logger.Debug("Singleton pool contains the following keys with refcount > 0: {keys}", SingletonPool.ActiveKeys);
+        _logger.Debug("Singleton pool contains the following objs: {@objs}", SingletonPool.ActiveObjects);
+
+        return pooledLog.Instance;
+    }
+
+    public FasterLog GetReader(string rawTopic)
+    {
+        var topic = SanitizeTopicName(rawTopic);
+
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={true}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic};Readonly={true}";
+
+        var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
+
+        var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
+        {
+            _logger.Debug("Initializing singleton Azure Blobs device with key {key}", deviceKey);
+
+            if (new AzureBlobsHelper(_connectionString).CreateContainerIfNotExists(_containerName))
+            {
+                _logger.Info("Successfully created blob container {containerName}", _containerName);
+            }
+
+            return new AzureStorageDevice(
+                connectionString: _connectionString,
+                containerName: _containerName,
+                directoryName: topic,
+                blobName: "data",
+                logger: loggerAdapter,
+                underLease: true
+            );
+        });
+
+        _disposables.Add(pooledDevice);
+
+        var device = pooledDevice.Instance;
+
+        var pooledLog = SingletonPool.GetInstance(logKey, () =>
+        {
+            _logger.Debug("Initializing singleton log instance with key {key}", logKey);
+
+            var settings = new FasterLogSettings
+            {
+                ReadOnlyMode = true,
+                LogDevice = device,
+                PageSizeBits = 23   //< page size is 2^23 = 8 MB
+            };
+
+            return new FasterLog(settings, logger: loggerAdapter);
+        });
+
+        _disposables.Add(pooledLog);
+
+        _logger.Debug("Singleton pool contains the following objs: {@objs}", SingletonPool.ActiveObjects);
 
         return pooledLog.Instance;
     }

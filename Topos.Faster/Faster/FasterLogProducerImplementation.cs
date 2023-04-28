@@ -114,7 +114,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     {
         try
         {
-            var log = _deviceManager.GetLog(topic);
+            var log = _deviceManager.GetWriter(topic);
 
             for (var index = 0; index < tasks.Count; index++)
             {
