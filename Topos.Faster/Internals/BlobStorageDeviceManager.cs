@@ -107,9 +107,13 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         if (log.CommittedUntilAddress == log.BeginAddress)
         {
-            _logger.Debug("Detected empty log - will write dummy data");
+            _logger.Debug("Detected un-initialized log for topic {topic} - will write dummy data", topic);
             log.Enqueue(FasterLogConsumerImplementation.DummyData);
             log.Commit(spinWait: true);
+        }
+        else
+        {
+            _logger.Debug("Detected log for topic {topic} was already initialized", topic);
         }
 
         return log;
