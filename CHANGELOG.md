@@ -264,6 +264,9 @@
 ## 0.18.0
 * Finally FIX Azure blobs-based FASTER event broker implementation by adding a blobs-based checkpoint manager
 
+## 0.19.0
+* Remove directory name option from Azure Blobs-based FASTER event broker and use sanitized topic name as directory instead
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

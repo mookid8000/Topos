@@ -48,7 +48,7 @@ public class ReproduceAzureDeviceFnidder : FixtureBase
         Logger.LogInformation("Creating FASTER log");
 
         var deviceFactory = new AzureStorageNamedDeviceFactory(connectionString, logger: Logger);
-        var namingScheme = new DefaultCheckpointNamingScheme(baseName: _containerName);
+        var namingScheme = new DefaultCheckpointNamingScheme(baseName: $"{_containerName}/events");
         
         using var checkpointManager = new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme);
 

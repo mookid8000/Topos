@@ -21,7 +21,6 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
 {
     string _containerName;
     string _connectionString;
-    string _directoryName;
     LogLevel _logLevel;
     InMemPositionsStorage _positionsStorage;
 
@@ -35,7 +34,6 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
 
         _connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
         
-        _directoryName = "events";
         _logLevel = LogLevel.Debug;
 
         _positionsStorage = new InMemPositionsStorage();
@@ -98,13 +96,13 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
     static IEnumerable<ToposMessage> GetMessages(int count) => Enumerable.Range(start: 0, count: count).Select(selector: n => new ToposMessage(body: $"THIS IS MESSAGE NUMBER {n}"));
 
     IToposProducer CreateProducer() => Configure
-        .Producer(s => s.UseAzureStorage(_connectionString, _containerName, _directoryName))
+        .Producer(s => s.UseAzureStorage(_connectionString, _containerName))
         .Logging(l => l.UseConsole(_logLevel))
         .Serialization(s => s.UseNewtonsoftJson())
         .Create();
 
     IDisposable CreateConsumer(Action<IReadOnlyList<string>> handleStrings) => Configure
-        .Consumer("default", s => s.UseAzureStorage(_connectionString, _containerName, _directoryName))
+        .Consumer("default", s => s.UseAzureStorage(_connectionString, _containerName))
         .Logging(l => l.UseConsole(_logLevel))
         .Serialization(s => s.UseNewtonsoftJson())
         .Positions(p =>

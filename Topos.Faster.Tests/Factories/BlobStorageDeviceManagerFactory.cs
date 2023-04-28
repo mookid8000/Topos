@@ -11,7 +11,7 @@ public class BlobStorageDeviceManagerFactory : IDeviceManagerFactory
 
     readonly string _containerName = Guid.NewGuid().ToString("N");
 
-    public IDeviceManager Create() => new BlobStorageDeviceManager(new ConsoleLoggerFactory(LogLevel.Debug), StorageConnectionString, _containerName, "db");
+    public IDeviceManager Create() => new BlobStorageDeviceManager(new ConsoleLoggerFactory(LogLevel.Debug), StorageConnectionString, _containerName);
 
     public void Dispose() => new StorageContainerDeleter(_containerName).Dispose();
 }

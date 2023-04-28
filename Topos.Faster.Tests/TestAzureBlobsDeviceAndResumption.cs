@@ -38,7 +38,6 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
     public async Task CanResumeAfterRestarting_NoReuse(int numberOfRestarts)
     {
         const string connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
-        const string directoryName = "directory";
         
         // the only thing that survives between iterations in the in-mem positions storage
         var positions = new InMemPositionsStorage();
@@ -49,13 +48,13 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
         var receivedMessages = new ConcurrentQueue<string>();
 
         IToposProducer CreateProducer() => Configure
-            .Producer(s => s.UseAzureStorage(connectionString, _containerName, directoryName))
+            .Producer(s => s.UseAzureStorage(connectionString, _containerName))
             .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
 
         IDisposable CreateConsumer() => Configure
-            .Consumer("default", s => s.UseAzureStorage(connectionString, _containerName, directoryName))
+            .Consumer("default", s => s.UseAzureStorage(connectionString, _containerName))
             .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Positions(p =>
@@ -92,7 +91,6 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
     public async Task CanResumeAfterRestarting_ReuseProducer(int numberOfRestarts)
     {
         const string connectionString = BlobStorageDeviceManagerFactory.StorageConnectionString;
-        const string directoryName = "directory";
         
         // the only thing that survives between iterations in the in-mem positions storage
         var positions = new InMemPositionsStorage();
@@ -103,13 +101,13 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
         var receivedMessages = new ConcurrentQueue<string>();
 
         IToposProducer CreateProducer() => Configure
-            .Producer(s => s.UseAzureStorage(connectionString, _containerName, directoryName))
+            .Producer(s => s.UseAzureStorage(connectionString, _containerName))
             .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
 
         IDisposable CreateConsumer() => Configure
-            .Consumer("default", s => s.UseAzureStorage(connectionString, _containerName, directoryName))
+            .Consumer("default", s => s.UseAzureStorage(connectionString, _containerName))
             .Logging(l => l.UseConsole(logLevel))
             .Serialization(s => s.UseNewtonsoftJson())
             .Positions(p =>

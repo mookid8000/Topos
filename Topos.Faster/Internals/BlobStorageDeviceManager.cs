@@ -16,15 +16,13 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
     readonly Disposables _disposables = new();
     readonly string _connectionString;
     readonly string _containerName;
-    readonly string _directoryName;
     readonly ILogger _logger;
 
-    public BlobStorageDeviceManager(ILoggerFactory loggerFactory, string connectionString, string containerName, string directoryName)
+    public BlobStorageDeviceManager(ILoggerFactory loggerFactory, string connectionString, string containerName)
     {
         if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
         _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         _containerName = containerName ?? throw new ArgumentNullException(nameof(containerName));
-        _directoryName = directoryName ?? throw new ArgumentNullException(nameof(directoryName));
 
         if (!AzureBlobsHelper.IsValidConnectionString(_connectionString))
         {
@@ -36,19 +34,19 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
     public void Initialize()
     {
-        _logger.Info("Initializing device manager with container {containerName} and directory {directoryName}",
-            _containerName, _directoryName);
+        _logger.Info("Initializing Azure Blobs device manager for container {containerName}", _containerName);
     }
 
     public FasterLog GetLog(string topic) => _logs.GetOrAdd(topic, _ => new Lazy<FasterLog>(() => InitializeLog(topic))).Value;
 
     FasterLog InitializeLog(string topic)
     {
-        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
-        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
-        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};DirectoryName={_directoryName};Topic={topic}";
+        var deviceKey = $"Type=Device;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
+        var managerKey = $"Type=Manager;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
+        var logKey = $"Type=Log;ConnectionString={_connectionString};ContainerName={_containerName};Topic={topic}";
 
         var loggerAdapter = new MicrosoftLoggerAdapter(_logger);
+        var directoryName = SanitizeTopicName(topic);
 
         var pooledDevice = SingletonPool.GetInstance(deviceKey, () =>
         {
@@ -62,8 +60,8 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             return new AzureStorageDevice(
                 connectionString: _connectionString,
                 containerName: _containerName,
-                directoryName: _directoryName,
-                blobName: SanitizeTopicName(topic),
+                directoryName: directoryName,
+                blobName: "data",
                 logger: loggerAdapter,
                 underLease: true
             );
@@ -78,9 +76,9 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
             _logger.Debug("Initializing singleton Azure Blobs checkpoint manager with key {key}", managerKey);
 
             var deviceFactory = new AzureStorageNamedDeviceFactory(_connectionString, logger: loggerAdapter);
-            var namingScheme = new DefaultCheckpointNamingScheme(baseName: _containerName);
+            var namingScheme = new DefaultCheckpointNamingScheme(baseName: $"{_containerName}/{directoryName}");
 
-            return new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme);
+            return new DeviceLogCommitCheckpointManager(deviceFactory, namingScheme, logger: loggerAdapter);
         });
 
         _disposables.Add(pooledCheckpointManager);

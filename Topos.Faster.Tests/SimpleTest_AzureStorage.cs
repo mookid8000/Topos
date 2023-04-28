@@ -54,7 +54,7 @@ public class SimpleTest_AzureStorage : FixtureBase
     IToposProducer CreateProducer()
     {
         return Configure
-            .Producer(p => p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))
+            .Producer(p => p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName))
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
     }
@@ -62,7 +62,7 @@ public class SimpleTest_AzureStorage : FixtureBase
     IDisposable StartConsumer(ManualResetEvent gotTheEvent)
     {
         return Configure
-            .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))
+            .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName))
             .Serialization(s => s.UseNewtonsoftJson())
             .Topics(t => t.Subscribe("test-topic"))
             .Positions(p => p.StoreInMemory())

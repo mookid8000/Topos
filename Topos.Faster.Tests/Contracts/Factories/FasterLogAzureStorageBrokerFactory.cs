@@ -16,12 +16,12 @@ public class FasterLogAzureStorageBrokerFactory : DisposableFactory, IBrokerFact
 
     public ToposProducerConfigurer ConfigureProducer() =>
         Configure
-            .Producer(p => p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "test"))
+            .Producer(p => p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName))
             .Logging(l => l.UseSerilog());
 
     public ToposConsumerConfigurer ConfigureConsumer(string groupName) =>
         Configure
-            .Consumer(groupName, c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "test"))
+            .Consumer(groupName, c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName))
             .Logging(l => l.UseSerilog());
 
     public string GetNewTopic() => $"topic{_counter++}";

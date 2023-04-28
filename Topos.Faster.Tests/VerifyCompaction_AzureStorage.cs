@@ -75,7 +75,7 @@ public class VerifyCompaction_AzureStorage : FixtureBase
         return Configure
             .Producer(p =>
             {
-                p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster")
+                p.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName)
                     .SetMaxAge("test-topic", TimeSpan.FromSeconds(5));
 
                 ChangeCompactionIntervalTo(p, TimeSpan.FromSeconds(1));
@@ -87,7 +87,7 @@ public class VerifyCompaction_AzureStorage : FixtureBase
     IDisposable StartConsumer(Action<Timestamp> handle)
     {
         return Configure
-            .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName, "faster"))
+            .Consumer("whatever", c => c.UseAzureStorage(BlobStorageDeviceManagerFactory.StorageConnectionString, _containerName))
             .Serialization(s => s.UseNewtonsoftJson())
             .Topics(t => t.Subscribe("test-topic"))
             .Positions(p => p.StoreInMemory())

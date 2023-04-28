@@ -61,19 +61,17 @@ public static class FasterLogConfigurationExtensions
     /// Configures Topos to use Microsoft's FASTER Log and the file system as the event store
     /// Please note that the underlying FASTER <see cref="IDevice"/> will be kept in a singleton pool, ensuring that all in-process instances that target the same container and blob directory will share the same device.
     /// </summary>
-    public static void UseAzureStorage(this StandardConfigurer<IConsumerImplementation> configurer, string connectionString, string containerName, string directoryName)
+    public static void UseAzureStorage(this StandardConfigurer<IConsumerImplementation> configurer, string connectionString, string containerName)
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
         if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
         if (containerName == null) throw new ArgumentNullException(nameof(containerName));
-        if (directoryName == null) throw new ArgumentNullException(nameof(directoryName));
 
         StandardConfigurer.Open(configurer)
             .Other<IDeviceManager>().Register(c => new BlobStorageDeviceManager(
                 loggerFactory: c.Get<ILoggerFactory>(),
                 connectionString: connectionString,
-                containerName: containerName,
-                directoryName: directoryName
+                containerName: containerName
             ));
 
         RegisterConsumerImplementation(configurer);
@@ -83,12 +81,11 @@ public static class FasterLogConfigurationExtensions
     /// Configures Topos to use Microsoft's FASTER Log and Azure page blobs as the event store.
     /// Please note that the underlying FASTER <see cref="IDevice"/> will be kept in a singleton pool, ensuring that all in-process instances that target the same container and blob directory will share the same device.
     /// </summary>
-    public static FasterProducerConfigurationBuilder UseAzureStorage(this StandardConfigurer<IProducerImplementation> configurer, string connectionString, string containerName, string directoryName)
+    public static FasterProducerConfigurationBuilder UseAzureStorage(this StandardConfigurer<IProducerImplementation> configurer, string connectionString, string containerName)
     {
         if (configurer == null) throw new ArgumentNullException(nameof(configurer));
         if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
         if (containerName == null) throw new ArgumentNullException(nameof(containerName));
-        if (directoryName == null) throw new ArgumentNullException(nameof(directoryName));
 
         var builder = new FasterProducerConfigurationBuilder();
 
@@ -96,8 +93,7 @@ public static class FasterLogConfigurationExtensions
             .Other<IDeviceManager>().Register(c => new BlobStorageDeviceManager(
                 loggerFactory: c.Get<ILoggerFactory>(),
                 connectionString: connectionString,
-                containerName: containerName,
-                directoryName: directoryName
+                containerName: containerName
             ));
 
         RegisterProducerImplementation(configurer, builder);
