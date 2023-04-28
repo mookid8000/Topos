@@ -103,7 +103,16 @@ class BlobStorageDeviceManager : IInitializable, IDisposable, IDeviceManager
 
         _logger.Debug("Singleton pool contains the following keys with refcount > 0: {keys}", SingletonPool.ActiveKeys);
 
-        return pooledLog.Instance;
+        var log = pooledLog.Instance;
+
+        if (log.CommittedUntilAddress == log.BeginAddress)
+        {
+            _logger.Debug("Detected empty log - will write dummy data");
+            log.Enqueue(FasterLogConsumerImplementation.DummyData);
+            log.Commit(spinWait: true);
+        }
+
+        return log;
     }
 
     static string SanitizeTopicName(string topic) => topic;

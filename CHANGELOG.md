@@ -267,6 +267,9 @@
 ## 0.19.0
 * Remove directory name option from Azure Blobs-based FASTER event broker and use sanitized topic name as directory instead
 
+## 0.20.0
+* Tweak various things to cater for producer/consumer startup ordering problems, singleton pooling and reference counting, etc.
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen

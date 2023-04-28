@@ -71,12 +71,19 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
 
         for (var counter = 1; counter <= numberOfRestarts; counter++)
         {
-            using var consumer = CreateConsumer();
-            using var producer = CreateProducer();
+            try
+            {
+                using var consumer = CreateConsumer();
+                using var producer = CreateProducer();
 
-            await producer.Send("topic1", new($"besked {counter}"));
+                await producer.Send("topic1", new($"besked {counter}"));
 
-            await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
+                await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
+            }
+            catch (Exception exception)
+            {
+                throw new ApplicationException($"Failed with counter={counter}", exception);
+            }
         }
 
         Assert.That(receivedMessages, Is.EqualTo(Enumerable.Range(1, numberOfRestarts).Select(n => $"besked {n}")));

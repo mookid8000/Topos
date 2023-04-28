@@ -13,6 +13,10 @@ namespace Topos.Faster;
 
 class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 {
+    public static byte[] DummyData = { 0xba, 0xda, 0x55 };
+
+    static readonly ByteArrayFasterEqualityComparer ByteArrayComparer = new();
+
     readonly CancellationTokenSource _cancellationTokenSource = new();
     readonly ILogEntrySerializer _logEntrySerializer;
     readonly IConsumerDispatcher _consumerDispatcher;
@@ -67,13 +71,22 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
                     {
                         while (iterator.GetNext(out var bytes, out _, out _, out var nextAddress))
                         {
+                            if (ByteArrayComparer.Equals(ref bytes, ref DummyData))
+                            {
+                                readAddress = nextAddress;
+                                continue;
+                            }
+
                             var transportMessage = _logEntrySerializer.Deserialize(bytes);
+                            
                             var receivedTransportMessage = new ReceivedTransportMessage(
-                                new Position(topic, 0, nextAddress), transportMessage.Headers,
-                                transportMessage.Body);
+                                position: new Position(topic, 0, nextAddress),
+                                headers: transportMessage.Headers,
+                                body: transportMessage.Body
+                            );
 
                             _consumerDispatcher.Dispatch(receivedTransportMessage);
-
+                            
                             readAddress = nextAddress;
                         }
 
