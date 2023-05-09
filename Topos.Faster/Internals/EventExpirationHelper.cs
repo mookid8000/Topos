@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -95,15 +96,22 @@ class EventExpirationHelper : IDisposable
 
         using var iterator = log.Scan(beginAddress, long.MaxValue);
 
-        while (iterator.GetNext(out var bytes, out _, out var currentAddress))
+        while (iterator.GetNext(out var bytes, out var length, out var currentAddress))
         {
             token.ThrowIfCancellationRequested();
 
-            var entry = _logEntrySerializer.Deserialize(bytes);
+            try
+            {
+                var entry = _logEntrySerializer.Deserialize(bytes);
 
-            if (!ShouldTruncateToHere(entry, cutoff)) break;
+                if (!ShouldTruncateToHere(entry, cutoff)) break;
 
-            truncateUntilAddress = currentAddress;
+                truncateUntilAddress = currentAddress;
+            }
+            catch (Exception exception)
+            {
+                throw new IOException($"An error occurred during scan for a truncate-until address - current address: {currentAddress} - {length} bytes read: {Convert.ToBase64String(bytes)}", exception);
+            }
         }
 
         return truncateUntilAddress;
@@ -131,11 +139,10 @@ class EventExpirationHelper : IDisposable
 
     public void Dispose()
     {
-        if (!_compactionTasks.Any()) return;
-
+        _cancellationTokenSource.Cancel();
         try
         {
-            _cancellationTokenSource.Cancel();
+            if (!_compactionTasks.Any()) return;
 
             var compactionTasks = _compactionTasks.Values.Where(t => t.IsValueCreated)
                 .Select(t => t.Value)
@@ -147,11 +154,10 @@ class EventExpirationHelper : IDisposable
             {
                 _logger.Warn("One or more compaction tasks did not exit within timeout {timeout}", timeout);
             }
-
-            _cancellationTokenSource?.Dispose();
         }
         finally
         {
+            _cancellationTokenSource?.Dispose();
             _compactionTasks.Clear();
         }
     }
