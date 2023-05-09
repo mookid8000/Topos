@@ -270,6 +270,12 @@
 ## 0.20.0
 * Tweak various things to cater for producer/consumer startup ordering problems, singleton pooling and reference counting, etc.
 
+## 0.21.0
+* Update Confluent.Kafka to 2.1.1
+* Update Microsoft.FASTER.Core to 2.5.3
+* Update Microsoft.FASTER.Devices.AzureStorage to 2.5.3
+* Add better error reporting in FASTER compaction task
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
