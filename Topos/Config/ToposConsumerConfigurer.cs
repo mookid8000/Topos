@@ -12,11 +12,11 @@ namespace Topos.Config;
 
 public class ToposConsumerConfigurer
 {
-    internal readonly Injectionist _injectionist = new Injectionist();
+    internal readonly Injectionist _injectionist = new();
 
-    readonly Topics _topics = new Topics();
-    readonly Handlers _handlers = new Handlers();
-    readonly Options _options = new Options();
+    readonly Topics _topics = new();
+    readonly Handlers _handlers = new();
+    readonly Options _options = new();
 
     public ToposConsumerConfigurer(Action<StandardConfigurer<IConsumerImplementation>> configure, string groupName)
     {

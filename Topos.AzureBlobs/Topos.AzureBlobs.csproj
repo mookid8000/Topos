@@ -17,4 +17,11 @@
     <ProjectReference Include="..\Topos\Topos.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Update="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
 </Project>

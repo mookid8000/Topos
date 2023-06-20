@@ -282,6 +282,8 @@
 * Update MongoDB.Driver to 2.19.2
 * Update Serilog to 3.0.0
 
+## 0.23.0
+* Add package readmes
 
 ---
 
