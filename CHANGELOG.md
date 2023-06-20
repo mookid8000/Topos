@@ -276,6 +276,13 @@
 * Update Microsoft.FASTER.Devices.AzureStorage to 2.5.3
 * Add better error reporting in FASTER compaction task
 
+## 0.22.0
+* Update Microsoft.FASTER.Core to 2.5.11
+* Update Microsoft.FASTER.Devices.AzureStorage to 2.5.11
+* Update MongoDB.Driver to 2.19.2
+* Update Serilog to 3.0.0
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
