@@ -1,27 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Company>Rebus FM</Company>
-    <Authors>mookid8000</Authors>
-    <RootNamespace>Topos</RootNamespace>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>10</LangVersion>
+		<Company>Rebus FM</Company>
+		<Authors>mookid8000</Authors>
+		<RootNamespace>Topos</RootNamespace>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>Newtonsoft JSON.NET-based message serializer for Topos.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="newtonsoft.json" Version="13.0.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos\Topos.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos\Topos.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="README.md">
-      <PackagePath>\</PackagePath>
-      <Pack>True</Pack>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="README.md">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+	</ItemGroup>
 
 </Project>

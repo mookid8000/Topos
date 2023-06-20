@@ -7,6 +7,8 @@
 		<Authors>mookid8000</Authors>
 		<RootNamespace>Topos</RootNamespace>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>Serilog-based logger factory implementation for Topos.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>

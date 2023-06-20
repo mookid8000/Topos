@@ -2,9 +2,11 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RootNamespace>Topos</RootNamespace>
 		<LangVersion>10</LangVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>PostgreSQL-based positions manager for Topos.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,10 +18,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="README.md">
-	    <PackagePath>\</PackagePath>
-	    <Pack>True</Pack>
-	  </None>
+		<None Update="README.md">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
 	</ItemGroup>
 
 </Project>

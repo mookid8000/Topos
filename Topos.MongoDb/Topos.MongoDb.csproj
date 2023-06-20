@@ -1,21 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Company>Rebus FM</Company>
-    <Authors>mookid8000</Authors>
-    <RootNamespace>Topos</RootNamespace>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>10</LangVersion>
+		<Company>Rebus FM</Company>
+		<Authors>mookid8000</Authors>
+		<RootNamespace>Topos</RootNamespace>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>MongoDB-based positions manager for Topos.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="mongodb.driver" Version="2.19.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="mongodb.driver" Version="2.19.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos\Topos.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos\Topos.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="README.md">
