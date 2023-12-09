@@ -4,5 +4,9 @@ namespace Topos.PostgreSql.Tests;
 
 public abstract class PostgreSqlFixtureBase : ToposFixtureBase
 {
-    protected void CleanDatabase(string connectionString) => PostgreSqlTestConfig.CleanDatabase(connectionString);
+    const string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=postgres";
+
+    protected string ConnectionString => connectionString;
+
+    protected void CleanDatabase() => PostgreSqlTestConfig.CleanDatabase(connectionString);
 }

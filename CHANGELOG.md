@@ -291,6 +291,9 @@
 ## 0.26.0
 * Update dependencies
 
+## 0.27.0
+* Target .NET 6, 7, and 8 explicitly in addition to .NET Standard 2.0.
+
 
 ---
 
