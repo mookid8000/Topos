@@ -12,7 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="system.text.json" Version="7.0.3" />
+		<PackageReference Include="system.text.json" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

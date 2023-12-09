@@ -12,7 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="mongodb.driver" Version="2.20.0" />
+		<PackageReference Include="mongodb.driver" Version="2.22.0" />
 	</ItemGroup>
 
 	<ItemGroup>

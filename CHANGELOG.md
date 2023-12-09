@@ -288,6 +288,9 @@
 ## 0.25.0
 * Update dependencies
 
+## 0.26.0
+* Update dependencies
+
 
 ---
 
