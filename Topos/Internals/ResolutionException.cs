@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace Topos.Internals;
 
@@ -33,13 +32,5 @@ class ResolutionException : Exception
             : $@"{message}
 
 {explanation}";
-    }
-
-    /// <summary>
-    /// Constructs the exception
-    /// </summary>
-    public ResolutionException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
     }
 }
