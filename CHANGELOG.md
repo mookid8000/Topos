@@ -294,6 +294,8 @@
 ## 0.27.0
 * Target .NET 6, 7, and 8 explicitly in addition to .NET Standard 2.0.
 
+## 0.28.0
+* LOGO!
 
 ---
 

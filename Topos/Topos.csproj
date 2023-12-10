@@ -8,9 +8,14 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>Wrapper of log-based brokers, e.g. like Kafka, abstracting away the actual broker implementation.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>logo128x128.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Include="..\artwork\logo128x128.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	  <None Include="..\README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>

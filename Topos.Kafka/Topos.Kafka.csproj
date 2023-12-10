@@ -9,6 +9,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>Kafka-based broker implementation for Topos.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>logo128x128.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,7 +21,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="README.md">
+		<None Include="..\artwork\logo128x128.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>

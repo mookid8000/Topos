@@ -1,5 +1,4 @@
-﻿
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0</TargetFrameworks>
@@ -10,6 +9,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>Microsoft FASTER-based broker implementation for Topos.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>logo128x128.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -24,7 +24,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="README.md">
+		<None Include="..\artwork\logo128x128.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
