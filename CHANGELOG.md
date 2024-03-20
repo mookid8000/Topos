@@ -297,6 +297,17 @@
 ## 0.28.0
 * LOGO!
 
+## 0.29.0
+* Update Confluent.Kafka to 2.3.0
+* Update MongoDb.Driver to 2.24.0
+* Update Microsoft.FASTER.Core to 2.6.3
+* Update Microsoft.FASTER.Devices.AzureStorage to 2.6.3
+* Update Npgsql to 8.0.2
+* Update System.Text.Json to 8.0.3
+
+
+
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
