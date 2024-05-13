@@ -305,7 +305,8 @@
 * Update Npgsql to 8.0.2
 * Update System.Text.Json to 8.0.3
 
-
+## 0.30.0
+* Update deps
 
 
 ---
