@@ -308,6 +308,8 @@
 ## 0.30.0
 * Update deps
 
+## 0.31.0
+* Update deps
 
 ---
 
