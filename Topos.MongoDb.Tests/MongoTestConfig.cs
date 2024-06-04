@@ -1,23 +1,42 @@
 ﻿using System;
 using MongoDB.Driver;
+using NUnit.Framework;
+using Testcontainers.MongoDb;
+using Testy.Files;
+using Testy.General;
+using Topos.Helpers;
 
 namespace Topos.MongoDb.Tests;
 
-public static class MongoTestConfig
+public class MongoTestConfig
 {
-    public static MongoUrl MongoUrl => new("mongodb://localhost/topos-test");
+    static readonly Disposables disposables = new();
+
+    static readonly Lazy<MongoDbContainer> MongoDbContainer = new(() =>
+    {
+        var temporaryTestDirectory = new TemporaryTestDirectory();
+
+        disposables.Add(temporaryTestDirectory);
+
+        var mongo = new MongoDbBuilder().Build();
+
+        mongo.StartAsync().GetAwaiter().GetResult();
+
+        disposables.Add(new DisposableCallback(() => mongo.StopAsync().GetAwaiter().GetResult()));
+
+        return mongo;
+    });
+
+    [OneTimeTearDown]
+    public void CleanUp() => disposables.Dispose();
 
     public static IMongoDatabase GetCleanTestDatabase()
     {
-        var databaseName = MongoUrl.DatabaseName 
-                           ?? throw new ArgumentException($"Can't use MongoDB connection string {MongoUrl}, because it doesn't contain a database name. Please provide one with a database name.");
-
-        var mongoClient = new MongoClient(MongoUrl);
+        var databaseName = Guid.NewGuid().ToString("n");
+        var mongoClient = new MongoClient(MongoDbContainer.Value.GetConnectionString());
 
         mongoClient.DropDatabase(databaseName);
-            
-        var database = mongoClient.GetDatabase(databaseName);
 
-        return database;
+        return mongoClient.GetDatabase(databaseName);
     }
 }

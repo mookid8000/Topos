@@ -1,5 +1,4 @@
 using System;
-using Npgsql;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
 using Testy.Files;
