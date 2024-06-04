@@ -30,5 +30,5 @@ public class KafkaTestConfig
     public static string Address => KafkaContainer.Value.GetBootstrapAddress();
 
     [OneTimeTearDown]
-    public void StopContainerAsync() => disposables.Dispose();
+    public void CleanUp() => disposables.Dispose();
 }

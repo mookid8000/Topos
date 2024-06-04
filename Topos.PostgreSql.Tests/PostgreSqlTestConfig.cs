@@ -1,19 +1,34 @@
+using System;
 using Npgsql;
+using NUnit.Framework;
+using Testcontainers.PostgreSql;
+using Testy.Files;
+using Testy.General;
+using Topos.Helpers;
 
 namespace Topos.PostgreSql.Tests;
 
-public static class PostgreSqlTestConfig
+public class PostgreSqlTestConfig
 {
-    public static void CleanDatabase(string connectionString)
+    static readonly Disposables disposables = new();
+
+    static readonly Lazy<PostgreSqlContainer> PostgresContainer = new(() =>
     {
-        using var connection = new NpgsqlConnection(connectionString);
+        var temporaryTestDirectory = new TemporaryTestDirectory();
 
-        connection.Open();
+        disposables.Add(temporaryTestDirectory);
 
-        const string clean = "DROP TABLE IF EXISTS topos.position_manager; DROP SCHEMA IF EXISTS topos;";
+        var postgres = new PostgreSqlBuilder().Build();
 
-        using var cmd = new NpgsqlCommand(clean, connection);
+        postgres.StartAsync().GetAwaiter().GetResult();
 
-        cmd.ExecuteNonQuery();
-    }
+        disposables.Add(new DisposableCallback(() => postgres.StopAsync().GetAwaiter().GetResult()));
+
+        return postgres;
+    });
+
+    public static string ConnectionString => PostgresContainer.Value.GetConnectionString();
+
+    [OneTimeTearDown]
+    public void CleanUp() => disposables.Dispose();
 }
