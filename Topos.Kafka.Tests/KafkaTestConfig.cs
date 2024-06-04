@@ -1,32 +1,34 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using NUnit.Framework;
+using Testcontainers.Kafka;
+using Testy.Files;
+using Testy.General;
+using Topos.Helpers;
 
 namespace Topos.Kafka.Tests;
 
-public static class KafkaTestConfig
+[SetUpFixture]
+public class KafkaTestConfig
 {
-    static KafkaTestConfig()
+    static readonly Disposables disposables = new();
+
+    static readonly Lazy<KafkaContainer> KafkaContainer = new(() =>
     {
-        var connectionStringFilePath = Path.Combine(AppContext.BaseDirectory, "connection_string.secret.txt");
+        var temporaryTestDirectory = new TemporaryTestDirectory();
 
-        if (!File.Exists(connectionStringFilePath))
-        {
-            throw new FileNotFoundException($@"Could not locate connection string file here:
+        disposables.Add(temporaryTestDirectory);
 
-    {connectionStringFilePath}
+        var kafka = new KafkaBuilder().Build();
 
-Please create this file and add a Kafka connection string to it");
-        }
+        kafka.StartAsync().GetAwaiter().GetResult();
 
-        var firstLine = File.ReadAllLines(connectionStringFilePath).First();
+        disposables.Add(new DisposableCallback(() => kafka.StopAsync().GetAwaiter().GetResult()));
 
-        Address = firstLine;
-    }
+        return kafka;
+    });
 
-    public static string Address { get; }
+    public static string Address => KafkaContainer.Value.GetBootstrapAddress();
 
-    //public static string Address => "127.0.0.1:9092";
-    //public static string Address => "10.200.236.139:9092";
-    //public static string Address => "192.168.1.98:9092";
+    [OneTimeTearDown]
+    public void StopContainerAsync() => disposables.Dispose();
 }

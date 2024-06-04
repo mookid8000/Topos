@@ -11,6 +11,7 @@ using Topos.Producer;
 namespace Topos.Kafka.Tests;
 
 [TestFixture]
+[Explicit]
 public class ReadmeCode : KafkaFixtureBase
 {
     [Test]

@@ -42,7 +42,7 @@ public class KafkaConsumerProducerTest : KafkaFixtureBase
                 var toposMessages = words
                     .Select(word => new ToposMessage(new MessageWithSingleWord(word)));
 
-                await producer.SendMany(topicForWords, toposMessages);
+                await producer.SendMany(topicForWords, toposMessages, cancellationToken: _);
             })
             .Create();
 
@@ -65,7 +65,7 @@ public class KafkaConsumerProducerTest : KafkaFixtureBase
             })
             .Create();
 
-        const string textFromGitHub = @"Nuget packages corresponding to all commits to release branches are available from the following nuget package source (Note: this is not a web URL - you should specify it in the nuget package manger): https://ci.appveyor.com/nuget/confluent-kafka-dotnet. The version suffix of these nuget packages matches the appveyor build number. You can see which commit a particular build number corresponds to by looking at the AppVeyor build history";
+        const string textFromGitHub = "Nuget packages corresponding to all commits to release branches are available from the following nuget package source (Note: this is not a web URL - you should specify it in the nuget package manger): https://ci.appveyor.com/nuget/confluent-kafka-dotnet. The version suffix of these nuget packages matches the appveyor build number. You can see which commit a particular build number corresponds to by looking at the AppVeyor build history";
 
         tokenizerConsumer.Start();
         wordCounterConsumer.Start();
@@ -82,23 +82,7 @@ SUM:
     {wordCounts.Sum(kvp => kvp.Value)}");
     }
 
-    class MessageWithText
-    {
-        public string Text { get; }
+    record MessageWithText(string Text);
 
-        public MessageWithText(string text)
-        {
-            Text = text;
-        }
-    }
-
-    class MessageWithSingleWord
-    {
-        public string Word { get; }
-
-        public MessageWithSingleWord(string word)
-        {
-            Word = word;
-        }
-    }
+    record MessageWithSingleWord(string Word);
 }

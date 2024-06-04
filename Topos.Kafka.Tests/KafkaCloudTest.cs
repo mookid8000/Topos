@@ -18,6 +18,7 @@ using Topos.Serialization;
 namespace Topos.Kafka.Tests;
 
 [TestFixture]
+[Explicit]
 public class KafkaCloudTest : FixtureBase
 {
     string host;
