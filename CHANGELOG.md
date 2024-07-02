@@ -311,6 +311,9 @@
 ## 0.31.0
 * Update deps
 
+## 0.32.0
+* Update deps
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
