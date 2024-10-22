@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="serilog" Version="4.0.1" />
+		<PackageReference Include="serilog" Version="4.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
