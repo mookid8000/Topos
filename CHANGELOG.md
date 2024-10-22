@@ -320,6 +320,9 @@
 ## 0.34.0
 * Update deps
 
+## 0.35.0
+* Remove .NET Standard 2.0 as target framework for Topos.MongoDb
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
