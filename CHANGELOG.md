@@ -326,6 +326,9 @@
 ## 0.36.0
 * Update deps
 
+## 0.37.0
+* Fix compaction when using the Azure Blobs-based FASTER storage device
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
