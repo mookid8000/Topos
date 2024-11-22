@@ -5,10 +5,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="microsoft.net.test.sdk" Version="17.11.1" />
+		<PackageReference Include="microsoft.net.test.sdk" Version="17.12.0" />
 		<PackageReference Include="NUnit" Version="4.2.2" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-		<PackageReference Include="Testcontainers.postgresql" Version="3.10.0" />
+		<PackageReference Include="Testcontainers.postgresql" Version="4.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -329,6 +329,9 @@
 ## 0.37.0
 * Fix compaction when using the Azure Blobs-based FASTER storage device
 
+## 0.38.0
+* .NET 9 as compile target and updated dependencies throughout
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
