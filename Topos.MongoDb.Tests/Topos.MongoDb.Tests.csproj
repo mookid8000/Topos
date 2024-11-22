@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="microsoft.net.test.sdk" Version="17.11.1" />
-    <PackageReference Include="mongodb.driver" Version="3.0.0" />
-    <PackageReference Include="nunit" Version="4.2.2" />
-    <PackageReference Include="nunit3testadapter" Version="4.6.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Testcontainers.mongodb" Version="3.10.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="microsoft.net.test.sdk" Version="17.11.1" />
+		<PackageReference Include="mongodb.driver" Version="3.0.0" />
+		<PackageReference Include="nunit" Version="4.2.2" />
+		<PackageReference Include="nunit3testadapter" Version="4.6.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Testcontainers.mongodb" Version="3.10.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos.MongoDb\Topos.MongoDb.csproj" />
-    <ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos.MongoDb\Topos.MongoDb.csproj" />
+		<ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
+	</ItemGroup>
 
 </Project>

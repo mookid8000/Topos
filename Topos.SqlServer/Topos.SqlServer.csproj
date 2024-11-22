@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0</TargetFrameworks>
-    <LangVersion>12</LangVersion>
-    <Company>Rebus FM</Company>
-    <Authors>mookid8000</Authors>
-    <RootNamespace>Topos</RootNamespace>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<LangVersion>13</LangVersion>
+		<Company>Rebus FM</Company>
+		<Authors>mookid8000</Authors>
+		<RootNamespace>Topos</RootNamespace>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos\Topos.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos\Topos.csproj" />
+	</ItemGroup>
 
 </Project>

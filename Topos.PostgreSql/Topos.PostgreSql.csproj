@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
 		<RootNamespace>Topos</RootNamespace>
-		<LangVersion>12</LangVersion>
+		<LangVersion>13</LangVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>PostgreSQL-based positions manager for Topos.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

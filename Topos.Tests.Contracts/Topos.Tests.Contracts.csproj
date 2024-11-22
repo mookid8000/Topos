@@ -1,22 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-    <LangVersion>12</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<LangVersion>13</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="newtonsoft.json" Version="13.0.3" />
-    <PackageReference Include="nunit" Version="4.2.2" />
-    <PackageReference Include="testy" Version="0.10.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="newtonsoft.json" Version="13.0.3" />
+		<PackageReference Include="nunit" Version="4.2.2" />
+		<PackageReference Include="testy" Version="0.10.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos\Topos.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Serialization\" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos\Topos.csproj" />
+	</ItemGroup>
 
 </Project>

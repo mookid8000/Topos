@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0</TargetFrameworks>
-		<LangVersion>12</LangVersion>
+		<TargetFrameworks>netstandard2.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<LangVersion>13</LangVersion>
 		<Company>Rebus FM</Company>
 		<Authors>mookid8000</Authors>
 		<RootNamespace>Topos</RootNamespace>
@@ -28,10 +28,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
 
 </Project>

@@ -1,37 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<LangVersion>13</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="confluent.kafka" Version="2.6.0" />
-    <PackageReference Include="microsoft.net.test.sdk" Version="17.11.1" />
-    <PackageReference Include="nunit3testadapter" Version="4.6.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="serilog" Version="4.1.0" />
-    <PackageReference Include="serilog.sinks.console" Version="6.0.0" />
-    <PackageReference Include="Testcontainers.Kafka" Version="3.10.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="confluent.kafka" Version="2.6.0" />
+		<PackageReference Include="microsoft.net.test.sdk" Version="17.11.1" />
+		<PackageReference Include="nunit3testadapter" Version="4.6.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="serilog" Version="4.1.0" />
+		<PackageReference Include="serilog.sinks.console" Version="6.0.0" />
+		<PackageReference Include="Testcontainers.Kafka" Version="3.10.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Topos.Kafka\Topos.Kafka.csproj" />
-    <ProjectReference Include="..\Topos.NewtonsoftJson\Topos.NewtonsoftJson.csproj" />
-    <ProjectReference Include="..\Topos.Serilog\Topos.Serilog.csproj" />
-    <ProjectReference Include="..\Topos.Tests.Contracts\Topos.Tests.Contracts.csproj" />
-    <ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Topos.Kafka\Topos.Kafka.csproj" />
+		<ProjectReference Include="..\Topos.NewtonsoftJson\Topos.NewtonsoftJson.csproj" />
+		<ProjectReference Include="..\Topos.Serilog\Topos.Serilog.csproj" />
+		<ProjectReference Include="..\Topos.Tests.Contracts\Topos.Tests.Contracts.csproj" />
+		<ProjectReference Include="..\Topos.Tests\Topos.Tests.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="confluent_cloud.secret.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="connection_string.secret.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="confluent_cloud.secret.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="connection_string.secret.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>
