@@ -332,6 +332,9 @@
 ## 0.38.0
 * .NET 9 as compile target and updated dependencies throughout
 
+## 0.39.0
+* Update all the deps
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
