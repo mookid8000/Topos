@@ -2,8 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
-		<RootNamespace>Topos</RootNamespace>
 		<LangVersion>13</LangVersion>
+		<Company>Rebus FM</Company>
+		<Authors>mookid8000</Authors>
+		<RootNamespace>Topos</RootNamespace>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>PostgreSQL-based positions manager for Topos.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -11,7 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="npgsql" Version="9.0.2" />
+		<PackageReference Include="npgsql" Version="9.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>

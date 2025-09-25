@@ -16,7 +16,7 @@
 		<PackageReference Include="Microsoft.FASTER.Core" Version="2.6.5" />
 		<PackageReference Include="Microsoft.FASTER.Devices.AzureStorage" Version="2.6.5" />
 		<PackageReference Include="nito.asyncex" Version="5.1.2" />
-		<PackageReference Include="protobuf-net" Version="3.2.46" />
+		<PackageReference Include="protobuf-net" Version="3.2.56" />
 	</ItemGroup>
 
 	<ItemGroup>
