@@ -13,7 +13,7 @@ namespace Topos.Faster;
 
 class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 {
-    public static byte[] DummyData = { 0xba, 0xda, 0x55 };
+    public static byte[] DummyData = [0xba, 0xda, 0x55];
 
     static readonly ByteArrayFasterEqualityComparer ByteArrayComparer = new();
 

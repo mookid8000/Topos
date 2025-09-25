@@ -100,8 +100,8 @@ class EventExpirationHelper : IDisposable
         {
             token.ThrowIfCancellationRequested();
 
-            // this is the weirdest thing: The first scan from the beginning yields the bytes 0xBADA55 which we simply ignore
-            if (bytes.Length == 3 && bytes[0] == 0xBA && bytes[1] == 0xDA && bytes[2] == 0x55)
+            // if it's the dummy data written at the beginning of each log, just skip it
+            if (bytes.Length == 3 && bytes.SequenceEqual(FasterLogConsumerImplementation.DummyData))
             {
                 continue;
             }

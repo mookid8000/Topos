@@ -39,7 +39,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
 
     public Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
     {
-        var writeTask = new WriteTask(topic, partitionKey, new[] { transportMessage }, cancellationToken);
+        var writeTask = new WriteTask(topic, partitionKey, [transportMessage], cancellationToken);
 
         return EnqueueWriteTask(writeTask);
     }
@@ -183,8 +183,7 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
     class WriteTask
     {
         readonly TaskCompletionSource<object> _taskCompletionSource = new();
-
-        CancellationTokenRegistration _cancellationRegistration;
+        readonly CancellationTokenRegistration _cancellationRegistration;
 
         public string Topic { get; }
         public string PartitionKey { get; }

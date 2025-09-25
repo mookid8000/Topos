@@ -335,7 +335,7 @@
 ## 0.39.0
 * Update all the deps
 
-## 0.40.0
+## 0.41.0
 * Update all the deps
 
 
