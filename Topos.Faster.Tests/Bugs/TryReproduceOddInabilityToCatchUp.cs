@@ -44,7 +44,7 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
     {
         using var producer = CreateProducer();
 
-        await producer.Send(topic: "topic2", new("hej"));
+        await producer.SendAsync(topic: "topic2", new("hej"));
 
     }
 
@@ -65,7 +65,7 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
         using var producer = CreateProducer();
         using var consumer = CreateConsumer(handleStrings: receivedStrings.EnqueueRange);
 
-        await producer.SendMany(topic: "topic1", messages: GetMessages(count));
+        await producer.SendManyAsync(topic: "topic1", messages: GetMessages(count));
 
         await receivedStrings.WaitOrDie(
             completionExpression: q => q.Count == count,
@@ -84,7 +84,7 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
         using var consumer = CreateConsumer(handleStrings: receivedStrings.EnqueueRange);
         using var producer = CreateProducer();
 
-        await producer.SendMany(topic: "topic1", messages: GetMessages(count));
+        await producer.SendManyAsync(topic: "topic1", messages: GetMessages(count));
 
         await receivedStrings.WaitOrDie(
             completionExpression: q => q.Count == count,

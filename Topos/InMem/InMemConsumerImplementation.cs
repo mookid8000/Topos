@@ -10,7 +10,7 @@ namespace Topos.InMem;
 
 class InMemConsumerImplementation : IConsumerImplementation, IDisposable
 {
-    readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    readonly CancellationTokenSource _cancellationTokenSource = new();
     readonly InMemEventBroker _eventBroker;
     readonly ILogger _logger;
 

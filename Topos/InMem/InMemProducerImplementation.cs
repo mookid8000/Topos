@@ -13,9 +13,9 @@ class InMemProducerImplementation : IProducerImplementation
 
     public InMemProducerImplementation(InMemEventBroker eventBroker) => _eventBroker = eventBroker ?? throw new ArgumentNullException(nameof(eventBroker));
 
-    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default) => _eventBroker.Send(topic, transportMessage);
+    public async Task SendAsync(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default) => _eventBroker.Send(topic, transportMessage);
 
-    public async Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
+    public async Task SendManyAsync(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
         foreach (var transportMessage in transportMessages)
         {

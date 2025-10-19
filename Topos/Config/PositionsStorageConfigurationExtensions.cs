@@ -38,11 +38,11 @@ public static class PositionsStorageConfigurationExtensions
             _startFromPosition = startFromPosition;
         }
 
-        public Task Set(Position position) => _positionManager.Set(position);
+        public Task SetAsync(Position position) => _positionManager.SetAsync(position);
 
-        public async Task<Position> Get(string topic, int partition)
+        public async Task<Position> GetAsync(string topic, int partition)
         {
-            var position = await _positionManager.Get(topic, partition);
+            var position = await _positionManager.GetAsync(topic, partition);
 
             return (isDefault: position.IsDefault, startFrom: _startFromPosition) switch
             {

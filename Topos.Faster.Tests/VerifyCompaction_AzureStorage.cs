@@ -33,10 +33,10 @@ public class VerifyCompaction_AzureStorage : FixtureBase
     {
         using var producer = CreateProducer();
 
-        await producer.SendMany("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"1-{n}", DateTimeOffset.Now))));
+        await producer.SendManyAsync("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"1-{n}", DateTimeOffset.Now))));
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        await producer.SendMany("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"2-{n}", DateTimeOffset.Now))));
+        await producer.SendManyAsync("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"2-{n}", DateTimeOffset.Now))));
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         using var consumer1 = StartConsumer(message =>
@@ -46,7 +46,7 @@ public class VerifyCompaction_AzureStorage : FixtureBase
 
         await Task.Delay(TimeSpan.FromSeconds(60));
 
-        await producer.SendMany("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"3-{n}", DateTimeOffset.Now))));
+        await producer.SendManyAsync("test-topic", Enumerable.Range(0, 1000).Select(n => new ToposMessage(new Timestamp($"3-{n}", DateTimeOffset.Now))));
 
         await Task.Delay(TimeSpan.FromSeconds(60));
 
@@ -58,17 +58,7 @@ public class VerifyCompaction_AzureStorage : FixtureBase
         await Task.Delay(TimeSpan.FromSeconds(10));
     }
 
-    class Timestamp
-    {
-        public Timestamp(string label, DateTimeOffset time)
-        {
-            Label = label;
-            Time = time;
-        }
-
-        public string Label { get; }
-        public DateTimeOffset Time { get; }
-    }
+    record Timestamp(string Label, DateTimeOffset Time);
 
     IToposProducer CreateProducer()
     {

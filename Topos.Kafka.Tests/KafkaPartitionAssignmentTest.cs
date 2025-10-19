@@ -90,7 +90,7 @@ public class KafkaPartitionAssignmentTest : KafkaFixtureBase
                     var myEvent = new MyEvent($"THIS IS EVENT NUMBER {counter}", counter);
                     var partitionKey = Guid.NewGuid().ToString();
 
-                    await producer.Send(topic, new ToposMessage(myEvent), partitionKey);
+                    await producer.SendAsync(topic, new ToposMessage(myEvent), partitionKey, cancellationToken);
 
                     await Task.Delay(delayBetweenEachMessage, cancellationToken);
                 }

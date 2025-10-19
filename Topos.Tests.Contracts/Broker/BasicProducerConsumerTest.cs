@@ -37,7 +37,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         Using(producer);
 
-        await producer.Send(topic, new ToposMessage("message 1"));
+        await producer.SendAsync(topic, new ToposMessage("message 1"));
 
         var consumer = _brokerFactory.ConfigureConsumer("default-group")
             .Handle(async (messages, _, _) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
@@ -54,7 +54,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
         // give consumer a chance to start up before new stuff happens
         await Task.Delay(TimeSpan.FromSeconds(10));
 
-        await producer.Send(topic, new ToposMessage("message 2"));
+        await producer.SendAsync(topic, new ToposMessage("message 2"));
 
         await receivedMessages.WaitOrDie(
             completionExpression: q => q.Count == 2,
@@ -73,7 +73,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         Using(producer);
 
-        await producer.Send(topic, new ToposMessage("message 1"));
+        await producer.SendAsync(topic, new ToposMessage("message 1"));
 
         var consumer = _brokerFactory.ConfigureConsumer("default-group")
             .Handle(async (messages, context, token) => receivedMessages.EnqueueRange(messages.Select(m => m.Body).OfType<string>()))
@@ -90,7 +90,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
         // give consumer a chance to start up before new stuff happens
         await Task.Delay(TimeSpan.FromSeconds(10));
 
-        await producer.Send(topic, new ToposMessage("message 2"));
+        await producer.SendAsync(topic, new ToposMessage("message 2"));
 
         await receivedMessages.WaitOrDie(
             completionExpression: q => q.Count == 1,
@@ -124,7 +124,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         Using(consumer);
 
-        await producer.Send(topic, new ToposMessage("wazzup my mayn?!"));
+        await producer.SendAsync(topic, new ToposMessage("wazzup my mayn?!"));
 
         weAreInTheHandler.WaitOrDie(timeoutSeconds: 15);
 
@@ -167,7 +167,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         Using(consumer);
 
-        await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.Send(topic, new ToposMessage($"message-{n}"), "p100")));
+        await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.SendAsync(topic, new ToposMessage($"message-{n}"), "p100")));
 
         await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 20);
     }
@@ -206,9 +206,9 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         using (CreateConsumer(positionsStorage))
         {
-            await producer.Send(topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
-            await producer.Send(topic, new ToposMessage("MED"), partitionKey: partitionKey);
-            await producer.Send(topic, new ToposMessage("DIG"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("MED"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
             await receivedStrings.WaitOrDie(
                 completionExpression: q => q.Count == 3,
@@ -226,9 +226,9 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         using (CreateConsumer(positionsStorage))
         {
-            await producer.Send(topic, new ToposMessage("MIN"), partitionKey: partitionKey);
-            await producer.Send(topic, new ToposMessage("SØDE"), partitionKey: partitionKey);
-            await producer.Send(topic, new ToposMessage("VEN"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("MIN"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("SØDE"), partitionKey: partitionKey);
+            await producer.SendAsync(topic, new ToposMessage("VEN"), partitionKey: partitionKey);
 
             await receivedStrings.WaitOrDie(
                 completionExpression: q => q.Count == 6,
@@ -334,7 +334,7 @@ but got
 
         Using(consumer);
 
-        await producer.Send(topic, new ToposMessage("HEJ MED DIG MIN VEN"));
+        await producer.SendAsync(topic, new ToposMessage("HEJ MED DIG MIN VEN"));
 
         gotTheString.WaitOrDie(errorMessage: "Waited for the text 'HEJ MED DIG MIN VEN' to arrive in the consumer");
     }

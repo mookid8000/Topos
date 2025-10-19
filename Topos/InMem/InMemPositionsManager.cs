@@ -15,9 +15,9 @@ public class InMemPositionsManager : IPositionManager
         _positionsStorage = positionsStorage ?? throw new ArgumentNullException(nameof(positionsStorage));
     }
 
-    public async Task Set(Position position) => _positionsStorage.Set(position);
+    public async Task SetAsync(Position position) => _positionsStorage.Set(position);
 
-    public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> GetAsync(string topic, int partition)
     {
         var results = _positionsStorage.Get(topic, new[] { partition });
 

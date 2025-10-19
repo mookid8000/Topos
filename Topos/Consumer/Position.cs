@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace Topos.Consumer;
 
-namespace Topos.Consumer;
-
-public class Position
+public class Position(string topic, int partition, long offset)
 {
     public const int DefaultOffset = -1;
 
@@ -12,28 +10,21 @@ public class Position
     /// Gets the "default" position, which is the lowest possible position. Brokers should interpret this position as "as much as you've got", so
     /// passing this position when resuming should get all events available in the broker
     /// </summary>
-    public static Position Default(string topic, int partition) => new Position(topic, partition, DefaultOffset);
+    public static Position Default(string topic, int partition) => new(topic, partition, DefaultOffset);
 
     /// <summary>
     /// Gets the "only new" position, which brokers should interpret as "only new events", so
     /// passing this position when resuming should get only events written after the consumer starts
     /// </summary>
-    public static Position OnlyNew(string topic, int partition) => new Position(topic, partition, OnlyNewOffset);
+    public static Position OnlyNew(string topic, int partition) => new(topic, partition, OnlyNewOffset);
 
-    public string Topic { get; }
-    public int Partition { get; }
-    public long Offset { get; }
+    public string Topic { get; } = topic;
+    public int Partition { get; } = partition;
+    public long Offset { get; } = offset;
 
     public bool IsDefault => Offset == DefaultOffset;
         
     public bool IsOnlyNew => Offset == OnlyNewOffset;
-
-    public Position(string topic, int partition, long offset)
-    {
-        Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-        Partition = partition;
-        Offset = offset;
-    }
 
     public override string ToString() => $"{Topic}: {Partition}/{Offset}";
 
@@ -60,5 +51,5 @@ public class Position
 
     public static bool operator !=(Position left, Position right) => !left.Equals(right);
 
-    public Position Advance(int offset) => new Position(Topic, Partition, Offset + offset);
+    public Position Advance(int offset) => new(Topic, Partition, Offset + offset);
 }

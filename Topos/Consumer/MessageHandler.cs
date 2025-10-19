@@ -87,7 +87,7 @@ public class MessageHandler : IDisposable
 
         _context = context;
         _logger = logger;
-        _task = Task.Run(ProcessMessages);
+        _task = Task.Run(ProcessMessagesAsync);
     }
 
     public void Stop()
@@ -111,7 +111,7 @@ public class MessageHandler : IDisposable
         }
     }
 
-    async Task ProcessMessages()
+    async Task ProcessMessagesAsync()
     {
         var cancellationToken = _cancellationTokenSource.Token;
 
@@ -175,7 +175,7 @@ public class MessageHandler : IDisposable
         _logger.Info("Message handler stopped");
     }
 
-    public async Task Drain(CancellationToken token)
+    public async Task DrainAsync(CancellationToken token)
     {
         // wait until queue is empty
         while (!token.IsCancellationRequested && _messages.Count > 0)

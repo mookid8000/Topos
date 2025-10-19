@@ -49,7 +49,7 @@ public class TrivialProdConTestWithApi : KafkaFixtureBase
 
         Using(consumer);
 
-        await producer.Send(_topic, new ToposMessage("hej med dig min ven!"));
+        await producer.SendAsync(_topic, new ToposMessage("hej med dig min ven!"));
 
         await receivedEvents.WaitOrDie(c => c.Count >= 1, timeoutSeconds: 10);
 

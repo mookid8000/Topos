@@ -61,7 +61,7 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
             handler.Start(logger, _consumerContext);
         }
 
-        _flusherLoopTask = Task.Run(RunPositionsFlusher);
+        _flusherLoopTask = Task.Run(RunPositionsFlusherAsync);
     }
 
     public void Dispatch(ReceivedTransportMessage transportMessage)
@@ -84,7 +84,7 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
         }, _cancellationTokenSource.Token);
     }
 
-    public async Task Revoke(string topic, IEnumerable<int> partitions)
+    public async Task RevokeAsync(string topic, IEnumerable<int> partitions)
     {
         var partitionsList = partitions.ToList();
 
@@ -97,11 +97,11 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
                 // ensure all handlers have finished processing their queues
                 foreach (var handler in _handlers)
                 {
-                    await handler.Drain(token);
+                    await handler.DrainAsync(token);
                 }
 
                 // save all positions
-                await SetPositions();
+                await SetPositionsAsync();
 
                 // remove cached positions from handlers
                 foreach (var handler in _handlers)
@@ -128,13 +128,13 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
         }
     }
 
-    async Task RunPositionsFlusher()
+    async Task RunPositionsFlusherAsync()
     {
         async Task DoFlush(CancellationToken cancellationToken)
         {
             using (await _setPositionsLock.LockAsync(cancellationToken))
             {
-                await SetPositions();
+                await SetPositionsAsync();
             }
         }
 
@@ -162,14 +162,14 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
             // set the positions one last time
             try
             {
-                await SetPositions();
+                await SetPositionsAsync();
             }
             // ReSharper disable once EmptyGeneralCatchClause
             catch { }
         }
     }
 
-    async Task SetPositions()
+    async Task SetPositionsAsync()
     {
         ConcurrentDictionary<int, long> GetForTopic(string topic) => _previouslySetPositions.GetOrAdd(topic, _ => new ConcurrentDictionary<int, long>());
 
@@ -193,7 +193,7 @@ public class DefaultConsumerDispatcher : IConsumerDispatcher, IInitializable, ID
 
         await Task.WhenAll(positions.Select(async position =>
         {
-            await _positionManager.Set(position);
+            await _positionManager.SetAsync(position);
 
             GetForTopic(position.Topic)[position.Partition] = position.Offset;
         }));

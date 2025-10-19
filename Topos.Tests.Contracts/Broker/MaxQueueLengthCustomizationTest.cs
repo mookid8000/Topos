@@ -62,7 +62,7 @@ public abstract class MaxQueueLengthCustomizationTest<TBrokerFactory> : ToposCon
 
         using (new TimerScope($"send {totalCount} messages", totalCount))
         {
-            await Task.WhenAll(messages.Select(m => producer.Send(topic, new ToposMessage(m))));
+            await Task.WhenAll(messages.Select(m => producer.SendAsync(topic, new ToposMessage(m))));
         }
 
         consumer.Start();

@@ -3,12 +3,8 @@ using Topos.Consumer;
 
 namespace Topos.Serialization;
 
-public class ReceivedTransportMessage : TransportMessage
+public class ReceivedTransportMessage(Position position, Dictionary<string, string> headers, byte[] body)
+    : TransportMessage(headers, body)
 {
-    public Position Position { get; }
-
-    public ReceivedTransportMessage(Position position, Dictionary<string, string> headers, byte[] body) : base(headers, body)
-    {
-        Position = position;
-    }
+    public Position Position { get; } = position;
 }

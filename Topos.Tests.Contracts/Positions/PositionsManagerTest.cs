@@ -23,9 +23,9 @@ public class PositionsManagerTest<TPositionsManagerFactory> : ToposContractFixtu
         var topic2 = Guid.NewGuid().ToString();
         var topic3 = Guid.NewGuid().ToString();
 
-        var position1 = await manager.Get(topic1, 0);
-        var position2 = await manager.Get(topic2, 2);
-        var position3 = await manager.Get(topic3, 32);
+        var position1 = await manager.GetAsync(topic1, 0);
+        var position2 = await manager.GetAsync(topic2, 2);
+        var position3 = await manager.GetAsync(topic3, 32);
 
         Assert.That(position1, Is.EqualTo(Position.Default(topic1, 0)));
         Assert.That(position2, Is.EqualTo(Position.Default(topic2, 2)));
@@ -38,9 +38,9 @@ public class PositionsManagerTest<TPositionsManagerFactory> : ToposContractFixtu
         var manager = Create();
         var topic = Guid.NewGuid().ToString("N");
         var originalPosition = new Position(topic, 23, 50);
-        await manager.Set(originalPosition);
+        await manager.SetAsync(originalPosition);
 
-        var roundtrippedPosition = await manager.Get(topic, 23);
+        var roundtrippedPosition = await manager.GetAsync(topic, 23);
 
         Assert.That(roundtrippedPosition, Is.EqualTo(originalPosition));
     }

@@ -67,7 +67,7 @@ public class KafkaProducerImplementation : IProducerImplementation
 
     public IAdminClient GetAdminClient() => _adminClient.Value;
 
-    public async Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
+    public async Task SendAsync(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (transportMessage == null) throw new ArgumentNullException(nameof(transportMessage));
@@ -77,7 +77,7 @@ public class KafkaProducerImplementation : IProducerImplementation
         await _producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
     }
 
-    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
+    public Task SendManyAsync(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (transportMessages == null) throw new ArgumentNullException(nameof(transportMessages));

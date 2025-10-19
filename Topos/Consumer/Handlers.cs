@@ -5,7 +5,7 @@ namespace Topos.Consumer;
 
 public class Handlers : IEnumerable<MessageHandler>
 {
-    readonly List<MessageHandler> _messageHandlers = new List<MessageHandler>();
+    readonly List<MessageHandler> _messageHandlers = new();
         
     public void Add(MessageHandler messageHandler) => _messageHandlers.Add(messageHandler);
 

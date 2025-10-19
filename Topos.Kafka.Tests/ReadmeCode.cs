@@ -32,7 +32,7 @@ public class ReadmeCode : KafkaFixtureBase
                 var messages = Enumerable.Range(0, count)
                     .Select(n => new SomeEvent($"This is event number {n}"));
 
-                await Task.WhenAll(messages.Select(m => producer.Send("someevents", new ToposMessage(m))));
+                await Task.WhenAll(messages.Select(m => producer.SendAsync("someevents", new ToposMessage(m))));
             });
     }
 
@@ -49,7 +49,7 @@ public class ReadmeCode : KafkaFixtureBase
         Using(producer);
 
         // send events like this:;
-        await producer.Send("someeents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
+        await producer.SendAsync("someeents", new ToposMessage(new SomeEvent("This is just a message")), partitionKey: "customer-004");
     }
 
     [Test]

@@ -29,6 +29,6 @@ public class TestConfigurationApi : FixtureBase
             .Logging(l => l.UseConsole())
             .Create();
 
-        await producer.Send("some-topic", new ToposMessage("hej med dig"));
+        await producer.SendAsync("some-topic", new ToposMessage("hej med dig"));
     }
 }

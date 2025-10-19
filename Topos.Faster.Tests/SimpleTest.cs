@@ -21,7 +21,7 @@ public class SimpleTest : FixtureBase
         var testDirectory = NewTempDirectory();
 
         using var producer = CreateProducer(testDirectory);
-        await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
+        await producer.SendAsync("test-topic", new ToposMessage(new SomeMessage()));
             
         using var consumer = StartConsumer(testDirectory, gotTheEvent);
 
@@ -37,7 +37,7 @@ public class SimpleTest : FixtureBase
         using var consumer = StartConsumer(testDirectory, gotTheEvent);
 
         using var producer = CreateProducer(testDirectory);
-        await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
+        await producer.SendAsync("test-topic", new ToposMessage(new SomeMessage()));
 
         gotTheEvent.WaitOrDie(errorMessage: "Did not get the expected events callback");
     }

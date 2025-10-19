@@ -37,14 +37,14 @@ class FasterLogProducerImplementation : IProducerImplementation, IInitializable
         _logger = loggerFactory.GetLogger(GetType());
     }
 
-    public Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
+    public Task SendAsync(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default)
     {
         var writeTask = new WriteTask(topic, partitionKey, [transportMessage], cancellationToken);
 
         return EnqueueWriteTask(writeTask);
     }
 
-    public Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
+    public Task SendManyAsync(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default)
     {
         var writeTask = new WriteTask(topic, partitionKey, transportMessages, cancellationToken);
 

@@ -12,7 +12,7 @@ public class TestAzureBlobsPositionManager
     {
         var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "does-not-exist");
 
-        Assert.That(await manager.Get("whatever", 1), Is.EqualTo(Position.Default("whatever", 1)));
+        Assert.That(await manager.GetAsync("whatever", 1), Is.EqualTo(Position.Default("whatever", 1)));
     }
 
     [Test]
@@ -20,9 +20,9 @@ public class TestAzureBlobsPositionManager
     {
         var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "positions");
 
-        await manager.Set(new Position("my-topic", 3, 500));
+        await manager.SetAsync(new Position("my-topic", 3, 500));
 
-        var position = await manager.Get("my-topic", 3);
+        var position = await manager.GetAsync("my-topic", 3);
 
         Assert.That(position, Is.Not.Null);
         Assert.That(position.Topic, Is.EqualTo("my-topic"));
@@ -35,9 +35,9 @@ public class TestAzureBlobsPositionManager
     {
         var manager = new AzureBlobsPositionManager(AzureBlobConfig.ConnectionString, "backuppositions");
 
-        await manager.Set(new Position("topic70", 3, 500));
+        await manager.SetAsync(new Position("topic70", 3, 500));
 
-        var position = await manager.Get("topic70", 3);
+        var position = await manager.GetAsync("topic70", 3);
 
         Assert.That(position, Is.Not.Null);
         Assert.That(position.Topic, Is.EqualTo("topic70"));

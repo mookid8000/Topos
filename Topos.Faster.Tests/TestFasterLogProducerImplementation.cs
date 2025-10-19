@@ -36,7 +36,7 @@ public class TestFasterLogProducerImplementation : FixtureBase
             var body = new byte[] { 1, 2, 3 };
             var transportMessage = new TransportMessage(headers, body);
 
-            await producerImplementation.Send(
+            await producerImplementation.SendAsync(
                 topic: "test",
                 partitionKey: "test",
                 transportMessage: transportMessage

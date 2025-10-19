@@ -18,7 +18,7 @@ public interface IProducerImplementation : IDisposable
     /// <param name="partitionKey">Key which will be used to pick a partition to append the message to</param>
     /// <param name="transportMessage">Raw transport message in the form of bytes and headers</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task Send(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default);
+    Task SendAsync(string topic, string partitionKey, TransportMessage transportMessage, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Must send the specified messages to the specified topic, ensuring ordered delivery within the specified partition key.
@@ -27,5 +27,5 @@ public interface IProducerImplementation : IDisposable
     /// <param name="partitionKey">Key which will be used to pick a partition to append the message to</param>
     /// <param name="transportMessages">Sequence of raw transport messages in the form of bytes and headers</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task SendMany(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default);
+    Task SendManyAsync(string topic, string partitionKey, IEnumerable<TransportMessage> transportMessages, CancellationToken cancellationToken = default);
 }

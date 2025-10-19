@@ -2,10 +2,8 @@
 
 namespace Topos.Consumer;
 
-public class DefaultToposConsumer : IToposConsumer
+public class DefaultToposConsumer(IConsumerImplementation consumerImplementation) : IToposConsumer
 {
-    readonly IConsumerImplementation _consumerImplementation;
-
     bool _isStarted;
 
     bool _disposing;
@@ -13,16 +11,12 @@ public class DefaultToposConsumer : IToposConsumer
 
     public event Action Disposing;
 
-    public DefaultToposConsumer(IConsumerImplementation consumerImplementation)
-    {
-        _consumerImplementation = consumerImplementation ?? throw new ArgumentNullException(nameof(consumerImplementation));
-    }
-
     public void Start()
     {
         if (_isStarted) return;
 
-        _consumerImplementation.Start();
+        consumerImplementation.Start();
+        
         _isStarted = true;
     }
 

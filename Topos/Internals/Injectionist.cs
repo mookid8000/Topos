@@ -16,14 +16,9 @@ public class Injectionist
 {
     class Handler
     {
-        public Handler()
-        {
-            Decorators = new List<Resolver>();
-        }
-
         public Resolver PrimaryResolver { get; private set; }
 
-        public List<Resolver> Decorators { get; }
+        public List<Resolver> Decorators { get; } = new();
 
         void AddDecorator(Resolver resolver)
         {

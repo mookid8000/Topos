@@ -4,6 +4,6 @@ namespace Topos.Consumer;
 
 public interface IPositionManager
 {
-    Task Set(Position position);
-    Task<Position> Get(string topic, int partition);
+    Task SetAsync(Position position);
+    Task<Position> GetAsync(string topic, int partition);
 }

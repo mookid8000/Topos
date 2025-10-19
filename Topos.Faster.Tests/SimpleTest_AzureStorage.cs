@@ -30,7 +30,7 @@ public class SimpleTest_AzureStorage : FixtureBase
         var testDirectory = NewTempDirectory();
 
         using var producer = CreateProducer();
-        await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
+        await producer.SendAsync("test-topic", new ToposMessage(new SomeMessage()));
 
         using var consumer = StartConsumer(gotTheEvent);
 
@@ -46,7 +46,7 @@ public class SimpleTest_AzureStorage : FixtureBase
         using var consumer = StartConsumer(gotTheEvent);
 
         using var producer = CreateProducer();
-        await producer.Send("test-topic", new ToposMessage(new SomeMessage()));
+        await producer.SendAsync("test-topic", new ToposMessage(new SomeMessage()));
 
         gotTheEvent.WaitOrDie(errorMessage: "Did not get the expected events callback");
     }

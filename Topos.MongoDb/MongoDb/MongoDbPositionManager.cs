@@ -17,7 +17,7 @@ public class MongoDbPositionManager : IPositionManager
         _positions = database.GetCollection<BsonDocument>(collectionName);
     }
 
-    public async Task Set(Position position)
+    public async Task SetAsync(Position position)
     {
         var criteria = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
         {
@@ -32,7 +32,7 @@ public class MongoDbPositionManager : IPositionManager
         await _positions.UpdateOneAsync(criteria, update, new UpdateOptions { IsUpsert = true });
     }
 
-    public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> GetAsync(string topic, int partition)
     {
         var query = new BsonDocumentFilterDefinition<BsonDocument>(new BsonDocument
         {

@@ -39,7 +39,7 @@ public class CheckMuchData : FixtureBase
 
         foreach (var batch in messages.Batch(1000))
         {
-            await producer.SendMany("test", batch);
+            await producer.SendManyAsync("test", batch);
         }
     }
 
@@ -70,11 +70,11 @@ public class CheckMuchData : FixtureBase
             .Create();
 
         var messages = Enumerable.Range(0, count)
-            .Select(n => new ToposMessage(payload));
+            .Select(_ => new ToposMessage(payload));
 
         foreach (var batch in messages.Batch(1000))
         {
-            await producer.SendMany("test", batch);
+            await producer.SendManyAsync("test", batch);
         }
     }
 

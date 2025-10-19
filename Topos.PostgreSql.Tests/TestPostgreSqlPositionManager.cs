@@ -20,10 +20,10 @@ public class TestPostgreSqlPositionManager : PostgreSqlFixtureBase
     {
         var testTopic = $"test-topic-{Guid.NewGuid():N}";
 
-        await _positionManager.Set(new Position(testTopic, 1, 100));
-        await _positionManager.Set(new Position(testTopic, 2, 100));
-        await _positionManager.Set(new Position(testTopic, 7, -1));
-        await _positionManager.Set(new Position(testTopic, 7, (long)int.MaxValue + 5));
+        await _positionManager.SetAsync(new Position(testTopic, 1, 100));
+        await _positionManager.SetAsync(new Position(testTopic, 2, 100));
+        await _positionManager.SetAsync(new Position(testTopic, 7, -1));
+        await _positionManager.SetAsync(new Position(testTopic, 7, (long)int.MaxValue + 5));
     }
 
     [Test]
@@ -31,7 +31,7 @@ public class TestPostgreSqlPositionManager : PostgreSqlFixtureBase
     {
         var testTopic = $"test-topic-{Guid.NewGuid():N}";
 
-        var position = await _positionManager.Get(testTopic, partition: 1);
+        var position = await _positionManager.GetAsync(testTopic, partition: 1);
 
         Assert.That(position, Is.EqualTo(Position.Default(testTopic, partition: 1)));
     }
@@ -41,9 +41,9 @@ public class TestPostgreSqlPositionManager : PostgreSqlFixtureBase
     {
         var testTopic = $"test-topic-{Guid.NewGuid():N}";
 
-        await _positionManager.Set(new Position(testTopic, 2, 100));
+        await _positionManager.SetAsync(new Position(testTopic, 2, 100));
 
-        var position = await _positionManager.Get(testTopic, 2);
+        var position = await _positionManager.GetAsync(testTopic, 2);
 
         Assert.That(position, Is.Not.Null);
 
@@ -56,11 +56,11 @@ public class TestPostgreSqlPositionManager : PostgreSqlFixtureBase
     {
         var testTopic = $"test-topic-{Guid.NewGuid():N}";
 
-        await _positionManager.Set(new Position(testTopic, 2, 100));
-        await _positionManager.Set(new Position(testTopic, 2, 101));
-        await _positionManager.Set(new Position(testTopic, 2, 110));
+        await _positionManager.SetAsync(new Position(testTopic, 2, 100));
+        await _positionManager.SetAsync(new Position(testTopic, 2, 101));
+        await _positionManager.SetAsync(new Position(testTopic, 2, 110));
 
-        var position = await _positionManager.Get(testTopic, 2);
+        var position = await _positionManager.GetAsync(testTopic, 2);
 
         Assert.That(position, Is.Not.Null);
 

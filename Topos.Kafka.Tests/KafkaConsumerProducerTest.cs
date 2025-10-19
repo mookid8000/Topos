@@ -42,7 +42,7 @@ public class KafkaConsumerProducerTest : KafkaFixtureBase
                 var toposMessages = words
                     .Select(word => new ToposMessage(new MessageWithSingleWord(word)));
 
-                await producer.SendMany(topicForWords, toposMessages, cancellationToken: _);
+                await producer.SendManyAsync(topicForWords, toposMessages, cancellationToken: _);
             })
             .Create();
 
@@ -70,7 +70,7 @@ public class KafkaConsumerProducerTest : KafkaFixtureBase
         tokenizerConsumer.Start();
         wordCounterConsumer.Start();
 
-        await textProducer.SendMany(topicForText, Enumerable.Range(0, 1000).Select(_ => new ToposMessage(new MessageWithText(textFromGitHub))));
+        await textProducer.SendManyAsync(topicForText, Enumerable.Range(0, 1000).Select(_ => new ToposMessage(new MessageWithText(textFromGitHub))));
 
         await Task.Delay(TimeSpan.FromSeconds(10));
 

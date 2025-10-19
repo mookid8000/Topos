@@ -76,7 +76,7 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
                 using var consumer = CreateConsumer();
                 using var producer = CreateProducer();
 
-                await producer.Send("topic1", new($"besked {counter}"));
+                await producer.SendAsync("topic1", new($"besked {counter}"));
 
                 await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
             }
@@ -135,7 +135,7 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
         {
             using var consumer = CreateConsumer();
 
-            await producer.Send("topic1", new($"besked {counter}"));
+            await producer.SendAsync("topic1", new($"besked {counter}"));
 
             await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
         }

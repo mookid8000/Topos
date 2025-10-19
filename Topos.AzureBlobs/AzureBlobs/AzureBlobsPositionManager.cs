@@ -32,7 +32,7 @@ public class AzureBlobsPositionManager : IPositionManager
         });
     }
 
-    public async Task Set(Position position)
+    public async Task SetAsync(Position position)
     {
         var topic = position.Topic;
         var partition = position.Partition;
@@ -53,7 +53,7 @@ public class AzureBlobsPositionManager : IPositionManager
         }
     }
 
-    public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> GetAsync(string topic, int partition)
     {
         var blobName = GetBlobName(topic, partition);
 

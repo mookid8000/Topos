@@ -48,29 +48,29 @@ public class ProdConCatchUpTest : KafkaFixtureBase
         var partitionKey = "test";
 
         // send three mewsages
-        await _producer.Send(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("MED"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("DIG"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("MED"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
         // wait until they're received
         await ConsumeForSomeTime(receivedEvents, c => c.Count == 3, c => c.Count > 3, FormatReceivedEvents);
 
-        Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "MED", "DIG" }), FormatReceivedEvents);
+        Assert.That(receivedEvents, Is.EqualTo(["HEJ", "MED", "DIG"]), FormatReceivedEvents);
 
         // now clear the events and send 5 additional events
         receivedEvents.Clear();
 
-        await _producer.Send(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("OG"), partitionKey: partitionKey);
-        await _producer.Send(_topic, new ToposMessage("SÅ IGEN"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("HEJ"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("IGEN"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("OG"), partitionKey: partitionKey);
+        await _producer.SendAsync(_topic, new ToposMessage("SÅ IGEN"), partitionKey: partitionKey);
 
         // ... and then wait for them to arrive
         await ConsumeForSomeTime(receivedEvents, c => c.Count == 5, c => c.Count > 5, FormatReceivedEvents);
 
         Assert.That(receivedEvents.Count, Is.EqualTo(5), FormatReceivedEvents);
-        Assert.That(receivedEvents, Is.EqualTo(new[] { "HEJ", "IGEN", "IGEN", "OG", "SÅ IGEN" }), FormatReceivedEvents);
+        Assert.That(receivedEvents, Is.EqualTo(["HEJ", "IGEN", "IGEN", "OG", "SÅ IGEN"]), FormatReceivedEvents);
     }
 
     async Task ConsumeForSomeTime(
@@ -134,21 +134,17 @@ Failed with details: {errorDetailsFactory()}
         }
     }
 
-    class WireTapPositionsManager : IPositionManager
+    class WireTapPositionsManager(IPositionManager positionManager) : IPositionManager
     {
-        readonly IPositionManager _positionManager;
-
-        public WireTapPositionsManager(IPositionManager positionManager) => _positionManager = positionManager;
-
-        public Task Set(Position position)
+        public Task SetAsync(Position position)
         {
             Console.WriteLine($"SET: {position}");
-            return _positionManager.Set(position);
+            return positionManager.SetAsync(position);
         }
 
-        public Task<Position> Get(string topic, int partition)
+        public Task<Position> GetAsync(string topic, int partition)
         {
-            return _positionManager.Get(topic, partition);
+            return positionManager.GetAsync(topic, partition);
         }
     }
 }

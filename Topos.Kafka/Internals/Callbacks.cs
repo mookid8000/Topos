@@ -42,7 +42,10 @@ static class Callbacks
         ConsumerContext context
     )
     {
-        if (!partitions.Any()) return Enumerable.Empty<TopicPartitionOffset>();
+        if (!partitions.Any())
+        {
+            return [];
+        }
 
         var partitionsByTopic = partitions
             .GroupBy(p => p.Topic)
@@ -62,7 +65,7 @@ static class Callbacks
                 .Select(async tp => new
                 {
                     TopicPartition = tp,
-                    Position = await positionManager.Get(tp.Topic, tp.Partition.Value)
+                    Position = await positionManager.GetAsync(tp.Topic, tp.Partition.Value)
                 })
                 .ToListAsync();
 
@@ -105,7 +108,7 @@ static class Callbacks
 
             foreach (var revocation in partitionsByTopic)
             {
-                await consumerDispatcher.Revoke(revocation.Topic, revocation.Partitions);
+                await consumerDispatcher.RevokeAsync(revocation.Topic, revocation.Partitions);
             }
         });
     }

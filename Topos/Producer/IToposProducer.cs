@@ -26,7 +26,7 @@ public interface IToposProducer : IDisposable
     /// Remember that if the order of the messages is important, you must specify a partition key that ensures partition affinity.
     /// </param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task Send(string topic, ToposMessage message, string partitionKey = null, CancellationToken cancellationToken = default);
+    Task SendAsync(string topic, ToposMessage message, string partitionKey = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sends the given messages.
@@ -44,5 +44,5 @@ public interface IToposProducer : IDisposable
     /// Remember that if the order of the messages is important, you must specify a partition key that ensures partition affinity.
     /// </param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task SendMany(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null, CancellationToken cancellationToken = default);
+    Task SendManyAsync(string topic, IEnumerable<ToposMessage> messages, string partitionKey = null, CancellationToken cancellationToken = default);
 }

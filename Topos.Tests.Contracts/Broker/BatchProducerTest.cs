@@ -41,12 +41,12 @@ public abstract class BatchProducerTest<TBrokerFactory> : ToposContractFixtureBa
             {
                 foreach (var evt in events)
                 {
-                    await producer.Send(topic, evt, partitionKey: "whatever");
+                    await producer.SendAsync(topic, evt, partitionKey: "whatever");
                 }
             }
             else
             {
-                await producer.SendMany(topic, events, partitionKey: "whatever");
+                await producer.SendManyAsync(topic, events, partitionKey: "whatever");
             }
         }
 

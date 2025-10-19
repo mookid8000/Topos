@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Topos.Consumer;
+// ReSharper disable MethodHasAsyncOverload
 #pragma warning disable 1998
 
 namespace Topos.FileSystem;
@@ -33,14 +34,14 @@ public class FileSystemPositionsManager : IPositionManager
         }
     }
 
-    public async Task Set(Position position)
+    public async Task SetAsync(Position position)
     {
         var filePath = GetFilePath(position.Topic, position.Partition);
 
         File.WriteAllText(filePath, position.Offset.ToString());
     }
 
-    public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> GetAsync(string topic, int partition)
     {
         var filePath = GetFilePath(topic, partition);
 

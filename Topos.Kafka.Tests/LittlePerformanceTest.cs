@@ -76,7 +76,7 @@ public class LittlePerformanceTest : KafkaFixtureBase
     {
         var stopwatch = Stopwatch.StartNew();
 
-        await producer.SendMany(topic, events.Select((evt, index) => new ToposMessage(evt)));
+        await producer.SendManyAsync(topic, events.Select((evt, index) => new ToposMessage(evt)));
 
         //await Task.WhenAll(events.Select(async (evt, index) => await producer.Send(topic, new ToposMessage(evt), index.ToString())));
 

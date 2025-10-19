@@ -45,7 +45,7 @@ public class KafkaCloudTest : FixtureBase
             .Serialization(s => s.UseNewtonsoftJson())
             .Create();
 
-        await producer.Send(topic, new ToposMessage("her er noget nyt!!"));
+        await producer.SendAsync(topic, new ToposMessage("her er noget nyt!!"));
             
         //await Task.WhenAll(Enumerable.Range(0, 10000).Select(n => 
         //producer.Send(topic, new ToposMessage($"her er besked nr {n}"), partitionKey: (n%20).ToString())));

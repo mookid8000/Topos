@@ -60,7 +60,7 @@ public class TestRawKafkaConsumer : KafkaFixtureBase
     [Test]
     public async Task ThisIsHowWeParty()
     {
-        await _producer.SendMany(_topic, Enumerable.Range(0, 10).Select(n => new ToposMessage($"THIS IS MESSAGE {n}")), partitionKey: "whatever");
+        await _producer.SendManyAsync(_topic, Enumerable.Range(0, 10).Select(n => new ToposMessage($"THIS IS MESSAGE {n}")), partitionKey: "whatever");
 
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
@@ -85,20 +85,20 @@ public class TestRawKafkaConsumer : KafkaFixtureBase
         }
     }
 
-    static IEnumerable<TestRun> GetTestRuns() => new[]
-    {
-        new TestRun(messageCount: 10, useTopos: true, printMessages: true),
-        new TestRun(messageCount: 10, useTopos: false, printMessages: true),
+    static IEnumerable<TestRun> GetTestRuns() =>
+    [
+        new(messageCount: 10, useTopos: true, printMessages: true),
+        new(messageCount: 10, useTopos: false, printMessages: true),
 
-        new TestRun(messageCount: 1000, useTopos: true, printMessages: false),
-        new TestRun(messageCount: 1000, useTopos: false, printMessages: false),
+        new(messageCount: 1000, useTopos: true, printMessages: false),
+        new(messageCount: 1000, useTopos: false, printMessages: false),
 
-        new TestRun(messageCount: 100000, useTopos: true, printMessages: false),
-        new TestRun(messageCount: 100000, useTopos: false, printMessages: false),
+        new(messageCount: 100000, useTopos: true, printMessages: false),
+        new(messageCount: 100000, useTopos: false, printMessages: false),
 
-        new TestRun(messageCount: 1000000, useTopos: true, printMessages: false),
-        new TestRun(messageCount: 1000000, useTopos: false, printMessages: false),
-    };
+        new(messageCount: 1000000, useTopos: true, printMessages: false),
+        new(messageCount: 1000000, useTopos: false, printMessages: false)
+    ];
 
     public class TestRun
     {
@@ -125,7 +125,7 @@ public class TestRawKafkaConsumer : KafkaFixtureBase
 
         using (TimerScope("produce", countForRateCalculation: messageCount))
         {
-            await _producer.SendMany(_topic, Enumerable.Range(0, messageCount)
+            await _producer.SendManyAsync(_topic, Enumerable.Range(0, messageCount)
                 .Select(n => new ToposMessage($"THIS IS MESSAGE {n}")), partitionKey: "whatever");
         }
 

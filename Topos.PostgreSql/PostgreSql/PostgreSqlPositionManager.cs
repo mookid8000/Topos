@@ -22,7 +22,7 @@ public class PostgreSqlPositionManager : IPositionManager
         }
     }
 
-    public async Task Set(Position position)
+    public async Task SetAsync(Position position)
     {
         await using var connection = new NpgsqlConnection(_connectionString);
 
@@ -64,7 +64,7 @@ public class PostgreSqlPositionManager : IPositionManager
         }
     }
 
-    public async Task<Position> Get(string topic, int partition)
+    public async Task<Position> GetAsync(string topic, int partition)
     {
         await using var connection = new NpgsqlConnection(_connectionString);
 

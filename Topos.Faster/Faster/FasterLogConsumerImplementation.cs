@@ -129,7 +129,7 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 
             try
             {
-                var position = await _positionManager.Get(topic, 0);
+                var position = await _positionManager.GetAsync(topic, 0);
 
                 return position ?? Position.Default(topic, 0);
             }
