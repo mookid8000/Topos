@@ -338,6 +338,11 @@
 ## 0.41.0
 * Update all the deps
 
+## 0.50.0
+* Rename async methods to follow the *Async naming convention
+* Add more logging to FASTER log consumer implementation
+
+
 
 ---
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FASTER.core;
 using Topos.Consumer;
 using Topos.Extensions;
+using Topos.Internals;
 using Topos.Logging;
 using Topos.Serialization;
 
@@ -58,14 +59,17 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 
             _logger.Debug("Starting FasterLog consumer task for topic {topic}", topic);
 
-            var resumePosition = await GetResumePosition(topic, cancellationToken);
+            var resumePosition = await GetResumePositionAsync(topic, cancellationToken);
             var readAddress = GetReadAddress(resumePosition, log);
+
+            _logger.Info("FasterLog consumer task for topic {topic} will resume from {resumePosition} corresponding to {readAddress}", 
+                topic, resumePosition, readAddress);
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    using var iterator = log.Scan(readAddress, long.MaxValue);
+                    using var iterator = log.Scan(readAddress, long.MaxValue, logger: new MicrosoftLoggerAdapter(_logger));
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
@@ -121,7 +125,7 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
         return resumePosition.Offset;
     }
 
-    async Task<Position> GetResumePosition(string topic, CancellationToken cancellationToken)
+    async Task<Position> GetResumePositionAsync(string topic, CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -129,9 +133,9 @@ class FasterLogConsumerImplementation : IConsumerImplementation, IDisposable
 
             try
             {
-                var position = await _positionManager.GetAsync(topic, 0);
+                var position = await _positionManager.GetAsync(topic, partition: 0);
 
-                return position ?? Position.Default(topic, 0);
+                return position ?? Position.Default(topic, partition: 0);
             }
             catch (Exception exception)
             {
