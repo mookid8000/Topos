@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.6.33801.468
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topos", "Topos\Topos.csproj", "{57294AA8-D493-4DDE-AB92-BDF6E1E8996A}"
 EndProject
@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0 Solution Items", "0 Solut
 	ProjectSection(SolutionItems) = preProject
 		scripts\build.cmd = scripts\build.cmd
 		CHANGELOG.md = CHANGELOG.md
+		Directory.Build.props = Directory.Build.props
 		scripts\push.cmd = scripts\push.cmd
 		README.md = README.md
 		scripts\release.cmd = scripts\release.cmd

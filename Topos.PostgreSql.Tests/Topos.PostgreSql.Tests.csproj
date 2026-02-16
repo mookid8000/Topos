@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="microsoft.net.test.sdk" Version="17.14.1" />
+		<PackageReference Include="microsoft.net.test.sdk" Version="18.0.1" />
 		<PackageReference Include="NUnit" Version="4.4.0" />
-		<PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
-		<PackageReference Include="Testcontainers.postgresql" Version="4.7.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
+		<PackageReference Include="Testcontainers.postgresql" Version="4.10.0" />
 	</ItemGroup>
 
 	<ItemGroup>

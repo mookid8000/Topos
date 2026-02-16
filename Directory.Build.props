@@ -1,0 +1,8 @@
+<Project>
+	<PropertyGroup>
+		<LangVersion>13</LangVersion>
+		<Company>Rebus FM</Company>
+		<Authors>mookid8000</Authors>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
+</Project>
