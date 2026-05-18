@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="azure.storage.blobs" Version="12.27.0" />
+		<PackageReference Include="azure.storage.blobs" Version="12.28.0" />
 	</ItemGroup>
 
 	<ItemGroup>

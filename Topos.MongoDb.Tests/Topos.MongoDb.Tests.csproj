@@ -5,14 +5,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="microsoft.net.test.sdk" Version="18.0.1" />
-		<PackageReference Include="mongodb.driver" Version="3.6.0" />
-		<PackageReference Include="nunit" Version="4.4.0" />
-		<PackageReference Include="nunit3testadapter" Version="6.1.0">
+		<PackageReference Include="microsoft.net.test.sdk" Version="18.5.1" />
+		<PackageReference Include="mongodb.driver" Version="3.8.1" />
+		<PackageReference Include="nunit" Version="4.6.0" />
+		<PackageReference Include="nunit3testadapter" Version="6.2.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Testcontainers.mongodb" Version="4.10.0" />
+		<PackageReference Include="Testcontainers.mongodb" Version="4.11.0" />
 	</ItemGroup>
 
 	<ItemGroup>
