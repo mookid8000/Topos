@@ -345,6 +345,8 @@
 ## 0.51.0
 * Update all the deps
 
+## 0.52.0
+* Update all the deps
 
 ---
 
