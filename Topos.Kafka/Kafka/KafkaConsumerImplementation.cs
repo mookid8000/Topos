@@ -70,7 +70,8 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
 
     public void Start()
     {
-        if (_worker.ThreadState == ThreadState.Running)
+        // ThreadState is a flags enum, and a background thread never reports exactly ThreadState.Running
+        if (!_worker.ThreadState.HasFlag(ThreadState.Unstarted))
         {
             throw new InvalidOperationException("Kafka consumer worker is already running");
         }
@@ -138,10 +139,15 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
             .SetPartitionsAssignedHandler((_, partitions) => PartitionsAssigned(_group, _logger, partitions.ToList(), _positionManager, _partitionsAssignedHandler, _context))
             .SetPartitionsRevokedHandler((_, partitions) =>
             {
-                PartitionsRevoked(_group, _logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context);
-
-                // force full reconnect after revocation
-                consumerInstanceCancellationTokenSource.Cancel();
+                try
+                {
+                    PartitionsRevoked(_group, _logger, partitions.ToList(), _consumerDispatcher, _partitionsRevokedHandler, _context);
+                }
+                finally
+                {
+                    // force full reconnect after revocation
+                    consumerInstanceCancellationTokenSource.Cancel();
+                }
             })
             .Build();
 
@@ -174,12 +180,10 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
         {
             _logger.Warn("Kafka consumer worker aborted!");
         }
-        catch (Exception exception)
-        {
-            _logger.Error(exception, "Unhandled exception in Kafka consumer");
-        }
         finally
         {
+            // closing triggers revocation, which flushes positions - so any other exception propagates to the worker loop,
+            // which re-initializes the consumer and resumes from the last flushed position
             try
             {
                 consumer.Close();
@@ -239,14 +243,23 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
         {
             _logger.Warn("Kafka consumer worker aborted!");
         }
-        catch (Exception exception)
-        {
-            _logger.Warn(exception, "Unhandled exception in Kafka consumer loop - waiting 30 s");
-            Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).WaitSafe(cancellationToken);
-        }
+        // other exceptions must NOT be swallowed here, because the consumer has already moved past the message, so it would be lost
     }
 
-    static Dictionary<string, string> GetHeaders(Headers headers) => headers.ToDictionary(h => h.Key, h => Encoding.UTF8.GetString(h.GetValueBytes()));
+    static Dictionary<string, string> GetHeaders(Headers headers)
+    {
+        var dictionary = new Dictionary<string, string>();
+
+        // Kafka allows duplicate keys (last one wins) and null values
+        foreach (var header in headers)
+        {
+            var bytes = header.GetValueBytes();
+
+            dictionary[header.Key] = bytes != null ? Encoding.UTF8.GetString(bytes) : null;
+        }
+
+        return dictionary;
+    }
 
     public void Dispose()
     {
@@ -260,7 +273,7 @@ public class KafkaConsumerImplementation : IConsumerImplementation, IDisposable
 
             using (_cancellationTokenSource)
             {
-                if (_worker.ThreadState != ThreadState.Running) return;
+                if (_worker.ThreadState.HasFlag(ThreadState.Unstarted)) return;
 
                 if (!_worker.Join(TimeSpan.FromSeconds(5)))
                 {

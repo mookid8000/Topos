@@ -66,7 +66,6 @@ public class KafkaConsumerConfigurationBuilder
             config.SessionTimeoutMs = 30000;
             config.SecurityProtocol = SecurityProtocol.SaslSsl;
             config.SaslMechanism = SaslMechanism.Plain;
-            config.EnableSslCertificateVerification = false;
         });
 
         return config;

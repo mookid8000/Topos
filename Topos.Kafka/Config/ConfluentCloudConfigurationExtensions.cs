@@ -21,7 +21,6 @@ public static class ConfluentCloudConfigurationExtensions
             config.RequestTimeoutMs = 60000;
             config.SecurityProtocol = SecurityProtocol.SaslSsl;
             config.SaslMechanism = SaslMechanism.Plain;
-            config.EnableSslCertificateVerification = false;
             config.SocketKeepaliveEnable = true;
             config.LogConnectionClose = false;
             config.ReconnectBackoffMaxMs = 3333;
@@ -45,7 +44,6 @@ public static class ConfluentCloudConfigurationExtensions
             config.SessionTimeoutMs = 45000;
             config.SecurityProtocol = SecurityProtocol.SaslSsl;
             config.SaslMechanism = SaslMechanism.Plain;
-            config.EnableSslCertificateVerification = false;
             config.SocketKeepaliveEnable = true;
             config.LogConnectionClose = false;
             config.ReconnectBackoffMaxMs = 3333;

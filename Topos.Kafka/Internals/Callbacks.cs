@@ -103,7 +103,15 @@ static class Callbacks
 
             if (partitionsRevokedHandler != null)
             {
-                await partitionsRevokedHandler(context, partitions.Select(p => p.TopicPartition));
+                // must not prevent the dispatcher from flushing positions below
+                try
+                {
+                    await partitionsRevokedHandler(context, partitions.Select(p => p.TopicPartition));
+                }
+                catch (Exception exception)
+                {
+                    logger.Error(exception, "Error in partitions revoked handler for group {consumerGroup}", consumerGroup);
+                }
             }
 
             foreach (var revocation in partitionsByTopic)

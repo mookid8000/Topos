@@ -350,6 +350,7 @@
 
 ## 0.53.0
 * Update all the deps
+* Fix couple of subtle bugs
 
 ---
 

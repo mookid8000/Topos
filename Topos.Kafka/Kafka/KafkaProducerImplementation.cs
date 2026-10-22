@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -82,12 +83,22 @@ public class KafkaProducerImplementation : IProducerImplementation
         if (topic == null) throw new ArgumentNullException(nameof(topic));
         if (transportMessages == null) throw new ArgumentNullException(nameof(transportMessages));
 
-        var taskCompletionSource = new TaskCompletionSource<object>();
+        var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         ThreadPool.QueueUserWorkItem(_ =>
         {
             try
             {
+                var failedDeliveries = new ConcurrentQueue<DeliveryReport<string, byte[]>>();
+
+                void HandleDeliveryReport(DeliveryReport<string, byte[]> report)
+                {
+                    if (report.Error.IsError)
+                    {
+                        failedDeliveries.Enqueue(report);
+                    }
+                }
+
                 foreach (var batch in transportMessages.Batch(_kafkaOutgoingQueueMaxMessages))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -96,21 +107,47 @@ public class KafkaProducerImplementation : IProducerImplementation
                     {
                         var kafkaMessage = GetKafkaMessage(partitionKey, transportMessage);
 
-                        _producer.Produce(topic, kafkaMessage);
+                        ProduceWithRetryOnQueueFull(topic, kafkaMessage, HandleDeliveryReport, cancellationToken);
                     }
 
+                    // flushing also waits for all delivery reports to have been handled
                     _producer.Flush(cancellationToken);
+
+                    if (failedDeliveries.TryPeek(out var firstFailure))
+                    {
+                        _logger.Error("{count} messages could not be delivered to topic {topic}", failedDeliveries.Count, topic);
+
+                        throw new ProduceException<string, byte[]>(firstFailure.Error, firstFailure);
+                    }
                 }
 
-                Task.Run(() => taskCompletionSource.SetResult(null));
+                taskCompletionSource.SetResult(null);
             }
             catch (Exception exception)
             {
-                Task.Run(() => taskCompletionSource.SetException(exception));
+                taskCompletionSource.SetException(exception);
             }
         });
 
         return taskCompletionSource.Task;
+    }
+
+    void ProduceWithRetryOnQueueFull(string topic, Message<string, byte[]> kafkaMessage, Action<DeliveryReport<string, byte[]>> deliveryHandler, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            try
+            {
+                _producer.Produce(topic, kafkaMessage, deliveryHandler);
+                return;
+            }
+            catch (ProduceException<string, byte[]> exception) when (exception.Error.Code == ErrorCode.Local_QueueFull)
+            {
+                // the outgoing queue is shared with concurrent senders, so it can fill up even though our batches fit - wait for it to drain a little
+                cancellationToken.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
     }
 
     IProducer<string, byte[]> BuildProducer(Confluent.Kafka.Config config)

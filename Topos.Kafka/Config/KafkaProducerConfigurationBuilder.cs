@@ -31,7 +31,6 @@ public class KafkaProducerConfigurationBuilder
             config.RequestTimeoutMs = 60000;
             config.SecurityProtocol = SecurityProtocol.SaslSsl;
             config.SaslMechanism = SaslMechanism.Plain;
-            config.EnableSslCertificateVerification = false;
             config.SocketKeepaliveEnable = true;
         });
 
