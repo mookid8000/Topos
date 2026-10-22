@@ -108,7 +108,7 @@ public class ProdConCatchUpTest : KafkaFixtureBase
         {
             try
             {
-                await receivedEvents.WaitOrDie(completionExpression, failExpression, timeoutSeconds: 10);
+                await receivedEvents.WaitOrDieAsync(completionExpression, failExpression, timeoutSeconds: 10);
             }
             catch (TimeoutException exception)
             {

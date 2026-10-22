@@ -74,7 +74,7 @@ public abstract class MaxQueueLengthCustomizationTest<TBrokerFactory> : ToposCon
         using (new PeriodicCallback(TimeSpan.FromSeconds(5), () => Console.WriteLine($"{DateTime.Now:HH:mm:ss} SUM(encountered batch sizes) = {encounteredBatchSizes.Sum()}")))
         {
             await encounteredBatchSizes
-                .WaitOrDie(
+                .WaitOrDieAsync(
                     completionExpression: q => q.Sum() == totalCount,
                     failExpression: q => q.Sum() > totalCount,
                     failureDetailsFunction: () => $@"The sum is {encounteredBatchSizes.Sum()}

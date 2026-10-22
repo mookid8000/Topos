@@ -68,7 +68,7 @@ public abstract class BatchProducerTest<TBrokerFactory> : ToposContractFixtureBa
 
         using (new TimerScope($"Receive {eventCount} messages", countForRateCalculation: eventCount))
         {
-            await queue.WaitOrDie(
+            await queue.WaitOrDieAsync(
                 completionExpression: q => q.Count == eventCount,
                 failExpression: q => q.Count > eventCount,
                 timeoutSeconds: 20

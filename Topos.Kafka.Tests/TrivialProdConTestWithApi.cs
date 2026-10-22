@@ -51,7 +51,7 @@ public class TrivialProdConTestWithApi : KafkaFixtureBase
 
         await producer.SendAsync(_topic, new ToposMessage("hej med dig min ven!"));
 
-        await receivedEvents.WaitOrDie(c => c.Count >= 1, timeoutSeconds: 10);
+        await receivedEvents.WaitOrDieAsync(c => c.Count >= 1, timeoutSeconds: 10);
 
         Console.WriteLine($@"Got these events:
 

@@ -78,7 +78,7 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
 
                 await producer.SendAsync("topic1", new($"besked {counter}"));
 
-                await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
+                await receivedMessages.WaitOrDieAsync(q => q.Count == counter, failExpression: q => q.Count > counter);
             }
             catch (Exception exception)
             {
@@ -137,7 +137,7 @@ public class TestAzureBlobsDeviceAndResumption : FixtureBase
 
             await producer.SendAsync("topic1", new($"besked {counter}"));
 
-            await receivedMessages.WaitOrDie(q => q.Count == counter, failExpression: q => q.Count > counter);
+            await receivedMessages.WaitOrDieAsync(q => q.Count == counter, failExpression: q => q.Count > counter);
         }
 
         Assert.That(receivedMessages, Is.EqualTo(Enumerable.Range(1, numberOfRestarts).Select(n => $"besked {n}")));

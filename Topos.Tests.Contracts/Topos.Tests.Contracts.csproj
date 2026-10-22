@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="newtonsoft.json" Version="13.0.4" />
-		<PackageReference Include="nunit" Version="4.6.0" />
-		<PackageReference Include="testy" Version="0.10.0" />
+		<PackageReference Include="nunit" Version="5.0.0" />
+		<PackageReference Include="testy" Version="0.11.0" />
 	</ItemGroup>
 
 	<ItemGroup>

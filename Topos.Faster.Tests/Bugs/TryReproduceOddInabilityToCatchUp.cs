@@ -67,7 +67,7 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
 
         await producer.SendManyAsync(topic: "topic1", messages: GetMessages(count));
 
-        await receivedStrings.WaitOrDie(
+        await receivedStrings.WaitOrDieAsync(
             completionExpression: q => q.Count == count,
             failExpression: q => q.Count > count,
             timeoutSeconds: 10
@@ -86,7 +86,7 @@ public class TryReproduceOddInabilityToCatchUp : FixtureBase
 
         await producer.SendManyAsync(topic: "topic1", messages: GetMessages(count));
 
-        await receivedStrings.WaitOrDie(
+        await receivedStrings.WaitOrDieAsync(
             completionExpression: q => q.Count == count,
             failExpression: q => q.Count > count,
             timeoutSeconds: 10

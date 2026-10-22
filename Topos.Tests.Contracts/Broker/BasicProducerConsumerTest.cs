@@ -56,7 +56,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         await producer.SendAsync(topic, new ToposMessage("message 2"));
 
-        await receivedMessages.WaitOrDie(
+        await receivedMessages.WaitOrDieAsync(
             completionExpression: q => q.Count == 2,
             failExpression: q => q.Count > 2,
             failureDetailsFunction: () => $"Expected to receive exactly 2 messages, but got this: {string.Join("; ", receivedMessages)}",
@@ -92,7 +92,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         await producer.SendAsync(topic, new ToposMessage("message 2"));
 
-        await receivedMessages.WaitOrDie(
+        await receivedMessages.WaitOrDieAsync(
             completionExpression: q => q.Count == 1,
             failExpression: q => q.Count > 1,
             failureDetailsFunction: () => $"Expected to receive exactly 1 messages, but got this: {string.Join("; ", receivedMessages)}",
@@ -169,7 +169,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
 
         await Task.WhenAll(Enumerable.Range(0, 1000).Select(n => producer.SendAsync(topic, new ToposMessage($"message-{n}"), "p100")));
 
-        await receivedStrings.WaitOrDie(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 20);
+        await receivedStrings.WaitOrDieAsync(c => c.Count == 1000, failExpression: c => c.Count > 1000, timeoutSeconds: 20);
     }
 
     [Test]
@@ -210,7 +210,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
             await producer.SendAsync(topic, new ToposMessage("MED"), partitionKey: partitionKey);
             await producer.SendAsync(topic, new ToposMessage("DIG"), partitionKey: partitionKey);
 
-            await receivedStrings.WaitOrDie(
+            await receivedStrings.WaitOrDieAsync(
                 completionExpression: q => q.Count == 3,
                 failExpression: q => q.Count > 3,
                 failureDetailsFunction: GetFailureDetailsFunction,
@@ -230,7 +230,7 @@ public abstract class BasicProducerConsumerTest<TBrokerFactory> : ToposContractF
             await producer.SendAsync(topic, new ToposMessage("SØDE"), partitionKey: partitionKey);
             await producer.SendAsync(topic, new ToposMessage("VEN"), partitionKey: partitionKey);
 
-            await receivedStrings.WaitOrDie(
+            await receivedStrings.WaitOrDieAsync(
                 completionExpression: q => q.Count == 6,
                 failExpression: q => q.Count > 6,
                 timeoutSeconds: 20

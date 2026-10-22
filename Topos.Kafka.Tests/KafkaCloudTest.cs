@@ -70,7 +70,7 @@ public class KafkaCloudTest : FixtureBase
 
         consumer.Start();
 
-        await receivedMessages.WaitOrDie(q => q.Count >= 1, timeoutSeconds: 20);
+        await receivedMessages.WaitOrDieAsync(q => q.Count >= 1, timeoutSeconds: 20);
 
         await Task.Delay(TimeSpan.FromSeconds(1));
 
