@@ -348,6 +348,9 @@
 ## 0.52.0
 * Update all the deps
 
+## 0.53.0
+* Update all the deps
+
 ---
 
 [runeanielsen]: https://github.com/runeanielsen
